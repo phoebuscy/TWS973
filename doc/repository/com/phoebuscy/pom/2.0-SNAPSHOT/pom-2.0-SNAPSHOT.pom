@@ -1,0 +1,391 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<project xmlns='http://maven.apache.org/POM/4.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+         xsi:schemaLocation='http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd'>
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.phoebuscy</groupId>
+        <artifactId>version</artifactId>
+        <version>2.0-SNAPSHOT</version>
+    </parent>
+
+    <groupId>com.phoebuscy</groupId>
+    <artifactId>pom</artifactId>
+    <version>2.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <source.include>**/*.java</source.include>
+        <source.include.1>undefined</source.include.1>
+        <source.exclude>undefined</source.exclude>
+        <source.exclude.1>undefined</source.exclude.1>
+
+        <source.include.nojava>undefined</source.include.nojava>
+        <source.include.nojava.1>undefined</source.include.nojava.1>
+        <source.exclude.nojava>undefined</source.exclude.nojava>
+
+        <source.conf>${source.source}/../conf</source.conf>
+        <source.conf.include>**/*</source.conf.include>
+        <source.conf.include.1>undefined</source.conf.include.1>
+        <source.conf.deploy>conf</source.conf.deploy>
+
+        <source.resource>${source.source}/../res</source.resource>
+        <source.resource.include>**/*</source.resource.include>
+        <source.resource.deploy>res</source.resource.deploy>
+        <source.resource.use>false</source.resource.use>
+
+        <source.extend>undefined</source.extend>
+        <source.extend.include>**/*</source.extend.include>
+
+        <test.include>${source.include}</test.include>
+        <test.include.1>${source.include.1}</test.include.1>
+        <test.exclude>${source.exclude}</test.exclude>
+        <test.exclude.1>${source.exclude}</test.exclude.1>
+
+        <test.gui.exclude>**/Gui*.java</test.gui.exclude>
+        <test.args/>
+
+
+        <deploy.output>undefined</deploy.output>
+
+        <deploy.par.jarname>${project.name}.jar</deploy.par.jarname>
+        <deploy.par.1.jarname>${deploy.par.jarname}</deploy.par.1.jarname>
+        <deploy.par.2.jarname>${deploy.par.jarname}</deploy.par.2.jarname>
+        <deploy.par.3.jarname>${deploy.par.jarname}</deploy.par.3.jarname>
+
+        <deploy.par>undefined</deploy.par>
+        <deploy.par.1>undefined</deploy.par.1>
+        <deploy.par.2>undefined</deploy.par.2>
+        <deploy.par.3>undefined</deploy.par.3>
+
+        <cobertura.branchrate>0</cobertura.branchrate>
+        <cobertura.linerate>0</cobertura.linerate>
+        <cobertura.haltonfailure>0</cobertura.haltonfailure>
+        <cobertura.totalbranchrate>0</cobertura.totalbranchrate>
+        <cobertura.totallinerate>0</cobertura.totallinerate>
+        <cobertura.packagelinerate>0</cobertura.packagelinerate>
+        <cobertura.packagebranchrate>0</cobertura.packagebranchrate>
+
+        <package.par>${project.build.directory}/par</package.par>
+
+        <check.findbugs>${deploy.output}/../../../checks/findbugs.xml</check.findbugs>
+        <check.checkstyle>${deploy.output}/../../../checks/checkstyle.xml</check.checkstyle>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <!-- https://mvnrepository.com/artifact/net.engio/mbassador -->
+            <groupId>net.engio</groupId>
+            <artifactId>mbassador</artifactId>
+            <version>1.3.0</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+
+                <executions>
+                    <execution>
+                        <id>clean.deploy</id>
+                        <phase>clean</phase>
+
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+
+                        <configuration>
+                            <filesets>
+                                <fileset>
+                                    <directory>${package.par}</directory>
+                                </fileset>
+
+                                <fileset>
+                                    <directory>${deploy.par}</directory>
+                                </fileset>
+
+                                <fileset>
+                                    <directory>${deploy.par.1}</directory>
+                                </fileset>
+
+                                <fileset>
+                                    <directory>${deploy.par.2}</directory>
+                                </fileset>
+
+                                <fileset>
+                                    <directory>${deploy.par.3}</directory>
+                                </fileset>
+                            </filesets>
+
+                            <failOnError>false</failOnError>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <encoding>UTF-8</encoding>
+
+                    <includes>
+                        <include>${source.include}</include>
+                        <include>${source.include.1}</include>
+                    </includes>
+
+                    <excludes>
+                        <exclude>${source.exclude}</exclude>
+                        <exclude>${source.exclude.1}</exclude>
+                    </excludes>
+
+                    <testIncludes>
+                        <testInclude>${test.include}</testInclude>
+                        <testInclude>${test.include.1}</testInclude>
+                    </testIncludes>
+
+                    <testExcludes>
+                        <testExclude>${test.exclude}</testExclude>
+                        <testExclude>${test.exclude.1}</testExclude>
+                    </testExcludes>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+
+                <executions>
+                    <execution>
+                        <id>prepare-package.copy</id>
+                        <phase>prepare-package</phase>
+
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+
+                        <configuration>
+                            <target name='prepare-package.copy'>
+                                <copy todir='${project.build.outputDirectory}' overwrite='true' failonerror='false'>
+                                    <fileset dir='${source.source}'>
+                                        <include name='${source.include.nojava}'/>
+                                        <include name='${source.include.nojava.1}'/>
+                                        <exclude name='${source.exclude.nojava}'/>
+                                        <exclude name='**/*.java'/>
+                                    </fileset>
+                                </copy>
+                            </target>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>package.copy</id>
+                        <phase>package</phase>
+
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+
+                        <configuration>
+                            <target name='package.copy'>
+                                <taskdef name='if' classname='ise.antelope.tasks.IfTask'/>
+
+                                <copy file='${project.build.directory}/${project.build.finalName}.jar'
+                                      tofile='${package.par}/${deploy.par.jarname}' overwrite='true'
+                                      failonerror='false'/>
+
+                                <copy todir='${package.par}/${source.conf.deploy}' overwrite='true' failonerror='false'>
+                                    <fileset dir='${source.conf}'>
+                                        <include name='${source.conf.include}'/>
+                                        <include name='${source.conf.include.1}'/>
+                                    </fileset>
+                                </copy>
+
+                                <if name='source.resource.use' value='true'>
+                                    <copy todir='${package.par}/${source.resource.deploy}' overwrite='true'
+                                          failonerror='false'>
+                                        <fileset dir='${source.resource}' includes='${source.resource.include}'/>
+                                    </copy>
+                                </if>
+
+                                <copy todir='${package.par}' overwrite='true' failonerror='false'>
+                                    <fileset dir='${source.extend}' includes='${source.extend.include}'/>
+                                </copy>
+                            </target>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>install.copy</id>
+                        <phase>install</phase>
+
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+
+                        <configuration>
+                            <target name='install.copy'>
+                                <taskdef name='if' classname='ise.antelope.tasks.IfTask'/>
+
+                                <if name='deploy.par' value='undefined'>
+                                    <else>
+                                        <copy todir='${deploy.par}' overwrite='true' failonerror='true'>
+                                            <fileset dir='${package.par}' excludes='${deploy.par.jarname}'/>
+                                        </copy>
+
+                                        <copy file='${package.par}/${deploy.par.jarname}'
+                                              tofile='${deploy.par}/${deploy.par.jarname}' overwrite='true'
+                                              failonerror='true'/>
+                                    </else>
+                                </if>
+
+                                <if name='deploy.par.1' value='undefined'>
+                                    <else>
+                                        <copy todir='${deploy.par.1}' overwrite='true' failonerror='true'>
+                                            <fileset dir='${package.par}' excludes='${deploy.par.jarname}'/>
+                                        </copy>
+
+                                        <copy file='${package.par}/${deploy.par.jarname}'
+                                              tofile='${deploy.par.1}/${deploy.par.1.jarname}' overwrite='true'
+                                              failonerror='true'/>
+                                    </else>
+                                </if>
+
+                                <if name='deploy.par.2' value='undefined'>
+                                    <else>
+                                        <copy todir='${deploy.par.2}' overwrite='true' failonerror='true'>
+                                            <fileset dir='${package.par}' excludes='${deploy.par.jarname}'/>
+                                        </copy>
+
+                                        <copy file='${package.par}/${deploy.par.jarname}'
+                                              tofile='${deploy.par.2}/${deploy.par.2.jarname}' overwrite='true'
+                                              failonerror='true'/>
+                                    </else>
+                                </if>
+
+                                <if name='deploy.par.3' value='undefined'>
+                                    <else>
+                                        <copy todir='${deploy.par.3}' overwrite='true' failonerror='true'>
+                                            <fileset dir='${package.par}' excludes='${deploy.par.jarname}'/>
+                                        </copy>
+
+                                        <copy file='${package.par}/${deploy.par.jarname}'
+                                              tofile='${deploy.par.3}/${deploy.par.3.jarname}' overwrite='true'
+                                              failonerror='true'/>
+                                    </else>
+                                </if>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+
+                <dependencies>
+                    <dependency>
+                        <groupId>org.tigris.antelope</groupId>
+                        <artifactId>antelopetasks</artifactId>
+                        <version>3.2.10</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+
+                <configuration>
+                    <argLine>${test.args}</argLine>
+
+                    <excludes>
+                        <exclude>${test.gui.exclude}</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+
+                <configuration>
+                    <formats>
+                        <format>html</format>
+                        <format>xml</format>
+                    </formats>
+
+                    <check>
+                        <branchRate>0</branchRate>
+                        <lineRate>0</lineRate>
+                        <haltOnFailure>true</haltOnFailure>
+                        <totalBranchRate>0</totalBranchRate>
+                        <totalLineRate>0</totalLineRate>
+                        <packageLineRate>0</packageLineRate>
+                        <packageBranchRate>0</packageBranchRate>
+                    </check>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+
+                <configuration>
+                    <configLocation>${check.checkstyle}</configLocation>
+                    <outputFile>${check.output}/checkstyle-result.xml</outputFile>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>High</threshold>
+
+                    <findbugsXmlOutput>true</findbugsXmlOutput>
+                    <findbugsXmlOutputDirectory>${check.output}</findbugsXmlOutputDirectory>
+
+                    <xmlOutput>true</xmlOutput>
+
+                    <excludeFilterFile>${check.findbugs}</excludeFilterFile>
+                    <!--includeFilterFile></includeFilterFile-->
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <reporting>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+            </plugin>
+
+        </plugins>
+    </reporting>
+
+
+</project>

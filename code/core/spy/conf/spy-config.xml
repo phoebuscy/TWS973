@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+  <server>
+    <ip>127.0.0.1</ip>
+    <port>4001</port>
+  </server>
+  <user>
+    <name>phoebuscy</name>
+    <password>1234567</password>
+  </user>
+</resources>
+

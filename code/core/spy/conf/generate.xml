@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <product name="QQ">
+        <account id="123456789">
+            <nickname>QQ-account-1</nickname>
+            <password>123asd21qda</password>
+            <level>56</level>
+        </account>
+    </product>
+</resources>

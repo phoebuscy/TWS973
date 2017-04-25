@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<locales>
+    <locale language-country='zh_CN'>
+
+        <pair label-key='user.name' label-value='用户名'/>
+        <pair label-key='ip' label-value='ip'/>
+        <pair label-key='port' label-value='端口'/>
+
+        <pair label-key='xqj' label-value='行权价'/>
+        <pair label-key='call.put' label-value='CALL/PUT'/>
+        <pair label-key='current.price' label-value='最新价'/>
+        <pair label-key='zde' label-value='涨跌额'/>
+        <pair label-key='zdf' label-value='涨跌幅'/>
+        <pair label-key='sell.one' label-value='卖一'/>
+        <pair label-key='buy.one' label-value='买一'/>
+        <pair label-key='cjl' label-value='成交量'/>
+        <pair label-key='wpc' label-value='未平仓'/>
+
+        <pair label-key='call.raise' label-value='CALL涨'/>
+        <pair label-key='put.down' label-value='PUT跌'/>
+
+
+
+    </locale>
+
+    <locale language-country='en_US'>
+        <pair label-key='user.name' label-value='User Name'/>
+        <pair label-key='ip' label-value='ip'/>
+        <pair label-key='port' label-value='port'/>
+
+        <pair label-key='xqj' label-value='行权价'/>
+        <pair label-key='CALL.PUT' label-value='CALL/PUT'/>
+        <pair label-key='current.price' label-value='最新价'/>
+        <pair label-key='zde' label-value='涨跌额'/>
+        <pair label-key='zdf' label-value='涨跌幅'/>
+        <pair label-key='sell.one' label-value='卖一'/>
+        <pair label-key='buy.one' label-value='买一'/>
+        <pair label-key='cjl' label-value='成交量'/>
+        <pair label-key='wpc' label-value='未平仓'/>
+
+        <pair label-key='call.raise' label-value='CALL涨'/>
+        <pair label-key='put.down' label-value='PUT跌'/>
+
+    </locale>
+
+</locales>

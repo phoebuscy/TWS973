@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='gb2312'?>
+
+<extension-set>
+  <extension-point-desc id='com.phoebuscy.Provider'>
+    <interface-class>com.phoebuscy.Provider</interface-class>
+  </extension-point-desc>
+  
+</extension-set>

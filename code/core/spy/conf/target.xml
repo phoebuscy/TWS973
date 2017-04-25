@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <product name="QQ">
+        <account id="123456789">
+            <nickname>qq-account-1</nickname>
+            <password>qwe123qwe123</password>
+            <level>56</level>
+        </account>
+        <account id="987654321">
+            <nickname>qq-account-2</nickname>
+            <password>ios9ios9ios9</password>
+            <level>12</level>
+        </account>
+    </product>
+    <product name="Netease">
+        <account id="tom">
+            <password>pwdOfTom</password>
+            <capacity>1024</capacity>
+        </account>
+        <account name="Jim">
+            <password>pwdOfJim</password>
+            <capacity>2560</capacity>
+        </account>
+    </product>
+</resources>
