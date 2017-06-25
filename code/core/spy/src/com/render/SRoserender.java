@@ -5,7 +5,7 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.math.BigInteger;
 
-import static com.SUtil.getShowNumberLabel;
+import static com.utils.SUtil.getShowNumberLabel;
 
 /**
  * Created by caiyong on 2017/1/17.

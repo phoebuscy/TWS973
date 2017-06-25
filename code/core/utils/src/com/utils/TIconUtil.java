@@ -1,13 +1,9 @@
-package com;
+package com.utils;
 
 import javax.swing.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.TFileUtil.getProjectFileByDoxName;
-import static com.TPubUtil.*;
-import static com.TStringUtil.notNullAndEmptyStr;
 
 /**
  * Created by caiyong on 2017/3/11.
@@ -25,7 +21,7 @@ public class TIconUtil
 
     public static Icon getProjIcon(final String iconName)
     {
-        if(nullOrEmptyMap(iconMap))
+        if(TPubUtil.nullOrEmptyMap(iconMap))
         {
             iconMap = getIconSource();
         }
@@ -35,7 +31,7 @@ public class TIconUtil
 
     private static String getFileNameWithNoDox(final String name)
     {
-        if(notNullAndEmptyStr(name) && name.contains("."))
+        if(TStringUtil.notNullAndEmptyStr(name) && name.contains("."))
         {
             return name.substring(0,name.indexOf("."));
         }
@@ -45,16 +41,16 @@ public class TIconUtil
 
     private static Map<String, Icon> getIconSource()
     {
-        List<String> fileLst = getProjectFileByDoxName("png");
+        List<String> fileLst = TFileUtil.getProjectFileByDoxName("png");
         Map<String, Icon> iconMap = new HashMap<>();
 
-        if (notNullAndEmptyCollection(fileLst))
+        if (TPubUtil.notNullAndEmptyCollection(fileLst))
         {
             for (String file : fileLst)
             {
                 String name = getNoPathFileName(file);
                 String[] nameArr = name.split("\\.");
-                if (notNullAndEmptyArry(nameArr) && notNullAndEmptyStr(nameArr[0]) && !iconMap.containsKey(nameArr[0]))
+                if (TPubUtil.notNullAndEmptyArry(nameArr) && TStringUtil.notNullAndEmptyStr(nameArr[0]) && !iconMap.containsKey(nameArr[0]))
                 {
                     Icon icon = new ImageIcon(file);
                     iconMap.put(nameArr[0], icon);
@@ -67,10 +63,10 @@ public class TIconUtil
 
     private static String getNoPathFileName(final String fileName)
     {
-        if (notNullAndEmptyStr(fileName))
+        if (TStringUtil.notNullAndEmptyStr(fileName))
         {
-            String sysSep = getSysFileSeparator();
-            String name = replaceToSysFileSeparator(fileName);
+            String sysSep = TPubUtil.getSysFileSeparator();
+            String name = TPubUtil.replaceToSysFileSeparator(fileName);
             if (name.contains(sysSep))
             {
                 return name.substring(name.lastIndexOf(sysSep) + 1, name.length());

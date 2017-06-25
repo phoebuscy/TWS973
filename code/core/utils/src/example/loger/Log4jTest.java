@@ -5,8 +5,8 @@ import org.apache.log4j.PropertyConfigurator;
 
 import java.util.List;
 
-import static com.TFileUtil.getProjectFileByName;
-import static com.TPubUtil.notNullAndEmptyCollection;
+import static com.utils.TFileUtil.getProjectFileByName;
+import static com.utils.TPubUtil.notNullAndEmptyCollection;
 
 /**
  * Created by caiyong on 2017/3/27.

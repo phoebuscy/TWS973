@@ -5,13 +5,9 @@ package example.mbassador;
  */
 
 
-import com.ReturnObj;
-import com.TMbassadorSingleton;
+import com.utils.ReturnObj;
+import com.utils.TMbassadorSingleton;
 import net.engio.mbassy.bus.MBassador;
-import net.engio.mbassy.bus.config.BusConfiguration;
-import net.engio.mbassy.bus.config.Feature;
-import net.engio.mbassy.bus.config.IBusConfiguration;
-import net.engio.mbassy.bus.error.IPublicationErrorHandler;
 
 import java.io.File;
 import java.math.BigInteger;

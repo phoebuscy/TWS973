@@ -1,6 +1,6 @@
 package com.table;
 
-import com.TConst;
+import com.utils.TConst;
 import com.render.SRosePercentRender;
 import com.render.SRoserender;
 import com.table.tableModel.SOptionLinkTableModel;
@@ -8,8 +8,8 @@ import com.table.tableModel.SOptionLinkTableModel;
 import javax.swing.*;
 import java.util.Random;
 
-import static com.TFileUtil.getConfigValue;
-import static com.SUtil.setColumWidth;
+import static com.utils.TFileUtil.getConfigValue;
+import static com.utils.SUtil.setColumWidth;
 
 /**
  * Created by caiyong on 2017/1/15.

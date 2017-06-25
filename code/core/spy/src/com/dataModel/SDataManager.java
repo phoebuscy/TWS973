@@ -1,6 +1,6 @@
 package com.dataModel;
 
-import com.TMbassadorSingleton;
+import com.utils.TMbassadorSingleton;
 import com.ib.client.CommissionReport;
 import com.ib.client.Contract;
 import com.ib.client.ContractDescription;
@@ -30,9 +30,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static com.TConst.AK_CONNECTED;
-import static com.TConst.DATAMAAGER_BUS;
-import static com.TPubUtil.makeAKmsg;
+import static com.utils.TConst.AK_CONNECTED;
+import static com.utils.TConst.DATAMAAGER_BUS;
+import static com.utils.TPubUtil.makeAKmsg;
 
 /**
  * Created by caiyong on 2017/2/3.

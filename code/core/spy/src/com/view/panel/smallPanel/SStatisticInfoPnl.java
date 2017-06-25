@@ -1,13 +1,13 @@
 package com.view.panel.smallPanel;
 
-import com.Cst;
+import com.utils.Cst;
 import com.util.GBC;
 
 import javax.swing.*;
 import java.awt.*;
 
-import static com.SUtil.isIntNumeric;
-import static com.SUtil.isIntOrDoubleNumber;
+import static com.utils.SUtil.isIntNumeric;
+import static com.utils.SUtil.isIntOrDoubleNumber;
 
 /**
  * Created by caiyong on 2016/12/25.

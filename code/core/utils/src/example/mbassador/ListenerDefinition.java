@@ -5,7 +5,7 @@ package example.mbassador;
  */
 
 
-import com.ReturnObj;
+import com.utils.ReturnObj;
 import net.engio.mbassy.bus.MessagePublication;
 import net.engio.mbassy.dispatch.HandlerInvocation;
 import net.engio.mbassy.listener.*;

@@ -3,7 +3,7 @@ package com.view.panel.smallPanel;
 import javax.swing.*;
 import java.awt.*;
 
-import static com.SUtil.getDimension;
+import static com.utils.SUtil.getDimension;
 
 /**
  * Created by 123 on 2016/12/24.

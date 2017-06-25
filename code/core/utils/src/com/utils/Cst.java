@@ -1,4 +1,4 @@
-package com;
+package com.utils;
 
 import java.awt.*;
 

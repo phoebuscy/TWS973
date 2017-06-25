@@ -1,7 +1,7 @@
 package com.view.panel.smallPanel;
 
-import com.SUtil;
-import com.TMbassadorSingleton;
+import com.utils.SUtil;
+import com.utils.TMbassadorSingleton;
 import com.dataModel.SDataManager;
 import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
@@ -20,10 +20,10 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import static com.TConst.AK_CONNECTED;
-import static com.TConst.DATAMAAGER_BUS;
-import static com.TIconUtil.getProjIcon;
-import static com.TPubUtil.getAKmsg;
+import static com.utils.TConst.AK_CONNECTED;
+import static com.utils.TConst.DATAMAAGER_BUS;
+import static com.utils.TIconUtil.getProjIcon;
+import static com.utils.TPubUtil.getAKmsg;
 
 /**
  * 连接按钮面板

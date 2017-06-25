@@ -1,11 +1,9 @@
-package com;
+package com.utils;
 
 import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
 
 import java.math.BigInteger;
-
-import static com.TStringUtil.notNullAndEmptyStr;
 
 /**
  * Created by 123 on 2017/3/17.
@@ -18,7 +16,7 @@ public class TBusFilter
         public boolean accepts(String message, SubscriptionContext context)
         {
            // return message.startsWith("http");
-            return notNullAndEmptyStr(message);
+            return TStringUtil.notNullAndEmptyStr(message);
         }
     }
 

@@ -4,8 +4,8 @@ import javax.swing.*;
 import javax.swing.table.TableModel;
 import java.awt.*;
 
-import static com.SUtil.getDimension;
-import static com.SUtil.setColumWidth;
+import static com.utils.SUtil.getDimension;
+import static com.utils.SUtil.setColumWidth;
 
 /**
  * Created by caiyong on 2016/12/25.

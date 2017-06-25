@@ -1,6 +1,5 @@
-package com;
+package com.utils;
 
-import org.dom4j.io.SAXReader;
 import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -9,10 +8,6 @@ import org.jdom2.input.SAXBuilder;
 
 import java.io.*;
 import java.util.*;
-
-import static com.TPubUtil.*;
-import static com.TStringUtil.notNullAndEmptyStr;
-import static com.TStringUtil.nullOrEmptyStr;
 
 /**
  * Created by caiyong on 2017/3/11.
@@ -42,13 +37,13 @@ public class TFileUtil
         if (i18nMap.get(fileName) == null)
         {
             contentMap = getConfigI18n(fileName);
-            if (notNullAndEmptyMap(contentMap))
+            if (TPubUtil.notNullAndEmptyMap(contentMap))
             {
                 i18nMap.put(fileName, contentMap);
             }
         }
         contentMap = i18nMap.get(fileName);
-        return notNullAndEmptyMap(contentMap) ? contentMap.get(key) : null;
+        return TPubUtil.notNullAndEmptyMap(contentMap) ? contentMap.get(key) : null;
 
     }
 
@@ -217,7 +212,7 @@ public class TFileUtil
      */
     public static String getCanonicalPath(final String canPrefix)
     {
-        String pre = nullOrEmptyStr(canPrefix) ? "" : canPrefix;
+        String pre = TStringUtil.nullOrEmptyStr(canPrefix) ? "" : canPrefix;
         String path = "";
         File directory = new File(pre);//设定为当前文件夹
         try
@@ -241,9 +236,9 @@ public class TFileUtil
     {
         List<String> fileList = new ArrayList<>();
 
-        File file = new File(nullOrEmptyStr(path) ? "" : path);
+        File file = new File(TStringUtil.nullOrEmptyStr(path) ? "" : path);
         File[] tempList = file.listFiles();
-        if (nullOrEmptyArray(tempList) || fileDirEnum == null)
+        if (TPubUtil.nullOrEmptyArray(tempList) || fileDirEnum == null)
         {
             return fileList;
         }
@@ -281,11 +276,11 @@ public class TFileUtil
         do
         {
             List<String> fileLst = getFileDirectory(path, TConst.TFileDirEnum.FILE_FLAG, true);
-            if (notNullAndEmptyCollection(fileLst))
+            if (TPubUtil.notNullAndEmptyCollection(fileLst))
             {
                 for (String file : fileLst)
                 {
-                    if (notNullAndEmptyStr(file) && file.contains(TConst.SPY_CONFIG_FILE))
+                    if (TStringUtil.notNullAndEmptyStr(file) && file.contains(TConst.SPY_CONFIG_FILE))
                     {
                         return file;
                     }
@@ -293,26 +288,26 @@ public class TFileUtil
             }
             path = path.substring(0, path.lastIndexOf(pathSepa));
 
-        } while (notNullAndEmptyStr(path) && path.contains(pathSepa));
+        } while (TStringUtil.notNullAndEmptyStr(path) && path.contains(pathSepa));
         return spyconfigfile;
     }
 
     public static List<String> getProjectFileByName(final String filename)
     {
         // 用系统路径分隔符号替换文件中的路径分隔符号
-        String rp_fileName = replaceToSysFileSeparator(filename);
+        String rp_fileName = TPubUtil.replaceToSysFileSeparator(filename);
         List<String> searchfilelst = new ArrayList<>();
-        if (nullOrEmptyStr(rp_fileName))
+        if (TStringUtil.nullOrEmptyStr(rp_fileName))
         {
             return searchfilelst;
         }
         String pth = getCanonicalPath(".");
         List<String> fileLst = getFileDirectory(pth, TConst.TFileDirEnum.FILE_FLAG, true);
-        if (notNullAndEmptyCollection(fileLst))
+        if (TPubUtil.notNullAndEmptyCollection(fileLst))
         {
             for (String file : fileLst)
             {
-                if (notNullAndEmptyStr(file))
+                if (TStringUtil.notNullAndEmptyStr(file))
                 {
                     int fileIndex = file.lastIndexOf(rp_fileName);
                     if (fileIndex != -1 && fileIndex + rp_fileName.length() == file.length())
@@ -334,17 +329,17 @@ public class TFileUtil
     public static List<String> getProjectFileByDoxName(final String doxName)
     {
         List<String> searchfilelst = new ArrayList<>();
-        if (nullOrEmptyStr(doxName))
+        if (TStringUtil.nullOrEmptyStr(doxName))
         {
             return searchfilelst;
         }
         String pth = getCanonicalPath(".");
         List<String> fileLst = getFileDirectory(pth, TConst.TFileDirEnum.FILE_FLAG, true);
-        if (notNullAndEmptyCollection(fileLst))
+        if (TPubUtil.notNullAndEmptyCollection(fileLst))
         {
             for (String file : fileLst)
             {
-                if (notNullAndEmptyStr(file))
+                if (TStringUtil.notNullAndEmptyStr(file))
                 {
 
                     int fileIndex = file.lastIndexOf("." + doxName);
@@ -364,7 +359,7 @@ public class TFileUtil
         Map<String, String> i18nMap = new HashMap<>();
         String filename = "conf/" + i18nfile;
         List<String> fileLst = getProjectFileByName(filename);
-        if (notNullAndEmptyCollection(fileLst))
+        if (TPubUtil.notNullAndEmptyCollection(fileLst))
         {
             filename = fileLst.get(0);
         }
@@ -407,7 +402,7 @@ public class TFileUtil
                     {
                         Attribute keyAttr = child.getAttribute("label-key");
                         Attribute valAttr = child.getAttribute("label-value");
-                        if(keyAttr != null && notNullAndEmptyStr(keyAttr.getValue()))
+                        if(keyAttr != null && TStringUtil.notNullAndEmptyStr(keyAttr.getValue()))
                         {
                             i18nMap.put(keyAttr.getValue(),valAttr != null? valAttr.getValue():null);
                         }

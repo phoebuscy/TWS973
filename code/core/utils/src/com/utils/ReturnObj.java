@@ -1,4 +1,4 @@
-package com;
+package com.utils;
 
 /**
  * Created by caiyong on 2016/12/28.

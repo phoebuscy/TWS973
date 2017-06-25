@@ -1,10 +1,10 @@
 package com.table.tableModel;
 
-import com.TConst;
+import com.utils.TConst;
 
 import javax.swing.table.AbstractTableModel;
 
-import static com.TFileUtil.getConfigValue;
+import static com.utils.TFileUtil.getConfigValue;
 
 /**
  * Created by 123 on 2016/12/24.

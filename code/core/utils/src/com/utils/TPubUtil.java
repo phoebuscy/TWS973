@@ -1,10 +1,7 @@
-package com;
+package com.utils;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-
-import static com.TStringUtil.notNullAndEmptyStr;
 
 /**
  * Created by caiyong on 2017/3/11.
@@ -63,7 +60,7 @@ public class TPubUtil
      */
     public static String replaceToSysFileSeparator(final String path)
     {
-        if (notNullAndEmptyStr(path))
+        if (TStringUtil.notNullAndEmptyStr(path))
         {
             String rp_path = path;
             String sysPathSepa = java.io.File.separator;  // 系统分隔符
@@ -96,7 +93,7 @@ public class TPubUtil
 
     public static String getAKmsg(final String akflag, final String attr)
     {
-        if (notNullAndEmptyStr(attr) && attr.startsWith(akflag + ":"))
+        if (TStringUtil.notNullAndEmptyStr(attr) && attr.startsWith(akflag + ":"))
         {
             return attr.substring(akflag.length() + 1, attr.length());
         }

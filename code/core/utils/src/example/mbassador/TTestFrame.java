@@ -1,15 +1,15 @@
 package example.mbassador;
 
-import com.ReturnObj;
-import com.TBusFilter;
-import com.TMbassadorSingleton;
+import com.utils.ReturnObj;
+import com.utils.TBusFilter;
+import com.utils.TMbassadorSingleton;
 import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
 
 import javax.swing.*;
 import java.awt.*;
 
-import static com.SUtil.*;
+import static com.utils.SUtil.*;
 
 /**
  * Created by 123 on 2017/3/14.
