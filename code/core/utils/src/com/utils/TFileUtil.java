@@ -1,13 +1,21 @@
 package com.utils;
 
-import org.jdom2.Attribute;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
 
-import java.io.*;
-import java.util.*;
+import org.dom4j.Attribute;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import static com.utils.TStringUtil.notNullAndEmptyStr;
 
 /**
  * Created by caiyong on 2017/3/11.
@@ -60,7 +68,8 @@ public class TFileUtil
         try
         {
             filePath = java.net.URLDecoder.decode(url.getPath(), "utf-8");
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             e.printStackTrace();
         }
@@ -86,7 +95,8 @@ public class TFileUtil
         try
         {
             realPath = java.net.URLDecoder.decode(realPath, "utf-8");
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             e.printStackTrace();
         }
@@ -137,7 +147,8 @@ public class TFileUtil
         try
         {
             realPath = java.net.URLDecoder.decode(realPath, "utf-8");
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             throw new RuntimeException(e);
         }
@@ -192,7 +203,8 @@ public class TFileUtil
             path = directory.getCanonicalPath(); //得到的是C:/test/abc
             path = directory.getAbsolutePath();  //得到的是C:/test/abc
             path = directory.getPath();          //得到的是abc
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
         }
         return path;
@@ -218,7 +230,8 @@ public class TFileUtil
         try
         {
             path = directory.getCanonicalPath();
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             e.printStackTrace();
         }
@@ -248,8 +261,8 @@ public class TFileUtil
             File fileTmp = tempList[i];
             String fileOrDir = tempList[i].toString();
             if (fileDirEnum == TConst.TFileDirEnum.FILE_AND_DIR ||
-                    (fileDirEnum == TConst.TFileDirEnum.FILE_FLAG && fileTmp.isFile()) ||
-                    (fileDirEnum == TConst.TFileDirEnum.DIR_FLAG && fileTmp.isDirectory()))
+                (fileDirEnum == TConst.TFileDirEnum.FILE_FLAG && fileTmp.isFile()) ||
+                (fileDirEnum == TConst.TFileDirEnum.DIR_FLAG && fileTmp.isDirectory()))
             {
                 fileList.add(fileOrDir);
             }
@@ -280,7 +293,7 @@ public class TFileUtil
             {
                 for (String file : fileLst)
                 {
-                    if (TStringUtil.notNullAndEmptyStr(file) && file.contains(TConst.SPY_CONFIG_FILE))
+                    if (notNullAndEmptyStr(file) && file.contains(TConst.SPY_CONFIG_FILE))
                     {
                         return file;
                     }
@@ -288,7 +301,7 @@ public class TFileUtil
             }
             path = path.substring(0, path.lastIndexOf(pathSepa));
 
-        } while (TStringUtil.notNullAndEmptyStr(path) && path.contains(pathSepa));
+        } while (notNullAndEmptyStr(path) && path.contains(pathSepa));
         return spyconfigfile;
     }
 
@@ -307,7 +320,7 @@ public class TFileUtil
         {
             for (String file : fileLst)
             {
-                if (TStringUtil.notNullAndEmptyStr(file))
+                if (notNullAndEmptyStr(file))
                 {
                     int fileIndex = file.lastIndexOf(rp_fileName);
                     if (fileIndex != -1 && fileIndex + rp_fileName.length() == file.length())
@@ -339,7 +352,7 @@ public class TFileUtil
         {
             for (String file : fileLst)
             {
-                if (TStringUtil.notNullAndEmptyStr(file))
+                if (notNullAndEmptyStr(file))
                 {
 
                     int fileIndex = file.lastIndexOf("." + doxName);
@@ -367,61 +380,47 @@ public class TFileUtil
         {
             return i18nMap;
         }
+
+        //1.获取SAM接口：
+        SAXReader saxReader = new SAXReader();
+        //2.获取XML文件：
+        Document doc = null;
         try
         {
-            //1.创建一个SAXBuilder的对象
-            SAXBuilder saxBuilder = new SAXBuilder();
-            //2.创建一个输入流，将xml文件加载到输入流中
-            InputStream in = new FileInputStream(filename);
-            InputStreamReader isr = new InputStreamReader(in, "UTF-8");
-            //3.通过saxBuilder的build方法，将输入流加载到saxBuilder中
-            Document document = saxBuilder.build(isr);
-            //4.通过document对象获取xml文件的根节点
-            Element rootElement = document.getRootElement();
-            //5.获取根节点下的子节点的List集合
-            List<Element> elementList = rootElement.getChildren();
-            for (Element element : elementList)
-            {
-                Attribute languageAttr = element.getAttribute("language-country");
-                if(languageAttr != null && !"zh_CN".equals(languageAttr.getValue()))
-                {
-                    continue;
-                }
-                // 解析文件的属性集合
-                List<Attribute> list = element.getAttributes();
-                for (Attribute attr : list)
-                {
-                    // 获取属性名
-                    String attrName = attr.getName();
-                    // 获取属性值
-                    String attrValue = attr.getValue();
-                    System.out.println(attrName + "=" + attrValue);
-                    // 对book节点的子节点的节点名以及节点值的遍历
-                    List<Element> listChild = element.getChildren();
-                    for (Element child : listChild)
-                    {
-                        Attribute keyAttr = child.getAttribute("label-key");
-                        Attribute valAttr = child.getAttribute("label-value");
-                        if(keyAttr != null && TStringUtil.notNullAndEmptyStr(keyAttr.getValue()))
-                        {
-                            i18nMap.put(keyAttr.getValue(),valAttr != null? valAttr.getValue():null);
-                        }
-                    }
-                }
-            }
-        } catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e)
-        {
-            e.printStackTrace();
-        } catch (JDOMException e)
-        {
-            e.printStackTrace();
-        } catch (IOException e)
+            doc = saxReader.read(new File(filename));
+        }
+        catch (DocumentException e)
         {
             e.printStackTrace();
         }
+
+        //3.获取根节点：
+        Element root = doc.getRootElement();
+
+        //获取子节点
+        Iterator<?> it = root.elementIterator();
+        while (it.hasNext())
+        {
+            Element elem = (Element) it.next();
+            //获取属性名属性值
+            Attribute attr = elem.attribute(0);
+            if("language-country".equals(attr.getName()) && "zh_CN".equals(attr.getValue()))
+            {
+                //获取子节的子节点
+                Iterator<?> ite = elem.elementIterator();
+                while (ite.hasNext())
+                {
+                    Element child = (Element) ite.next();
+                    String labelKey = child.attribute("label-key").getValue();
+                    String labelVal = child.attribute("label-value").getValue();
+                    if(notNullAndEmptyStr(labelKey))
+                    {
+                        i18nMap.put(labelKey, labelVal);
+                    }
+                }
+            }
+        }
+
         return i18nMap;
     }
 

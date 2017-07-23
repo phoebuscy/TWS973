@@ -1,9 +1,17 @@
 package com.utils;
 
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.table.TableColumnModel;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Toolkit;
 import java.math.BigInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

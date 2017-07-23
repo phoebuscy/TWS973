@@ -1,4 +1,4 @@
-package example.mbassador;
+package com.example.mbassador;
 
 /**
  * Created by 123 on 2017/3/14.

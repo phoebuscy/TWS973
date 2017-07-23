@@ -1,4 +1,4 @@
-package example.mbassador;
+package com.example.mbassador;
 
 import com.utils.ReturnObj;
 import com.utils.TBusFilter;

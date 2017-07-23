@@ -1,4 +1,4 @@
-package example.mbassador;
+package com.example.mbassador;
 
 import net.engio.mbassy.bus.MBassador;
 import net.engio.mbassy.bus.config.BusConfiguration;
