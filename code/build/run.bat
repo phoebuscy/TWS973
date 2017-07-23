@@ -12,7 +12,8 @@ for %%i in (%install_root%lib\*.*) do call %install_root%cpappend.bat %%i
 
 set port=8788
 
-set jvm_opts=-Xdebug -Xrunjdwp:transport=dt_socket,address=%port%,server=y,suspend=n -XXaltjvm=dcevm -javaagent:C:\hotswap\hotswap-agent-1.1.0-SNAPSHOT.jar -Xbootclasspath/p:%otherjar%
+rem set jvm_opts=-Xdebug -Xrunjdwp:transport=dt_socket,address=%port%,server=y,suspend=n -XXaltjvm=dcevm -javaagent:C:\hotswap\hotswap-agent-1.1.0-SNAPSHOT.jar -Xbootclasspath/p:%otherjar%
+set jvm_opts=-Xdebug -Xrunjdwp:transport=dt_socket,address=%port%,server=y,suspend=n -Xbootclasspath/p:%otherjar%
 
 set x=%~dp0%spy\spy.par\twsapi-spy.jar
 java  -jar %jvm_opts%  %x% %*
