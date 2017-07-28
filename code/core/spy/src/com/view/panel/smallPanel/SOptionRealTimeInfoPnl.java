@@ -2,7 +2,7 @@ package com.view.panel.smallPanel;
 
 import com.model.SOptionRealTimeInfoModel;
 import com.utils.ReturnObj;
-import com.util.GBC;
+import com.utils.GBC;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,6 +1,6 @@
 package com.view.panel;
 
-import com.util.GBC;
+import com.utils.GBC;
 import com.view.panel.smallPanel.SConnectPnl;
 import com.view.panel.smallPanel.SOptionPanel;
 import com.view.panel.smallPanel.SSymbolePanel;

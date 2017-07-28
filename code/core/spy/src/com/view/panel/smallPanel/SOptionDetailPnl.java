@@ -1,6 +1,6 @@
 package com.view.panel.smallPanel;
 
-import com.util.GBC;
+import com.utils.GBC;
 
 import javax.swing.*;
 import java.awt.*;

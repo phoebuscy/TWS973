@@ -1,6 +1,7 @@
-package com.util;
+package com.utils;
 
-import java.awt.*;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 
 /**
  * Created by 123 on 2016/12/18.

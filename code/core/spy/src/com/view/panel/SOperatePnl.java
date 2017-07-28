@@ -1,6 +1,6 @@
 package com.view.panel;
 
-import com.util.GBC;
+import com.utils.GBC;
 import com.view.panel.smallPanel.SOperateButtonPnl;
 import com.view.panel.smallPanel.SOperateRecordPnl;
 import com.view.panel.smallPanel.SOptionDetailPnl;
