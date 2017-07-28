@@ -102,6 +102,7 @@ public class SDataManager implements EWrapper
         {
             return;
         }
+
         SwingWorker swingWorker = new SwingWorker()
         {
             @Override

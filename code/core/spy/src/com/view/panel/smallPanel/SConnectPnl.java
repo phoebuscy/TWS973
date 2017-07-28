@@ -1,5 +1,6 @@
 package com.view.panel.smallPanel;
 
+import com.dataModel.monitor.ConnectionMonitor;
 import com.utils.SUtil;
 import com.utils.TMbassadorSingleton;
 import com.dataModel.SDataManager;
@@ -88,6 +89,7 @@ public class SConnectPnl extends JPanel
                     String ip = ipText.getText();
                     int port = Integer.valueOf(portText.getText());
                     SDataManager.getInstance().connect(ip, port, cltid++);
+                    ConnectionMonitor.startMonitor();
                 }
             });
         }
