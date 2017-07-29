@@ -1,6 +1,7 @@
 package com.view.panel.smallPanel;
 
 import com.dataModel.monitor.ConnectionMonitor;
+import com.dataModel.monitor.ProcessMsgMonitor;
 import com.utils.SUtil;
 import com.utils.TMbassadorSingleton;
 import com.dataModel.SDataManager;
@@ -88,8 +89,9 @@ public class SConnectPnl extends JPanel
                 {
                     String ip = ipText.getText();
                     int port = Integer.valueOf(portText.getText());
-                    SDataManager.getInstance().connect(ip, port, cltid++);
-                    ConnectionMonitor.startMonitor();
+                    SDataManager.getInstance().connect(ip, port, cltid);
+                    ProcessMsgMonitor.startProcessMsg(SDataManager.getInstance());
+                    ConnectionMonitor.startMonitor(SDataManager.getInstance());
                 }
             });
         }
@@ -105,14 +107,14 @@ public class SConnectPnl extends JPanel
         }
     }
 
-   // 连接消息处理器
+    // 连接消息处理器
     @Handler(filters = {@Filter(connectStatusFilter.class)})
     private void setConnStatus(String msg)
     {
         String isConnected = getAKmsg(AK_CONNECTED, msg);
         String iconName = "true".equalsIgnoreCase(isConnected) ? "connicon" : "disconnicon";
         connStatus.setIcon(getProjIcon(iconName));
-        connStatus.setText("connicon".equals(iconName)? " Connected": " Disconnected");
+        connStatus.setText("connicon".equals(iconName) ? " Connected" : " Disconnected");
     }
 
 

@@ -1,6 +1,5 @@
 package com.dataModel;
 
-import com.utils.TMbassadorSingleton;
 import com.ib.client.CommissionReport;
 import com.ib.client.Contract;
 import com.ib.client.ContractDescription;
@@ -18,21 +17,20 @@ import com.ib.client.Order;
 import com.ib.client.OrderState;
 import com.ib.client.SoftDollarTier;
 import com.ib.client.TickAttr;
+import com.utils.TMbassadorSingleton;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.swing.SwingWorker;
-import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static com.utils.TConst.AK_CONNECTED;
 import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TPubUtil.makeAKmsg;
+import static com.utils.TStringUtil.notNullAndEmptyStr;
 
 /**
  * Created by caiyong on 2017/2/3.
@@ -48,8 +46,9 @@ public class SDataManager implements EWrapper
     private int m_clientid;
 
 
-    private EJavaSignal m_signal = new EJavaSignal();
-    private EClientSocket m_client = new EClientSocket(this, m_signal);
+    private EJavaSignal m_signal;
+    private EClientSocket m_client;
+    private EReader m_reader;
 
     private static int reqId = 100000;
 
@@ -92,41 +91,41 @@ public class SDataManager implements EWrapper
         return instance;
     }
 
+    public void conncet()
+    {
+        if (notNullAndEmptyStr(m_host) && m_port > 0 && m_clientid > 0)
+        {
+            connect(m_host, m_port, m_clientid);
+        }
+    }
+
+    public boolean isConnected()
+    {
+        return (m_client != null && (m_client.isConnected() || m_client.isAsyncEConnect()));
+    }
+
     public void connect(String host, int port, int clientid)
     {
         m_host = host;
         m_port = port;
         m_clientid = clientid;
 
-        if (m_client.isConnected() && m_client.isAsyncEConnect())
+        if(m_client != null && (m_client.isConnected() || m_client.isAsyncEConnect()))
         {
             return;
         }
 
-        SwingWorker swingWorker = new SwingWorker()
-        {
-            @Override
-            protected Object doInBackground() throws Exception
-            {
-                m_client.eConnect(host, port, clientid);
-                processRetMsg();
-                return null;
-            }
+        m_signal = new EJavaSignal();
+        m_client = new EClientSocket(this, m_signal);
 
-            @Override
-            protected void done()
-            {
-                checkConnect();
-            }
-        };
-        swingWorker.run();
-    }
-
-    private void connectAndProcessRetmsg()
-    {
         m_client.eConnect(m_host, m_port, m_clientid);
-        processRetMsg();
+        if(m_client.isConnected())
+        {
+            m_reader = new EReader(m_client, m_signal);
+            m_reader.start();
+        }
     }
+
 
     public void disconnect()
     {
@@ -147,69 +146,7 @@ public class SDataManager implements EWrapper
         m_client.reqMktData(reqId, contract, "mdoff,292", false, false, null);
     }
 
-    private void checkConnect()
-    {
-        Runnable runnable = new Runnable()
-        {
-            public void run()
-            {
-                if (m_client.isConnected() || m_client.isAsyncEConnect())
-                {
-                    TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(makeAKmsg(AK_CONNECTED, "true"));
-                    m_client.cancelOrder(-100);
-                }
-                else
-                {
-                    TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(makeAKmsg(AK_CONNECTED, "false"));
-                    connectAndProcessRetmsg();
-                }
-            }
-        };
-        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-        // 第二个参数为首次执行的延时时间，第三个参数为定时执行的间隔时间
-        service.scheduleAtFixedRate(runnable, 1, 5, TimeUnit.SECONDS);
 
-    }
-
-    private void processRetMsg()
-    {
-        final EReader reader = new EReader(m_client, m_signal);
-        reader.start();
-        new Thread()
-        {
-            public void run()
-            {
-                while (m_client.isAsyncEConnect())
-                {
-                    m_signal.waitForSignal();
-                    try
-                    {
-                        javax.swing.SwingUtilities.invokeAndWait(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                try
-                                {
-                                    reader.processMsgs();
-                                }
-                                catch (IOException e)
-                                {
-                                    error(e);
-                                }
-                            }
-                        });
-                    }
-                    catch (Exception e)
-                    {
-                        error(e);
-                    }
-                }
-                TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(makeAKmsg(AK_CONNECTED, "false"));
-            }
-        }.start();
-
-    }
 
     @Override
     public void tickPrice(int tickerId, int field, double price, TickAttr attrib)
@@ -450,6 +387,9 @@ public class SDataManager implements EWrapper
     @Override
     public void currentTime(long time)
     {
+        long retTime = time;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String dateStr = sdf.format(new Date(retTime));
 
     }
 
@@ -546,18 +486,22 @@ public class SDataManager implements EWrapper
     @Override
     public void error(Exception e)
     {
-
+        int a = 1;
     }
 
     @Override
     public void error(String str)
     {
 
+        String retErrMsg = str;
     }
 
     @Override
     public void error(int id, int errorCode, String errorMsg)
     {
+        int errid = id;
+        int errcode = errorCode;
+        String retErrMsg = errorMsg;
 
     }
 
@@ -720,4 +664,46 @@ public class SDataManager implements EWrapper
     {
 
     }
+
+
+    public EClientSocket getM_client()
+    {
+        return m_client;
+    }
+
+    public String getM_host()
+    {
+        return m_host;
+    }
+
+    public int getM_port()
+    {
+        return m_port;
+    }
+
+    public int getM_clientid()
+    {
+        return m_clientid;
+    }
+
+    public EJavaSignal getM_signal()
+    {
+        return m_signal;
+    }
+
+    public EReader getM_reader()
+    {
+        return m_reader;
+    }
+
+
+    public void reqCurrentTime()
+    {
+        if(m_client != null)
+        {
+            m_client.reqCurrentTime();
+        }
+    }
+
+
 }
