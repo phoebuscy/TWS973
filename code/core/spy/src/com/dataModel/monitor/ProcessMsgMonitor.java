@@ -1,7 +1,6 @@
 package com.dataModel.monitor;
 
 import com.dataModel.SDataManager;
-import com.ib.client.EClientSocket;
 import com.ib.client.EJavaSignal;
 import com.ib.client.EReader;
 import org.apache.logging.log4j.LogManager;
@@ -13,22 +12,23 @@ import java.util.concurrent.Executors;
 public class ProcessMsgMonitor
 {
     private static Logger logApp = LogManager.getLogger("applog");
+    private static boolean started = false;
+    private static ExecutorService msgProcessThreadPool;
 
-    private static ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
-
-    private static ProcessMsgMonitor instence = new ProcessMsgMonitor();
-
-    public static ProcessMsgMonitor getInstence()
+    public static void setStartedFlag(boolean isstarted)
     {
-        return instence;
+        started = isstarted;
     }
 
-    public static void startProcessMsg(SDataManager dataManager)
+
+    public static void startMonitor(SDataManager dataManager)
     {
-        if (dataManager != null)
+        if (dataManager.isConnected() && !started)
         {
             ProcessMsgRunnable processMsgRunnable = new ProcessMsgRunnable(dataManager, logApp);
-            singleThreadExecutor.execute(processMsgRunnable);
+            msgProcessThreadPool = Executors.newSingleThreadExecutor();
+            msgProcessThreadPool.submit(processMsgRunnable);
+            started = true;
         }
     }
 
@@ -56,12 +56,14 @@ public class ProcessMsgMonitor
                     try
                     {
                         reader.processMsgs();
-                    } catch (Exception e)
+                    }
+                    catch (Exception e)
                     {
                         e.printStackTrace();
                         logApp.error(e.getMessage());
                     }
-                } else
+                }
+                else
                 {
                     logApp.error("ProcessMsgMonitor -> signal or reader is null");
                 }

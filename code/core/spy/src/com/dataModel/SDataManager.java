@@ -91,36 +91,29 @@ public class SDataManager implements EWrapper
         return instance;
     }
 
-    public void conncet()
-    {
-        if (notNullAndEmptyStr(m_host) && m_port > 0 && m_clientid > 0)
-        {
-            connect(m_host, m_port, m_clientid);
-        }
-    }
-
     public boolean isConnected()
     {
         return (m_client != null && (m_client.isConnected() || m_client.isAsyncEConnect()));
     }
 
-    public void connect(String host, int port, int clientid)
+    public void setClientConnectionParam(String host, int port, int clientid)
     {
         m_host = host;
         m_port = port;
         m_clientid = clientid;
+    }
 
-        if(m_client != null && (m_client.isConnected() || m_client.isAsyncEConnect()))
+    public void connect()
+    {
+        if (notNullAndEmptyStr(m_host) && m_port > 0 && m_clientid > 0)
         {
-            return;
-        }
-
-        m_signal = new EJavaSignal();
-        m_client = new EClientSocket(this, m_signal);
-
-        m_client.eConnect(m_host, m_port, m_clientid);
-        if(m_client.isConnected())
-        {
+            if (m_client != null && (m_client.isConnected() || m_client.isAsyncEConnect()))
+            {
+                return;
+            }
+            m_signal = new EJavaSignal();
+            m_client = new EClientSocket(this, m_signal);
+            m_client.eConnect(m_host, m_port, m_clientid);
             m_reader = new EReader(m_client, m_signal);
             m_reader.start();
         }
@@ -145,7 +138,6 @@ public class SDataManager implements EWrapper
         contract.currency("USD");
         m_client.reqMktData(reqId, contract, "mdoff,292", false, false, null);
     }
-
 
 
     @Override
@@ -387,10 +379,11 @@ public class SDataManager implements EWrapper
     @Override
     public void currentTime(long time)
     {
-        long retTime = time;
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String dateStr = sdf.format(new Date(retTime));
-
+        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        //前面的lSysTime是秒数，先乘1000得到毫秒数，再转为java.util.Date类型
+        Date dt = new Date(time * 1000);
+        String sDateTime = sdf.format(dt);  //得到精确到秒的表示：08/31/2006 21:08:00
+        int a = 1;
     }
 
     @Override
@@ -699,7 +692,7 @@ public class SDataManager implements EWrapper
 
     public void reqCurrentTime()
     {
-        if(m_client != null)
+        if (m_client != null)
         {
             m_client.reqCurrentTime();
         }

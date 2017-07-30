@@ -89,8 +89,9 @@ public class SConnectPnl extends JPanel
                 {
                     String ip = ipText.getText();
                     int port = Integer.valueOf(portText.getText());
-                    SDataManager.getInstance().connect(ip, port, cltid);
-                    ProcessMsgMonitor.startProcessMsg(SDataManager.getInstance());
+                    SDataManager.getInstance().setClientConnectionParam(ip,port,cltid);
+                    SDataManager.getInstance().connect();
+                    ProcessMsgMonitor.startMonitor(SDataManager.getInstance());
                     ConnectionMonitor.startMonitor(SDataManager.getInstance());
                 }
             });

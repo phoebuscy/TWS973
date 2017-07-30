@@ -38,7 +38,10 @@ public class ConnectionMonitor
         if (dataManager != null)
         {
             checkConnection = new CheckConnection(dataManager);
-            ConnectionMonitor.getInstence().monitor.scheduleAtFixedRate(checkConnection, 0, checkRate, TimeUnit.SECONDS);
+            ConnectionMonitor.getInstence().monitor.scheduleAtFixedRate(checkConnection,
+                                                                        0,
+                                                                        checkRate,
+                                                                        TimeUnit.SECONDS);
         }
     }
 
@@ -52,7 +55,6 @@ public class ConnectionMonitor
             m_dataManager = dataManager;
         }
 
-
         @Override
         public void run()
         {
@@ -63,16 +65,18 @@ public class ConnectionMonitor
                     TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(makeAKmsg(AK_CONNECTED, "true"));
                     LogApp.info("ConnectionMonitor check result : connected");
                     m_dataManager.reqCurrentTime();
-                } else
+                }
+                else
                 {
                     TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(makeAKmsg(AK_CONNECTED, "false"));
                     LogApp.info("ConnectionMonitor check result : disconnected");
                     LogApp.info("ConnectionMonitor reconnect, host ");
-
-                    SDataManager.getInstance().conncet();
-                    ProcessMsgMonitor.startProcessMsg(SDataManager.getInstance());
+                    SDataManager.getInstance().connect();
+                    ProcessMsgMonitor.setStartedFlag(false);
                 }
-            } else
+                ProcessMsgMonitor.startMonitor(SDataManager.getInstance());
+            }
+            else
             {
                 LogApp.error("ConnectionMonitor the SDataManager is null, can't check connection");
             }
