@@ -4,8 +4,13 @@ import com.dataModel.SDataManager;
 import com.table.SOptionLinkTable;
 import com.utils.GBC;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -60,9 +65,9 @@ public class SOptionLinkTablePnl extends JPanel
                 @Override
                 public void actionPerformed(ActionEvent e)
                 {
-                    optionLinkTable.updateData(null);
-                    // test
-                    SDataManager.getInstance().disconnect();
+                    // optionLinkTable.updateData(null);
+                    // test 临时测试代码
+                    SDataManager.getInstance().reqHistoryDatas("","","","");
 
                 }
             });

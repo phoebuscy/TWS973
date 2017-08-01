@@ -16,12 +16,14 @@ import com.ib.client.NewsProvider;
 import com.ib.client.Order;
 import com.ib.client.OrderState;
 import com.ib.client.SoftDollarTier;
+import com.ib.client.TagValue;
 import com.ib.client.TickAttr;
 import com.utils.TMbassadorSingleton;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,7 @@ import static com.utils.TConst.AK_CONNECTED;
 import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TPubUtil.makeAKmsg;
 import static com.utils.TStringUtil.notNullAndEmptyStr;
+import static com.utils.TStringUtil.nullOrEmptyStr;
 
 /**
  * Created by caiyong on 2017/2/3.
@@ -125,10 +128,15 @@ public class SDataManager implements EWrapper
         m_client.eDisconnect();
     }
 
+    public static synchronized int getReqId()
+    {
+        reqId++;
+        return reqId;
+    }
+
 
     public void orderTick()
     {
-        reqId++;
         Contract contract = new Contract();
         contract.conid(0);
         contract.symbol("IBM");
@@ -136,7 +144,39 @@ public class SDataManager implements EWrapper
         contract.exchange("SMART");
         contract.primaryExch("ISLAND");
         contract.currency("USD");
-        m_client.reqMktData(reqId, contract, "mdoff,292", false, false, null);
+        m_client.reqMktData(getReqId(), contract, "mdoff,292", false, false, null);
+    }
+
+    /**
+     * 获取历史数据
+     *
+     * @param symbol
+     * @param endDataTime
+     * @param durationStr
+     * @param barSize
+     */
+    public void reqHistoryDatas(String symbol, String endDataTime, String durationStr, String barSize)
+    {
+        String t_symbol = nullOrEmptyStr(symbol) ? "SPY" : symbol;
+        String t_endDataTime = nullOrEmptyStr(endDataTime) ? "20170726 12:00:00" : endDataTime;
+        String t_durationStr = nullOrEmptyStr(durationStr) ? "1 D" : durationStr;
+        String t_barSize = nullOrEmptyStr(barSize) ? "1 hour" : barSize;
+
+        Contract contract = new Contract();
+        contract.conid(0);
+        contract.symbol(t_symbol);
+        contract.secType("STK");
+        contract.exchange("SMART");
+        contract.primaryExch("ISLAND");
+        contract.currency("USD");
+
+        String whatToShow = "TRADES";
+        int useRTH = 0;
+        int formatData = 2;
+        List<TagValue> tagValueList = new ArrayList<>();
+
+        m_client.reqHistoricalData(getReqId(), contract, t_endDataTime, t_durationStr, t_barSize, whatToShow, useRTH, formatData,
+                tagValueList);
     }
 
 
@@ -335,6 +375,39 @@ public class SDataManager implements EWrapper
                                double WAP,
                                boolean hasGaps)
     {
+        StringBuilder strBuilder = new StringBuilder(100);
+
+        strBuilder.append("reqId:");
+        strBuilder.append(reqId);
+        strBuilder.append("/");
+        strBuilder.append("date:");
+        strBuilder.append(date);
+        strBuilder.append("/");
+        strBuilder.append("open:");
+        strBuilder.append(open);
+        strBuilder.append("/");
+        strBuilder.append("high:");
+        strBuilder.append(high);
+        strBuilder.append("/");
+        strBuilder.append("low:");
+        strBuilder.append(low);
+        strBuilder.append("/");
+        strBuilder.append("close:");
+        strBuilder.append(close);
+        strBuilder.append("/");
+        strBuilder.append("volume:");
+        strBuilder.append(volume);
+        strBuilder.append("/");
+        strBuilder.append("count:");
+        strBuilder.append(count);
+        strBuilder.append("/");
+        strBuilder.append("WAP:");
+        strBuilder.append(WAP);
+        strBuilder.append("/");
+        strBuilder.append("hasGaps:");
+        strBuilder.append(hasGaps);
+
+        LogMsg.info(strBuilder.toString());
 
     }
 
@@ -379,7 +452,7 @@ public class SDataManager implements EWrapper
     @Override
     public void currentTime(long time)
     {
-        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         //前面的lSysTime是秒数，先乘1000得到毫秒数，再转为java.util.Date类型
         Date dt = new Date(time * 1000);
         String sDateTime = sdf.format(dt);  //得到精确到秒的表示：08/31/2006 21:08:00
