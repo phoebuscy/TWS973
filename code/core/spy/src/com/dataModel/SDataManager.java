@@ -29,7 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.utils.SUtil.getDate;
+import static com.utils.SUtil.isIntNumeric;
 import static com.utils.TConst.AK_CONNECTED;
+import static com.utils.TConst.AK_REAL_PRICE;
 import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TPubUtil.makeAKmsg;
 import static com.utils.TStringUtil.notNullAndEmptyStr;
@@ -134,6 +137,33 @@ public class SDataManager implements EWrapper
         return reqId;
     }
 
+    // 查询实时价格，返回的tickeid
+    public String queryRealTimePrice(String symbol)
+    {
+        if (notNullAndEmptyStr(symbol))
+        {
+            Contract contract = new Contract();
+            contract.conid(0);
+            contract.symbol(symbol);
+            contract.secType("STK");
+            contract.exchange("SMART");
+            contract.primaryExch("ISLAND");
+            contract.currency("USD");
+            int tickID = getReqId();
+            m_client.reqMktData(tickID, contract, "", false, false, null);
+            return String.valueOf(tickID);
+        }
+        return null;
+    }
+
+    public void cancelQueryRealTimePrice(String reqId)
+    {
+        if (m_client != null && isIntNumeric(reqId))
+        {
+            m_client.cancelMktData(Integer.valueOf(reqId));
+        }
+    }
+
 
     public void orderTick()
     {
@@ -160,7 +190,7 @@ public class SDataManager implements EWrapper
         String t_symbol = nullOrEmptyStr(symbol) ? "SPY" : symbol;
         String t_endDataTime = nullOrEmptyStr(endDataTime) ? "20170726 12:00:00" : endDataTime;
         String t_durationStr = nullOrEmptyStr(durationStr) ? "1 D" : durationStr;
-        String t_barSize = nullOrEmptyStr(barSize) ? "1 hour" : barSize;
+        String t_barSize = nullOrEmptyStr(barSize) ? "1 minute" : barSize;
 
         Contract contract = new Contract();
         contract.conid(0);
@@ -175,15 +205,25 @@ public class SDataManager implements EWrapper
         int formatData = 2;
         List<TagValue> tagValueList = new ArrayList<>();
 
-        m_client.reqHistoricalData(getReqId(), contract, t_endDataTime, t_durationStr, t_barSize, whatToShow, useRTH, formatData,
-                tagValueList);
+        m_client.reqHistoricalData(getReqId(),
+                                   contract,
+                                   t_endDataTime,
+                                   t_durationStr,
+                                   t_barSize,
+                                   whatToShow,
+                                   useRTH,
+                                   formatData,
+                                   tagValueList);
     }
 
 
     @Override
     public void tickPrice(int tickerId, int field, double price, TickAttr attrib)
     {
-
+        TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(makeAKmsg(AK_REAL_PRICE,
+                                                                          String.valueOf(tickerId),
+                                                                          String.valueOf(field),
+                                                                          String.valueOf(price)));
     }
 
     @Override
@@ -381,7 +421,8 @@ public class SDataManager implements EWrapper
         strBuilder.append(reqId);
         strBuilder.append("/");
         strBuilder.append("date:");
-        strBuilder.append(date);
+        String d_date = getDate(date);
+        strBuilder.append(d_date);
         strBuilder.append("/");
         strBuilder.append("open:");
         strBuilder.append(open);

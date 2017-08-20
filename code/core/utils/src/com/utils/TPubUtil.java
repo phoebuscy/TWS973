@@ -2,6 +2,7 @@ package com.utils;
 
 import java.util.Collection;
 import java.util.Map;
+import static com.utils.TStringUtil.notNullAndEmptyStr;
 
 /**
  * Created by caiyong on 2017/3/11.
@@ -9,13 +10,14 @@ import java.util.Map;
 public class TPubUtil
 {
 
+    public final static String STR_SEPARATOR = "/";   // 字符串分割符号
+
     public static void main(String[] args)
     {
 
         String str3 = null;
         String str2 = null;
         String str1 = getAKmsg("ABCDE", str2);
-
 
         int a = 1;
 
@@ -60,7 +62,7 @@ public class TPubUtil
      */
     public static String replaceToSysFileSeparator(final String path)
     {
-        if (TStringUtil.notNullAndEmptyStr(path))
+        if (notNullAndEmptyStr(path))
         {
             String rp_path = path;
             String sysPathSepa = java.io.File.separator;  // 系统分隔符
@@ -82,18 +84,26 @@ public class TPubUtil
 
     }
 
-    public static String makeAKmsg(final String akflag, final String attr)
+
+    public static String makeAKmsg(final String akflag, final String... attrs)
     {
-        if (akflag != null)
+        if (notNullAndEmptyStr(akflag) && notNullAndEmptyArry(attrs))
         {
-            return akflag + ":" + attr;
+            StringBuilder builder = new StringBuilder();
+            builder.append(akflag);
+            for(String attr: attrs)
+            {
+                builder.append(STR_SEPARATOR);
+                builder.append(attr);
+            }
+            return builder.toString();
         }
         return null;
     }
 
     public static String getAKmsg(final String akflag, final String attr)
     {
-        if (TStringUtil.notNullAndEmptyStr(attr) && attr.startsWith(akflag + ":"))
+        if (notNullAndEmptyStr(attr) && attr.startsWith(akflag + STR_SEPARATOR))
         {
             return attr.substring(akflag.length() + 1, attr.length());
         }

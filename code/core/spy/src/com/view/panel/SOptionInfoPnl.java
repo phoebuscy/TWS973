@@ -4,10 +4,10 @@ import com.utils.GBC;
 import com.view.panel.smallPanel.SConnectPnl;
 import com.view.panel.smallPanel.SOptionPanel;
 import com.view.panel.smallPanel.SSymbolePanel;
-
-import javax.swing.*;
-import java.awt.*;
-
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridBagLayout;
+import javax.swing.JPanel;
 import static com.utils.SUtil.getDimension;
 
 /**
@@ -29,7 +29,7 @@ public class SOptionInfoPnl extends JPanel
 
     private void setDimension()
     {
-        setSize(getDimension(parentDimension,1.0,0.48));
+        setSize(getDimension(parentDimension, 1.0, 0.48));
     }
 
     private void buildGUI()

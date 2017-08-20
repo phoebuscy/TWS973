@@ -19,6 +19,7 @@
 
         <pair label-key='call.raise' label-value='CALL涨'/>
         <pair label-key='put.down' label-value='PUT跌'/>
+        <pair label-key='query' label-value='查询'/>
 
 
 
@@ -41,6 +42,8 @@
 
         <pair label-key='call.raise' label-value='CALL涨'/>
         <pair label-key='put.down' label-value='PUT跌'/>
+        <pair label-key='query' label-value='Query'/>
+
 
     </locale>
 

@@ -13,6 +13,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.math.BigInteger;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -328,6 +330,20 @@ public class SUtil
             }
         }
         return label;
+    }
+
+    public static String getDate(String date)
+    {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        //前面的lSysTime是秒数，先乘1000得到毫秒数，再转为java.util.Date类型
+        if(isIntNumeric(date))
+        {
+            long l_date = Long.valueOf(date);
+            Date dt = new Date(l_date * 1000);
+            String sDateTime = sdf.format(dt);  //得到精确到秒的表示：08/31/2006 21:08:00
+            return sDateTime;
+        }
+        return "1900-01-01 00:00:00";
     }
 
 
