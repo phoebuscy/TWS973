@@ -21,6 +21,21 @@
         <pair label-key='put.down' label-value='PUT跌'/>
         <pair label-key='query' label-value='查询'/>
 
+        <pair label-key='file' label-value='文件'/>
+        <pair label-key='config' label-value='设置'/>
+        <pair label-key='exit' label-value='退出'/>
+        <pair label-key='database' label-value='数据库'/>
+        <pair label-key='init.database' label-value='初始化数据库'/>
+        <pair label-key='passworld' label-value='密码'/>
+
+        <pair label-key='confirm' label-value='确定'/>
+        <pair label-key='cancel' label-value='取消'/>
+        <pair label-key='if.continue' label-value='是否继续'/>
+
+        <pair label-key='del.database.if.confirm' label-value='该操作将删除数据库所有数据，是否确定执行该操作？'/>
+
+
+
 
 
     </locale>
@@ -43,6 +58,20 @@
         <pair label-key='call.raise' label-value='CALL涨'/>
         <pair label-key='put.down' label-value='PUT跌'/>
         <pair label-key='query' label-value='Query'/>
+
+        <pair label-key='file' label-value='文件'/>
+        <pair label-key='config' label-value='设置'/>
+        <pair label-key='exit' label-value='退出'/>
+        <pair label-key='database' label-value='数据库'/>
+        <pair label-key='init.database' label-value='初始化数据库'/>
+        <pair label-key='passworld' label-value='密码'/>
+
+        <pair label-key='confirm' label-value='确定'/>
+        <pair label-key='cancel' label-value='取消'/>
+        <pair label-key='if.continue' label-value='是否继续'/>
+
+        <pair label-key='del.database.if.confirm' label-value='该操作将删除数据库所有数据，是否确定执行该操作？'/>
+
 
 
     </locale>

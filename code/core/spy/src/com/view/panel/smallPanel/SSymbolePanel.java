@@ -88,6 +88,10 @@ public class SSymbolePanel extends JPanel
             @Override
             public void actionPerformed(ActionEvent e)
             {
+                // 1: 查询当前symbol的实时价格
+                // 2: 查询期权链
+                // 3：默认查询最近期权链数据
+
                 cancelCurrentSybRealPrice();
                 String currentSymbol = symbolText.getText().trim();
                 tikerID = querySybRealPrice(currentSymbol);

@@ -1,19 +1,27 @@
 package com.view.dialog;
 
 import com.utils.SUtil;
+import com.utils.TConst;
 import com.utils.TPubUtil;
 import com.view.panel.STopoFramContentPnl;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.Configurator;
 
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
+import static com.utils.TFileUtil.getConfigValue;
 import static com.utils.TFileUtil.getProjectFileByName;
 
 /**
@@ -49,11 +57,12 @@ public class SMainFram extends JFrame
             BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
             final ConfigurationSource source = new ConfigurationSource(in);
             Configurator.initialize(null, source);
-        }
-        catch (IOException e)
+        } catch (IOException e)
         {
             e.printStackTrace();
         }
+
+        setMenuBar();
     }
 
     private void buildTopoFrame()
@@ -64,6 +73,52 @@ public class SMainFram extends JFrame
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(new STopoFramContentPnl(this));
         SUtil.setWindosStyle(this, 1);
+    }
+
+
+    private void setMenuBar()
+    {
+        JMenuBar bar = new JMenuBar();
+        JMenu menuFile = new JMenu(getConfigValue("file", TConst.CONFIG_I18N_FILE));
+        JMenuItem itemConfig = new JMenuItem(getConfigValue("config", TConst.CONFIG_I18N_FILE));
+        JMenuItem itemExit = new JMenuItem(getConfigValue("exit", TConst.CONFIG_I18N_FILE));
+        menuFile.add(itemConfig);
+        menuFile.add(itemExit);
+        itemExit.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+
+            }
+        });
+        bar.add(menuFile);
+
+        JMenu menuDatabase = new JMenu(getConfigValue("database", TConst.CONFIG_I18N_FILE));
+        JMenuItem itemInitDatabase = new JMenuItem(getConfigValue("init.database", TConst.CONFIG_I18N_FILE));
+        itemInitDatabase.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                String delDatabaseInfo = getConfigValue("del.database.if.confirm", TConst.CONFIG_I18N_FILE);
+                String ifcontinue = getConfigValue("if.continue", TConst.CONFIG_I18N_FILE); // "是否继续"
+                int ret = JOptionPane.showConfirmDialog(null, getConfigValue(delDatabaseInfo, TConst
+                                .CONFIG_I18N_FILE), ifcontinue,
+                        JOptionPane
+                                .YES_NO_OPTION);
+                if (ret == 0) // 0为YES
+                {
+                    SInitDatabaseDlg initDatabaseDlg = new SInitDatabaseDlg();
+                    initDatabaseDlg.setVisible(true);
+                }
+            }
+        });
+        menuDatabase.add(itemInitDatabase);
+
+        bar.add(menuDatabase);
+
+        setJMenuBar(bar);
 
     }
 
