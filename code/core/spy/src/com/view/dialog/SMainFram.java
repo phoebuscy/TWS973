@@ -57,7 +57,8 @@ public class SMainFram extends JFrame
             BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
             final ConfigurationSource source = new ConfigurationSource(in);
             Configurator.initialize(null, source);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             e.printStackTrace();
         }
@@ -101,17 +102,8 @@ public class SMainFram extends JFrame
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                String delDatabaseInfo = getConfigValue("del.database.if.confirm", TConst.CONFIG_I18N_FILE);
-                String ifcontinue = getConfigValue("if.continue", TConst.CONFIG_I18N_FILE); // "是否继续"
-                int ret = JOptionPane.showConfirmDialog(null, getConfigValue(delDatabaseInfo, TConst
-                                .CONFIG_I18N_FILE), ifcontinue,
-                        JOptionPane
-                                .YES_NO_OPTION);
-                if (ret == 0) // 0为YES
-                {
-                    SInitDatabaseDlg initDatabaseDlg = new SInitDatabaseDlg();
-                    initDatabaseDlg.setVisible(true);
-                }
+                SInitDatabaseDlg initDatabaseDlg = new SInitDatabaseDlg();
+                initDatabaseDlg.setVisible(true);
             }
         });
         menuDatabase.add(itemInitDatabase);
