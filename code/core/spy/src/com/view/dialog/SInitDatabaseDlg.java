@@ -3,12 +3,18 @@ package com.view.dialog;
 import com.utils.GBC;
 import com.utils.SUtil;
 import com.utils.TConst;
+
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
+import java.awt.im.InputMethodRequests;
+import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -16,8 +22,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import static com.utils.TFileUtil.getConfigValue;
 
 /*
@@ -45,8 +53,10 @@ public class SInitDatabaseDlg extends JFrame
 {
     private static Logger LogApp = LogManager.getLogger("applog");
 
-    JTextField userTextField = new JTextField("root",20);
-    JTextField pwTextField = new JTextField("try258TRY",20);
+    private final String dbname = "twsdb";
+
+    JTextField userTextField = new JTextField("root", 20);
+    JTextField pwTextField = new JTextField("try258TRY", 20);
 
     public SInitDatabaseDlg()
     {
@@ -104,10 +114,15 @@ public class SInitDatabaseDlg extends JFrame
             String userName = userTextField.getText().trim();
             String password = pwTextField.getText().trim();
             Connection connection = connectDB(userName, password);
-            createDB(connection);
+            //  createDB(connection);  // 创建数据库
+            // createTable(userName, password); // 创建数据库表
+            // inserData(userName, password);
+            inserDataByProc(userName, password);  // 调用存储过程插入数据
+
             int a = 1;
         }
     }
+
 
     /**
      * 连接到数据库
@@ -119,8 +134,7 @@ public class SInitDatabaseDlg extends JFrame
         try
         {
             Class.forName("com.mysql.jdbc.Driver");
-        }
-        catch (ClassNotFoundException e)
+        } catch (ClassNotFoundException e)
         {
             // TODO Auto-generated catch block
             LogApp.error("add mysql jdbc driver failed");  // 找不到驱动！
@@ -133,8 +147,7 @@ public class SInitDatabaseDlg extends JFrame
             {
                 LogApp.info("connection successful");
             }
-        }
-        catch (SQLException e)
+        } catch (SQLException e)
         {
             // TODO Auto-generated catch block
             LogApp.error("connection fail");
@@ -143,19 +156,23 @@ public class SInitDatabaseDlg extends JFrame
         return conn;
     }
 
+    /**
+     * 创建数据库
+     *
+     * @param conn 数据库链接
+     */
     private void createDB(Connection conn)
     {
-        if(conn != null)
+        if (conn != null)
         {
             try
             {
-                java.sql.Statement statement = conn.createStatement();
-                String dropDb = "";
+                Statement statement = conn.createStatement();
                 String hrappSQL = "CREATE DATABASE  IF NOT EXISTS twsdb";  // 加上IF NOT EXISTS就算数据库已经存在，把原来的覆盖掉了
                 int ret = statement.executeUpdate(hrappSQL);
-                int a = 1;
-            }
-            catch (SQLException ex)
+                statement.close();
+                conn.close();
+            } catch (SQLException ex)
             {
                 ex.printStackTrace();
             }
@@ -163,5 +180,98 @@ public class SInitDatabaseDlg extends JFrame
         }
     }
 
+    /**
+     * 创建数据库表
+     *
+     * @param
+     */
+    private void createTable(String username, String password)
+    {
+        try
+        {
+            //加载驱动
+            Class.forName("com.mysql.jdbc.Driver");
+            //链接到数据库
+            String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC";
+            Connection ss = DriverManager.getConnection(url, username, password);
+            //获取对象
+            Statement stmt = ss.createStatement();
+            //插入记录到数据库中
+            String sqlstr = "create table operrecord(id int(1),name varchar(20),opertime DATETIME);";
+            int ret = stmt.executeUpdate(sqlstr);
 
+            System.out.println("创建成功！");
+            stmt.close();
+            ss.close();
+        } catch (Exception e)
+        {
+            System.out.println("创建失败！或已经存在该表格" + e);
+            e.printStackTrace();
+        }
+
+    }
+
+    private void inserData(String username, String password)
+    {
+        try
+        {
+            //加载驱动
+            Class.forName("com.mysql.jdbc.Driver");
+            //链接到数据库
+            String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC";
+            Connection ss = DriverManager.getConnection(url, username, password);
+            //获取对象
+            Statement stmt = ss.createStatement();
+            //插入记录到数据库中 , 5000条
+            for (int i = 0; i < 5000; i++)
+            {
+                String sqlstr = "insert into operrecord values(" + String.valueOf(i) + ", 'abc','2018-08-01 22:16:27')";
+                int ret = stmt.executeUpdate(sqlstr);
+            }
+
+            stmt.close();
+            ss.close();
+        } catch (Exception e)
+        {
+            System.out.println("创建失败！或已经存在该表格" + e);
+            e.printStackTrace();
+        }
+
+    }
+
+    private void inserDataByProc(String username, String password)
+    {
+        try
+        {
+            //加载驱动
+            Class.forName("com.mysql.jdbc.Driver");
+            //链接到数据库
+            String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC";
+            Connection connection = DriverManager.getConnection(url, username, password);
+
+        //    String sql = "{CALL proc_insertdata(?,?)}"; //调用存储过程
+          //  CallableStatement cstm = connection.prepareCall(sql); //实例化对象cstm
+            //插入记录到数据库中 , 5000条
+            for (int i = 0; i < 5000; i++)
+            {
+                //  String sqlstr = "insert into operrecord values(" + String.valueOf(i) + ", 'abc','2018-08-01 22:16:27')";
+                // int ret = stmt.executeUpdate(sqlstr);
+
+                String sql = "{CALL proc_insertdata(?,?)}"; //调用存储过程
+                CallableStatement cstm = connection.prepareCall(sql); //实例化对象cstm
+                cstm.setInt(1, i); //存储过程输入参数
+                cstm.setString(2, String.valueOf(i)); // 存储过程输入参数
+               // cstm.setObject(3, "2018-08-01 22:16:27");
+                cstm.execute(); // 执行存储过程
+            }
+
+           // cstm.close();
+            connection.close();
+        } catch (Exception e)
+        {
+            System.out.println("创建失败！或已经存在该表格" + e);
+            e.printStackTrace();
+        }
+
+    }
 }
