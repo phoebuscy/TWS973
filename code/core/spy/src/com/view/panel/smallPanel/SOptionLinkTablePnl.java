@@ -13,6 +13,7 @@ import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Random;
 
 import static com.utils.SUtil.getDimension;
 
@@ -66,8 +67,12 @@ public class SOptionLinkTablePnl extends JPanel
                 public void actionPerformed(ActionEvent e)
                 {
                     // test 临时测试代码
-                    optionLinkTable.updateData(null);
-                  //  SDataManager.getInstance().reqHistoryDatas("","","","");
+                  //  optionLinkTable.updateData(null);
+
+                    Random random = new Random();
+                    boolean b = random.nextBoolean();
+                    optionLinkTable.setValueAt(0, 2, b ? 552.8 : 283.3);
+                    //  SDataManager.getInstance().reqHistoryDatas("","","","");
 
                 }
             });

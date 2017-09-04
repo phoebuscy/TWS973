@@ -38,6 +38,7 @@ public class TCyTableModel extends AbstractTableModel
     public void setData(Object[][] datas)
     {
         rowdatas.clear();
+        rowData2rowIndexMap.clear();
         if (columnNames != null && datas != null && datas[0].length == columnNames.length)
         {
             int dataColCount = columnNames.length;
@@ -51,6 +52,7 @@ public class TCyTableModel extends AbstractTableModel
                 rowData2rowIndexMap.put(newRowDataNum, Integer.valueOf(i));
             }
         }
+        fireTableDataChanged();
 
     }
 
@@ -66,6 +68,19 @@ public class TCyTableModel extends AbstractTableModel
     {
         return columnNames != null ? columnNames.length : 0;
     }
+
+    @Override
+    public String getColumnName(int column)
+    {
+        return columnNames != null && columnNames.length > column ? columnNames[column] : "null";
+    }
+
+    public void updateData(Object[][] tableData)
+    {
+        setData(tableData);
+    }
+
+
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex)
