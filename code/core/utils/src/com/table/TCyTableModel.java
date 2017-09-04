@@ -21,7 +21,6 @@ public class TCyTableModel extends AbstractTableModel
 
     public TCyTableModel()
     {
-
     }
 
     public TCyTableModel(String[] columnNames)
@@ -35,10 +34,18 @@ public class TCyTableModel extends AbstractTableModel
         setData(datas);
     }
 
-    public void setData(Object[][] datas)
+    public void removeAllData()
     {
+        rowObjectNum = BigInteger.ZERO;
         rowdatas.clear();
         rowData2rowIndexMap.clear();
+        fireTableDataChanged();
+
+    }
+
+    public void setData(Object[][] datas)
+    {
+        removeAllData();
         if (columnNames != null && datas != null && datas[0].length == columnNames.length)
         {
             int dataColCount = columnNames.length;
@@ -53,7 +60,24 @@ public class TCyTableModel extends AbstractTableModel
             }
         }
         fireTableDataChanged();
+    }
 
+    public int getRowIndexByUserObj(Object userObj)
+    {
+        if (rowdatas != null && userObj != null)
+        {
+            for (Map.Entry<BigInteger, List<Object>> entry : rowdatas.entrySet())
+            {
+                List<Object> rowDataWithUserObj = entry.getValue();
+                if (rowDataWithUserObj != null && userObj.equals(rowDataWithUserObj.get(0)) &&
+                    rowData2rowIndexMap != null)
+                {
+                    Integer rowIndex = rowData2rowIndexMap.get(entry.getKey());
+                    return (rowIndex != null) ? rowIndex : -1;
+                }
+            }
+        }
+        return -1;
     }
 
 
@@ -79,7 +103,6 @@ public class TCyTableModel extends AbstractTableModel
     {
         setData(tableData);
     }
-
 
 
     @Override
@@ -137,7 +160,6 @@ public class TCyTableModel extends AbstractTableModel
             fireTableCellUpdated(rowIndex, columnIndex);
         }
     }
-
 
     public void addRowData(List<Object> rowdata)
     {

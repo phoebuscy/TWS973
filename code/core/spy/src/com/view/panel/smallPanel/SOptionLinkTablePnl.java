@@ -1,12 +1,8 @@
 package com.view.panel.smallPanel;
 
-import com.dataModel.SDataManager;
 import com.table.SOptionLinkTable;
+import com.table.TCyTableModel;
 import com.utils.GBC;
-
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -14,7 +10,9 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Random;
-
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import static com.utils.SUtil.getDimension;
 
 /**
@@ -67,13 +65,25 @@ public class SOptionLinkTablePnl extends JPanel
                 public void actionPerformed(ActionEvent e)
                 {
                     // test 临时测试代码
-                  //  optionLinkTable.updateData(null);
+                  //    optionLinkTable.updateData(null);
 
                     Random random = new Random();
                     boolean b = random.nextBoolean();
-                    optionLinkTable.setValueAt(0, 2, b ? 552.8 : 283.3);
-                    //  SDataManager.getInstance().reqHistoryDatas("","","","");
+                    if (b)
+                    {
+                        TCyTableModel cyTableModel = (TCyTableModel) optionLinkTable.getModel();
+                        cyTableModel.removeAllData();
+                    }
+                    else
+                    {
+                        optionLinkTable.updateData(null);
 
+                        optionLinkTable.setValueAt(0, 2, b ? 552.8 : 23.3);
+                        optionLinkTable.setValueAt(0, 3, b ? 39.8 : 283.3);
+                        optionLinkTable.setValueAt(1, 2, b ? 952.8 : 13.3);
+                        optionLinkTable.setValueAt(2, 3, b ? 55.8 : 883.3);
+                    }
+                    //  SDataManager.getInstance().reqHistoryDatas("","","","");
                 }
             });
         }
