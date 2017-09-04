@@ -65,9 +65,9 @@ public class SOptionLinkTablePnl extends JPanel
                 @Override
                 public void actionPerformed(ActionEvent e)
                 {
-                    // optionLinkTable.updateData(null);
                     // test 临时测试代码
-                    SDataManager.getInstance().reqHistoryDatas("","","","");
+                    optionLinkTable.updateData(null);
+                  //  SDataManager.getInstance().reqHistoryDatas("","","","");
 
                 }
             });
