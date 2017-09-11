@@ -1,9 +1,11 @@
 package com.view.panel.smallPanel;
 
+import com.utils.TConst;
 import javax.swing.*;
 import java.awt.*;
 
 import static com.utils.SUtil.getDimension;
+import static com.utils.TFileUtil.getConfigValue;
 
 /**
  * Created by 123 on 2016/12/24.
@@ -16,6 +18,7 @@ public class SExpireDatePnl extends JPanel
 
     private JLabel expireDate = new JLabel("ExpireDate:");
     private JComboBox expireDataComb = new JComboBox();
+    private JButton queryOptionbtn = new JButton(getConfigValue("query.option.chain", TConst.CONFIG_I18N_FILE)); // ²éÑ¯ÆÚÈ¨Á´
 
 
     public SExpireDatePnl(Component parentWin)
@@ -45,6 +48,7 @@ public class SExpireDatePnl extends JPanel
         setLayout(new FlowLayout(FlowLayout.LEFT, 15, 0));
         add(expireDate);
         add(expireDataComb);
+        add(queryOptionbtn);
     }
 
 

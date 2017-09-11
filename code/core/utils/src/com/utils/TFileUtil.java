@@ -51,7 +51,8 @@ public class TFileUtil
             }
         }
         contentMap = i18nMap.get(fileName);
-        return TPubUtil.notNullAndEmptyMap(contentMap) ? contentMap.get(key) : null;
+        String retVal = TPubUtil.notNullAndEmptyMap(contentMap) ?contentMap.get(key):key;
+        return notNullAndEmptyStr(retVal)? retVal:key;
 
     }
 

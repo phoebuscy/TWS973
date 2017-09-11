@@ -31,6 +31,7 @@
         <pair label-key='confirm' label-value='确定'/>
         <pair label-key='cancel' label-value='取消'/>
         <pair label-key='if.continue' label-value='是否继续'/>
+        <pair label-key='query.option.chain' label-value='查询期权链'/>
 
         <pair label-key='del.database.if.confirm' label-value='该操作将删除数据库所有数据，是否确定执行该操作？'/>
 
@@ -69,6 +70,7 @@
         <pair label-key='confirm' label-value='确定'/>
         <pair label-key='cancel' label-value='取消'/>
         <pair label-key='if.continue' label-value='是否继续'/>
+        <pair label-key='query.option.chain' label-value='查询期权链'/>
 
         <pair label-key='del.database.if.confirm' label-value='该操作将删除数据库所有数据，是否确定执行该操作？'/>
 
