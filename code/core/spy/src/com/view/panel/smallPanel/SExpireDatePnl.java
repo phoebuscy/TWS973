@@ -1,8 +1,13 @@
 package com.view.panel.smallPanel;
 
 import com.utils.TConst;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
 import static com.utils.SUtil.getDimension;
 import static com.utils.TFileUtil.getConfigValue;
@@ -29,6 +34,31 @@ public class SExpireDatePnl extends JPanel
         setDimension();
         setExpireDataComb();
         buildGUI();
+        addActionListener();
+    }
+
+    private void addActionListener()
+    {
+        queryOptionbtn.addActionListener(e ->
+        {
+            queryOptionChain();
+        });
+
+        expireDataComb.addItemListener(e ->
+        {
+            onExpireDateChanged(e);
+        });
+
+    }
+
+    private void onExpireDateChanged(ItemEvent e)
+    {
+
+    }
+
+    private void queryOptionChain()
+    {
+
     }
 
     private void setExpireDataComb()
@@ -40,7 +70,7 @@ public class SExpireDatePnl extends JPanel
 
     private void setDimension()
     {
-        setSize(getDimension(parentDimension,1.0,0.1));
+        setSize(getDimension(parentDimension, 1.0, 0.1));
     }
 
     private void buildGUI()
@@ -50,10 +80,6 @@ public class SExpireDatePnl extends JPanel
         add(expireDataComb);
         add(queryOptionbtn);
     }
-
-
-
-
 
 
 }

@@ -56,6 +56,9 @@ public class SDataManager implements EWrapper
     private EClientSocket m_client;
     private EReader m_reader;
 
+    private Symbol symbol = new Symbol("");  //
+
+
     private static int reqId = 100000;
 
     static
@@ -91,6 +94,23 @@ public class SDataManager implements EWrapper
     {
     }
 
+    public Symbol getSymbol()
+    {
+        return symbol;
+    }
+
+    public void setSymbol(String symbolVal)
+    {
+        if (symbolVal != null)
+        {
+            symbol.setSymbleVal(symbolVal);
+        }
+    }
+
+    public String getSymbleVal()
+    {
+        return symbol != null ? symbol.getSymbleVal() : null;
+    }
 
     public static SDataManager getInstance()
     {
@@ -206,14 +226,14 @@ public class SDataManager implements EWrapper
         List<TagValue> tagValueList = new ArrayList<>();
 
         m_client.reqHistoricalData(getReqId(),
-                                   contract,
-                                   t_endDataTime,
-                                   t_durationStr,
-                                   t_barSize,
-                                   whatToShow,
-                                   useRTH,
-                                   formatData,
-                                   tagValueList);
+                contract,
+                t_endDataTime,
+                t_durationStr,
+                t_barSize,
+                whatToShow,
+                useRTH,
+                formatData,
+                tagValueList);
     }
 
 
@@ -221,9 +241,9 @@ public class SDataManager implements EWrapper
     public void tickPrice(int tickerId, int field, double price, TickAttr attrib)
     {
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(makeAKmsg(AK_REAL_PRICE,
-                                                                          String.valueOf(tickerId),
-                                                                          String.valueOf(field),
-                                                                          String.valueOf(price)));
+                String.valueOf(tickerId),
+                String.valueOf(field),
+                String.valueOf(price)));
     }
 
     @Override
