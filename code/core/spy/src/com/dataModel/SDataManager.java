@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.utils.SUtil.getDate;
+import static com.utils.SUtil.getSysYear;
 import static com.utils.SUtil.isIntNumeric;
 import static com.utils.TConst.AK_CONNECTED;
 import static com.utils.TConst.AK_REAL_PRICE;
@@ -162,6 +163,7 @@ public class SDataManager implements EWrapper
     {
         if (notNullAndEmptyStr(symbol))
         {
+            setSymbol(symbol);
             Contract contract = new Contract();
             contract.conid(0);
             contract.symbol(symbol);
@@ -175,6 +177,29 @@ public class SDataManager implements EWrapper
         }
         return null;
     }
+
+    // 查询期权链
+    public String queryOptionChain()
+    {
+        String symbol = getSymbleVal();
+        if(notNullAndEmptyStr(symbol))
+        {
+            Contract contract = new Contract();
+            contract.conid(0);
+            contract.symbol(symbol);
+            contract.secType("OPT");
+            contract.lastTradeDateOrContractMonth(getSysYear());  // 获取当前年份 如：2017
+            contract.strike(0.0);
+            contract.exchange("SMART");
+            contract.currency("USD");
+
+            int tickID = getReqId();
+            m_client.reqContractDetails(tickID, contract);
+            return String.valueOf(tickID);
+        }
+        return null;
+    }
+
 
     public void cancelQueryRealTimePrice(String reqId)
     {
@@ -360,7 +385,10 @@ public class SDataManager implements EWrapper
     @Override
     public void contractDetails(int reqId, ContractDetails contractDetails)
     {
-
+        if(reqId > 0 && contractDetails != null)
+        {
+            symbol.addContractdetails(contractDetails);
+        }
     }
 
     @Override
@@ -372,6 +400,11 @@ public class SDataManager implements EWrapper
     @Override
     public void contractDetailsEnd(int reqId)
     {
+        if(reqId > 0)
+        {
+            List contrdetailLst = symbol.getContractdetails();
+            int a = 1;
+        }
 
     }
 

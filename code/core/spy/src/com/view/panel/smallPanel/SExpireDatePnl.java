@@ -1,5 +1,6 @@
 package com.view.panel.smallPanel;
 
+import com.dataModel.SDataManager;
 import com.utils.TConst;
 
 import javax.swing.*;
@@ -41,7 +42,7 @@ public class SExpireDatePnl extends JPanel
     {
         queryOptionbtn.addActionListener(e ->
         {
-            queryOptionChain();
+            String trictid = queryOptionChain();
         });
 
         expireDataComb.addItemListener(e ->
@@ -56,9 +57,13 @@ public class SExpireDatePnl extends JPanel
 
     }
 
-    private void queryOptionChain()
+    /**
+     * ²éÑ¯ÆÚÈ¨Á´
+     */
+    private String queryOptionChain()
     {
-
+        String tickID = SDataManager.getInstance().queryOptionChain();
+        return tickID;
     }
 
     private void setExpireDataComb()

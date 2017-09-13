@@ -1,6 +1,7 @@
 package com.utils;
 
 
+import java.util.Calendar;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -29,7 +30,7 @@ public class SUtil
         String src = "10";
         String des = "1";
 
-        ReturnObj returnObj = getPercentValStr( src,  des);
+        ReturnObj returnObj = getPercentValStr(src, des);
         String ret = (String) returnObj.returnObj;
 
         double a = Double.parseDouble("2.2");
@@ -166,6 +167,7 @@ public class SUtil
     {
         return obj != null && isIntNumeric(obj.toString());
     }
+
     public static boolean isIntNumeric(String str)
     {
         if (!isStrNull(str))
@@ -239,7 +241,7 @@ public class SUtil
         {
             if (isIntOrDoubleNumber(src) && isIntOrDoubleNumber(des))
             {
-                returnObj.setReturnObj(Double.parseDouble(des)/Double.parseDouble(src));
+                returnObj.setReturnObj(Double.parseDouble(des) / Double.parseDouble(src));
                 returnObj.setSuccess(true);
             }
         }
@@ -253,8 +255,8 @@ public class SUtil
         {
             if (isIntOrDoubleNumber(src) && isIntOrDoubleNumber(des))
             {
-                Double percent = Double.parseDouble(des)/Double.parseDouble(src);
-                String strPercent = String.format("%.2f%%",percent*100);
+                Double percent = Double.parseDouble(des) / Double.parseDouble(src);
+                String strPercent = String.format("%.2f%%", percent * 100);
                 returnObj.setReturnObj(strPercent);
                 returnObj.setSuccess(true);
             }
@@ -265,26 +267,30 @@ public class SUtil
     public static String getPercentValStr(Object obj)
     {
         String percnetStr = "--";
-        if(obj != null && isIntOrDoubleNumber(obj))
+        if (obj != null && isIntOrDoubleNumber(obj))
         {
             Double db = Double.valueOf(obj.toString());
-            percnetStr = String.format("%.2f%%",db*100);
+            percnetStr = String.format("%.2f%%", db * 100);
         }
         return percnetStr;
     }
 
     // “dialog”代表字体，1代表样式(1是粗体，0是平常的）15是字号设置字体
     //price.setFont(new java.awt.Font("Dialog",   1,   15));
-    public static JLabel getShowNumberLabel(Object num,Boolean ifPer,BigInteger bold, BigInteger fontsize , Boolean ifColor)
+    public static JLabel getShowNumberLabel(Object num,
+                                            Boolean ifPer,
+                                            BigInteger bold,
+                                            BigInteger fontsize,
+                                            Boolean ifColor)
     {
         JLabel label = new JLabel("--");
         label.setOpaque(true);
         Integer integer = Integer.valueOf(0);
         Double db = 0.0;
-        if(isIntNumeric(num))
+        if (isIntNumeric(num))
         {
             integer = Integer.valueOf(num.toString());
-            if(ifPer)
+            if (ifPer)
             {
                 label.setText(getPercentValStr(num));
             }
@@ -293,10 +299,10 @@ public class SUtil
                 label.setText(num.toString());
             }
         }
-        else if(isDoubleNumber(num))
+        else if (isDoubleNumber(num))
         {
             db = Double.valueOf(num.toString());
-            if(ifPer)
+            if (ifPer)
             {
                 label.setText(getPercentValStr(num));
             }
@@ -307,14 +313,14 @@ public class SUtil
         }
         Font font = label.getFont();
         font.getSize();
-        int fontBold = (bold != null && bold.intValue() == 1)? 1: 0;  // “dialog”代表字体，1代表样式(1是粗体，0是平常的）15是字号设置字体
-        int ftSize = (fontsize != null) ? fontsize.intValue(): font.getSize();
-        if(bold != null)
+        int fontBold = (bold != null && bold.intValue() == 1) ? 1 : 0;  // “dialog”代表字体，1代表样式(1是粗体，0是平常的）15是字号设置字体
+        int ftSize = (fontsize != null) ? fontsize.intValue() : font.getSize();
+        if (bold != null)
         {
             label.setFont(new Font("Dialog", fontBold, ftSize));
         }
 
-        if(ifColor != null && ifColor)
+        if (ifColor != null && ifColor)
         {
             if (integer > 0 || db > 0.0)
             {
@@ -336,7 +342,7 @@ public class SUtil
     {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         //前面的lSysTime是秒数，先乘1000得到毫秒数，再转为java.util.Date类型
-        if(isIntNumeric(date))
+        if (isIntNumeric(date))
         {
             long l_date = Long.valueOf(date);
             Date dt = new Date(l_date * 1000);
@@ -344,6 +350,13 @@ public class SUtil
             return sDateTime;
         }
         return "1900-01-01 00:00:00";
+    }
+
+    public static String getSysYear()
+    {
+        Calendar date = Calendar.getInstance();
+        String year = String.valueOf(date.get(Calendar.YEAR));
+        return year;
     }
 
 
