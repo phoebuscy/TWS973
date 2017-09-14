@@ -18,6 +18,7 @@ public class TConst
     public static final String DATAMAAGER_BUS = "SDataManager_bus";
     public static final String AK_CONNECTED = "ak_connected";  // 连接返回报文头
     public static final String AK_REAL_PRICE = "ak_realPrice";  // 查询的实时价格报文头
+    public static final String AK_CONTRACT_DETAIL_END = "ak_contractDetailsEnd";  // 查询contractDetail返回报文头
 
 
 

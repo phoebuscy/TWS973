@@ -91,7 +91,6 @@ public class SSymbolePanel extends JPanel
                 // 1: 查询当前symbol的实时价格
                 // 2: 查询期权链
                 // 3：默认查询最近期权链数据
-
                 cancelCurrentSybRealPrice();
                 String currentSymbol = symbolText.getText().trim();
                 tikerID = querySybRealPrice(currentSymbol);
@@ -142,18 +141,18 @@ public class SSymbolePanel extends JPanel
     {
         String realPriceStr = getAKmsg(AK_REAL_PRICE, msg);
         String[] attrArry = realPriceStr.split(STR_SEPARATOR);
-/*
-    public void tickPrice(int tickerId, int field, double price, TickAttr attrib)
-    */
+         /*
+         public void tickPrice(int tickerId, int field, double price, TickAttr attrib)
+        */
         // 根据返回的实时数据前3个进行设置
         if (attrArry.length == 3)
         {
             String tickerId = attrArry[0];
             String field = attrArry[1];
             String price = attrArry[2];
-            if(tickerId.equals(tikerID) && isIntOrDoubleNumber(price))
+            if (tickerId.equals(tikerID) && isIntOrDoubleNumber(price))
             {
-                setPrice(Double.valueOf(price),0.0);
+                setPrice(Double.valueOf(price), 0.0);
             }
         }
 

@@ -33,6 +33,7 @@ import static com.utils.SUtil.getDate;
 import static com.utils.SUtil.getSysYear;
 import static com.utils.SUtil.isIntNumeric;
 import static com.utils.TConst.AK_CONNECTED;
+import static com.utils.TConst.AK_CONTRACT_DETAIL_END;
 import static com.utils.TConst.AK_REAL_PRICE;
 import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TPubUtil.makeAKmsg;
@@ -179,10 +180,10 @@ public class SDataManager implements EWrapper
     }
 
     // ²éÑ¯ÆÚÈ¨Á´
-    public String queryOptionChain()
+    public int queryOptionChain()
     {
         String symbol = getSymbleVal();
-        if(notNullAndEmptyStr(symbol))
+        if (notNullAndEmptyStr(symbol))
         {
             Contract contract = new Contract();
             contract.conid(0);
@@ -195,9 +196,9 @@ public class SDataManager implements EWrapper
 
             int tickID = getReqId();
             m_client.reqContractDetails(tickID, contract);
-            return String.valueOf(tickID);
+            return tickID;
         }
-        return null;
+        return -1;
     }
 
 
@@ -251,14 +252,14 @@ public class SDataManager implements EWrapper
         List<TagValue> tagValueList = new ArrayList<>();
 
         m_client.reqHistoricalData(getReqId(),
-                contract,
-                t_endDataTime,
-                t_durationStr,
-                t_barSize,
-                whatToShow,
-                useRTH,
-                formatData,
-                tagValueList);
+                                   contract,
+                                   t_endDataTime,
+                                   t_durationStr,
+                                   t_barSize,
+                                   whatToShow,
+                                   useRTH,
+                                   formatData,
+                                   tagValueList);
     }
 
 
@@ -266,9 +267,9 @@ public class SDataManager implements EWrapper
     public void tickPrice(int tickerId, int field, double price, TickAttr attrib)
     {
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(makeAKmsg(AK_REAL_PRICE,
-                String.valueOf(tickerId),
-                String.valueOf(field),
-                String.valueOf(price)));
+                                                                          String.valueOf(tickerId),
+                                                                          String.valueOf(field),
+                                                                          String.valueOf(price)));
     }
 
     @Override
@@ -385,9 +386,9 @@ public class SDataManager implements EWrapper
     @Override
     public void contractDetails(int reqId, ContractDetails contractDetails)
     {
-        if(reqId > 0 && contractDetails != null)
+        if (reqId > 0 && contractDetails != null)
         {
-            symbol.addContractdetails(contractDetails);
+            TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(makeAKmsg(reqId, contractDetails));
         }
     }
 
@@ -400,12 +401,8 @@ public class SDataManager implements EWrapper
     @Override
     public void contractDetailsEnd(int reqId)
     {
-        if(reqId > 0)
-        {
-            List contrdetailLst = symbol.getContractdetails();
-            int a = 1;
-        }
-
+        TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(makeAKmsg(AK_CONTRACT_DETAIL_END,
+                                                                          String.valueOf(reqId)));
     }
 
     @Override

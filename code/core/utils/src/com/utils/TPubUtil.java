@@ -84,6 +84,11 @@ public class TPubUtil
 
     }
 
+    public static AnswerObj makeAKmsg(final int reqid, Object answerObj)
+    {
+        AnswerObj answerObj1 = new AnswerObj(reqid, answerObj);
+        return answerObj1;
+    }
 
     public static String makeAKmsg(final String akflag, final String... attrs)
     {
@@ -91,7 +96,7 @@ public class TPubUtil
         {
             StringBuilder builder = new StringBuilder();
             builder.append(akflag);
-            for(String attr: attrs)
+            for (String attr : attrs)
             {
                 builder.append(STR_SEPARATOR);
                 builder.append(attr);
