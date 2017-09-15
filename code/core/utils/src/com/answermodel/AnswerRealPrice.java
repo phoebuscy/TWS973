@@ -1,11 +1,12 @@
-package com.utils;
+package com.answermodel;
 
-public class AnswerObj
+public class AnswerRealPrice
 {
+
     public int reqid = -1;
     public Object answerObj = null;
 
-    public AnswerObj(int reqid, Object answerObj)
+    public AnswerRealPrice(int reqid, Object answerObj)
     {
         this.reqid = reqid;
         this.answerObj = answerObj;

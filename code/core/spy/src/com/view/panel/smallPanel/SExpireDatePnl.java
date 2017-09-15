@@ -2,7 +2,7 @@ package com.view.panel.smallPanel;
 
 import com.dataModel.SDataManager;
 import com.ib.client.ContractDetails;
-import com.utils.AnswerObj;
+import com.answermodel.AnswerObj;
 import com.utils.TConst;
 import com.utils.TMbassadorSingleton;
 import java.awt.Color;
@@ -11,6 +11,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +65,7 @@ public class SExpireDatePnl extends JPanel
     {
         queryOptionbtn.addActionListener(e ->
         {
+            contractDetailsList.clear();
             expireDataComb.removeAllItems();
             reqid = queryOptionChain();
         });
@@ -105,6 +107,7 @@ public class SExpireDatePnl extends JPanel
     {
         setLayout(new FlowLayout(FlowLayout.LEFT, 15, 0));
         add(expireDate);
+        expireDataComb.setPreferredSize(new Dimension(150,30));
         add(expireDataComb);
         add(queryOptionbtn);
     }
@@ -168,8 +171,10 @@ public class SExpireDatePnl extends JPanel
         }
         if(notNullAndEmptyMap(day2CtrdMap))
         {
+            List<String> dateLst = new ArrayList<>(day2CtrdMap.keySet());
+            Collections.sort(dateLst);
             expireDataComb.removeAllItems();
-            for(String day: day2CtrdMap.keySet())
+            for(String day: dateLst)
             {
                 expireDataComb.addItem(day);
             }
