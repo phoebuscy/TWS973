@@ -10,6 +10,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import static com.utils.TFileUtil.getConfigValue;
 import static com.utils.TPubUtil.getAKmsg;
 import static com.utils.TPubUtil.notNullAndEmptyCollection;
 import static com.utils.TPubUtil.notNullAndEmptyMap;
+import static java.awt.event.ItemEvent.SELECTED;
 
 /**
  * Created by 123 on 2016/12/24.
@@ -45,6 +47,7 @@ public class SExpireDatePnl extends JPanel
     private JButton queryOptionbtn = new JButton(getConfigValue("query.option.chain", TConst.CONFIG_I18N_FILE)); // 查询期权链
     private static int reqid = -1;
     private List<ContractDetails> contractDetailsList = new ArrayList<>();
+    private  Map<String, List<ContractDetails>> day2CtrdMap = new HashMap<>();
 
 
     public SExpireDatePnl(Component parentWin)
@@ -70,6 +73,7 @@ public class SExpireDatePnl extends JPanel
             reqid = queryOptionChain();
         });
 
+
         expireDataComb.addItemListener(e ->
         {
             onExpireDateChanged(e);
@@ -79,6 +83,22 @@ public class SExpireDatePnl extends JPanel
 
     private void onExpireDateChanged(ItemEvent e)
     {
+        // 根据选择的日期查询出当前价格上下5个点之间的期权链
+        if(e.getStateChange() == SELECTED)
+        {
+            Object selecteddate = expireDataComb.getSelectedItem();
+            if (selecteddate instanceof String)
+            {
+                List<ContractDetails> ctrdetailLst = day2CtrdMap.get(selecteddate);
+                if(notNullAndEmptyCollection(ctrdetailLst))
+                {
+                    for(ContractDetails ctrDtails: ctrdetailLst)
+                    {
+
+                    }
+                }
+            }
+        }
 
     }
 
@@ -151,7 +171,15 @@ public class SExpireDatePnl extends JPanel
     @Handler(filters = {@Filter(contractDetailEndFilter.class)})
     private void getContractDetailend(String msg)
     {
-        Map<String, List<ContractDetails>> day2CtrdMap = new HashMap<>();
+        if(day2CtrdMap == null)
+        {
+            day2CtrdMap = new HashMap<>();
+        }
+        else
+        {
+            day2CtrdMap.clear();
+        }
+
         if(notNullAndEmptyCollection(contractDetailsList))
         {
             for(ContractDetails ctrd: contractDetailsList)
