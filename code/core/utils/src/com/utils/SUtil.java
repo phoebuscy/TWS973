@@ -206,6 +206,27 @@ public class SUtil
         return isIntNumeric(str) || isDoubleNumber(str);
     }
 
+    // 判断两个数是否相等，包括整数和double数，此处差小于0.0001即表示相等
+    public static boolean isEqualDoubleNumber(String oneNum, String otherNum, double betweendiff)
+    {
+        if (!isStrNull(oneNum) && !isStrNull(otherNum))
+        {
+            if (isIntOrDoubleNumber(oneNum) && isIntOrDoubleNumber(otherNum))
+            {
+                double abs = Math.abs(Double.parseDouble(otherNum) - Double.parseDouble(oneNum));
+                return Double.compare(abs,betweendiff) == -1;
+            }
+        }
+        return false;
+    }
+
+    // 判断两个数是否相等，包括整数和double数，此处差小于diff即表示相等
+    public static boolean isEqualdoubleNumber(double oneNum, double otherNum, double betweendiff)
+    {
+        double abs = Math.abs(oneNum - otherNum);
+        return Double.compare(abs, betweendiff) == -1;
+    }
+
     public static ReturnObj getDiffDoubleNumber(String src, String des)
     {
         ReturnObj returnObj = new ReturnObj();

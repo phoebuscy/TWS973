@@ -3,6 +3,9 @@ package com.view.panel.smallPanel;
 import com.dataModel.SDataManager;
 import com.ib.client.ContractDetails;
 import com.answermodel.AnswerObj;
+import com.ib.client.Types;
+import com.ib.controller.Profile;
+import com.utils.ReturnObj;
 import com.utils.TConst;
 import com.utils.TMbassadorSingleton;
 import java.awt.Color;
@@ -24,7 +27,9 @@ import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
+import static com.utils.SUtil.getDiffDoubleNumber;
 import static com.utils.SUtil.getDimension;
+import static com.utils.SUtil.isEqualdoubleNumber;
 import static com.utils.TConst.AK_CONTRACT_DETAIL_END;
 import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TFileUtil.getConfigValue;
@@ -73,7 +78,6 @@ public class SExpireDatePnl extends JPanel
             reqid = queryOptionChain();
         });
 
-
         expireDataComb.addItemListener(e ->
         {
             onExpireDateChanged(e);
@@ -89,13 +93,28 @@ public class SExpireDatePnl extends JPanel
             Object selecteddate = expireDataComb.getSelectedItem();
             if (selecteddate instanceof String)
             {
+                Map<Double, List<ContractDetails>> strike2ContractDtalsLst = new HashMap<>();
+                double curSymbolRealPrice = 249.5;  // 需要用一个方法获取当前symbol的价格
                 List<ContractDetails> ctrdetailLst = day2CtrdMap.get(selecteddate);
+
                 if(notNullAndEmptyCollection(ctrdetailLst))
                 {
-                    for(ContractDetails ctrDtails: ctrdetailLst)
+                    for (ContractDetails ctrDtails : ctrdetailLst)
                     {
-
+                        Double strike = ctrDtails.contract().strike();
+                        if (Double.compare(Math.abs(curSymbolRealPrice - strike),3.0) == -1)
+                        {
+                            List<ContractDetails> contractDetailsLst = strike2ContractDtalsLst.get(strike);
+                            if(contractDetailsLst == null)
+                            {
+                                contractDetailsLst = new ArrayList<>();
+                                strike2ContractDtalsLst.put(strike,contractDetailsLst);
+                            }
+                            contractDetailsLst.add(ctrDtails);
+                        }
                     }
+
+                    int a = 1;
                 }
             }
         }
