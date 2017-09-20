@@ -1,19 +1,35 @@
 package com.view.panel.smallPanel;
 
+import com.ib.client.ContractDetails;
+import com.ib.client.Types;
 import com.table.SOptionLinkTable;
 import com.table.TCyTableModel;
 import com.utils.GBC;
+import com.utils.TConst;
+import com.utils.TMbassadorSingleton;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import net.engio.mbassy.listener.Filter;
+import net.engio.mbassy.listener.Handler;
+import net.engio.mbassy.listener.IMessageFilter;
+import net.engio.mbassy.subscription.SubscriptionContext;
 import static com.utils.SUtil.getDimension;
+import static com.utils.TConst.DATAMAAGER_BUS;
+import static com.utils.TFileUtil.getConfigValue;
+import static com.utils.TPubUtil.notNullAndEmptyCollection;
+import static com.utils.TPubUtil.notNullAndEmptyMap;
 
 /**
  * Created by 123 on 2016/12/24.
@@ -35,6 +51,9 @@ public class SOptionLinkTablePnl extends JPanel
         setDimension();
         buildGUI();
         setTestButtonListener();
+
+        // 订阅消息总线名称为 DATAMAAGER_BUS 的 消息
+        TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
     }
 
     private void setDimension()
@@ -65,7 +84,7 @@ public class SOptionLinkTablePnl extends JPanel
                 public void actionPerformed(ActionEvent e)
                 {
                     // test 临时测试代码
-                  //    optionLinkTable.updateData(null);
+                    //    optionLinkTable.updateData(null);
 
                     Random random = new Random();
                     boolean b = random.nextBoolean();
@@ -87,6 +106,75 @@ public class SOptionLinkTablePnl extends JPanel
                 }
             });
         }
+    }
+
+
+    // 接收处理过后的期权链消息过滤器
+    static public class processedOptionChainFilter implements IMessageFilter<Map<Double, List<ContractDetails>>>
+    {
+        @Override
+        public boolean accepts(Map<Double, List<ContractDetails>> msg, SubscriptionContext subscriptionContext)
+        {
+            return notNullAndEmptyMap(msg);
+        }
+    }
+
+    // 连接消息处理器
+    @Handler(filters = {@Filter(processedOptionChainFilter.class)})
+    private void setProcessedOptionChain(Map<Double, List<ContractDetails>> msg)
+    {
+        // 需要实施以下操作
+        // 1: 发送取消订阅期权链中各个期权的实时价格
+        // 2: 构造新的期权链行数据
+        // 3: 订阅期权链中期权的实时价格
+
+        TCyTableModel cyTableModel = (TCyTableModel) optionLinkTable.getModel();
+        cyTableModel.removeAllData();
+
+        if (msg != null)
+        {
+            String callRaise = getConfigValue("call.raise", TConst.CONFIG_I18N_FILE); //CALL涨
+            String putDown = getConfigValue("put.down", TConst.CONFIG_I18N_FILE); //PUT跌
+
+            List<Double> strikeLst = new ArrayList<>(msg.keySet());
+            Collections.sort(strikeLst);
+            for (Double strike : strikeLst)
+            {
+                List<ContractDetails> contractDetailsList = msg.get(strike);
+                if (notNullAndEmptyCollection(contractDetailsList) && contractDetailsList.size() == 2)
+                {
+                    ContractDetails callDts = contractDetailsList.get(0);
+                    ContractDetails putDts = contractDetailsList.get(1);
+                    if (callDts.contract().right() != Types.Right.Call)
+                    {
+                        callDts = contractDetailsList.get(1);
+                        putDts = contractDetailsList.get(0);
+                    }
+
+                    List<Object> callRowData = makeRowData(callRaise, callDts.contract().strike());
+                    optionLinkTable.addRowData(callDts, callRowData);
+
+                    List<Object> putRowData = makeRowData(putDown, putDts.contract().strike());
+                    optionLinkTable.addRowData(putDts, putRowData);
+                }
+            }
+
+        }
+    }
+
+    private List<Object> makeRowData(Object... arg)
+    {
+        List<Object> rowData = new ArrayList<>();
+        if (arg != null)
+        {
+            int colCount = optionLinkTable.getColumnModel().getColumnCount();
+            for (int i = 0; i < colCount; i++)
+            {
+                rowData.add(i < arg.length ? arg[i] : "");
+            }
+        }
+
+        return rowData;
     }
 
 

@@ -1,11 +1,8 @@
 package com.view.panel.smallPanel;
 
+import com.answermodel.AnswerObj;
 import com.dataModel.SDataManager;
 import com.ib.client.ContractDetails;
-import com.answermodel.AnswerObj;
-import com.ib.client.Types;
-import com.ib.controller.Profile;
-import com.utils.ReturnObj;
 import com.utils.TConst;
 import com.utils.TMbassadorSingleton;
 import java.awt.Color;
@@ -13,7 +10,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,9 +23,7 @@ import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
-import static com.utils.SUtil.getDiffDoubleNumber;
 import static com.utils.SUtil.getDimension;
-import static com.utils.SUtil.isEqualdoubleNumber;
 import static com.utils.TConst.AK_CONTRACT_DETAIL_END;
 import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TFileUtil.getConfigValue;
@@ -113,9 +107,10 @@ public class SExpireDatePnl extends JPanel
                             contractDetailsLst.add(ctrDtails);
                         }
                     }
-
-                    int a = 1;
                 }
+
+                // 发送构造好的当前期权链的消息
+                TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(strike2ContractDtalsLst);
             }
         }
 
@@ -151,7 +146,7 @@ public class SExpireDatePnl extends JPanel
         add(queryOptionbtn);
     }
 
-
+    ////////////////////////////////////////////////////////////
     // 接收期权链消息过滤器
     static public class optionChainFilter implements IMessageFilter<AnswerObj>
     {
@@ -172,6 +167,8 @@ public class SExpireDatePnl extends JPanel
             contractDetailsList.add((ContractDetails)obj);
         }
     }
+
+    ///////////////////////////////////////////////////////////////
 
     // 接收查询contractDetail完毕的过滤器
     static public class contractDetailEndFilter implements IMessageFilter<String>

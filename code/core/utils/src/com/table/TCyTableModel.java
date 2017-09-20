@@ -161,9 +161,9 @@ public class TCyTableModel extends AbstractTableModel
         }
     }
 
-    public void addRowData(List<Object> rowdata)
+    public void addRowData(Object userObj, List<Object> rowdata)
     {
-        addRowData(null, rowdata, Integer.MAX_VALUE);
+        addRowData(userObj, rowdata, Integer.MAX_VALUE);
     }
 
     public void addRowData(Object userObj, List<Object> rowdata, int rowIndex)
