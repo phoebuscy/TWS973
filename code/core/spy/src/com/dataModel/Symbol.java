@@ -13,25 +13,30 @@ import java.util.List;
 public class Symbol
 {
 
-    private String symbleVal = ""; // 对象名称
+    private String symbolVal = ""; // 对象名称
+    private SDataManager dataManager;
 
     private List<ContractDetails> contractDetailsList = new ArrayList<>();
 
-
-    public Symbol(String symbleVal)
+    public Symbol(SDataManager dataManager)
     {
-        this.symbleVal = symbleVal;
+        this.dataManager = dataManager;
+    }
+
+    public Symbol(String symbolVal)
+    {
+        this.symbolVal = symbolVal;
     }
 
 
-    public String getSymbleVal()
+    public String getSymbolVal()
     {
-        return symbleVal;
+        return symbolVal;
     }
 
-    public void setSymbleVal(String symbleVal)
+    public void setSymbolVal(String symbleVal)
     {
-        this.symbleVal = symbleVal;
+        this.symbolVal = symbleVal;
     }
 
     public void addContractdetails(ContractDetails contractDetails)

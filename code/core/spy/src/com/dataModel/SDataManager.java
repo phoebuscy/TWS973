@@ -58,7 +58,7 @@ public class SDataManager implements EWrapper
     private EClientSocket m_client;
     private EReader m_reader;
 
-    private Symbol symbol = new Symbol("");  //
+    private Symbol symbol = new Symbol(instance);
 
 
     private static int reqId = 100000;
@@ -101,17 +101,14 @@ public class SDataManager implements EWrapper
         return symbol;
     }
 
-    public void setSymbol(String symbolVal)
+    public void setSymbolVal(String symbolVal)
     {
-        if (symbolVal != null)
-        {
-            symbol.setSymbleVal(symbolVal);
-        }
+        symbol.setSymbolVal(symbolVal);
     }
 
     public String getSymbleVal()
     {
-        return symbol != null ? symbol.getSymbleVal() : null;
+        return symbol != null ? symbol.getSymbolVal() : null;
     }
 
     public static SDataManager getInstance()
@@ -164,7 +161,6 @@ public class SDataManager implements EWrapper
     {
         if (notNullAndEmptyStr(symbol))
         {
-            setSymbol(symbol);
             Contract contract = new Contract();
             contract.conid(0);
             contract.symbol(symbol);

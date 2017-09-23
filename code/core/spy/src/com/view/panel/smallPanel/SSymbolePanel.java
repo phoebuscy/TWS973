@@ -113,6 +113,7 @@ public class SSymbolePanel extends JPanel
     {
         if (notNullAndEmptyStr(symbol))
         {
+            SDataManager.getInstance().setSymbolVal(symbol);
             String tickID = SDataManager.getInstance().queryRealTimePrice(symbol);
             return tickID;
         }

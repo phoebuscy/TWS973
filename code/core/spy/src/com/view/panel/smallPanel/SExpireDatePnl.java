@@ -2,9 +2,11 @@ package com.view.panel.smallPanel;
 
 import com.answermodel.AnswerObj;
 import com.dataModel.SDataManager;
+import com.dataModel.mbassadorObj.OptionChainMap;
 import com.ib.client.ContractDetails;
 import com.utils.TConst;
 import com.utils.TMbassadorSingleton;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -19,10 +21,12 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
 import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
+
 import static com.utils.SUtil.getDimension;
 import static com.utils.TConst.AK_CONTRACT_DETAIL_END;
 import static com.utils.TConst.DATAMAAGER_BUS;
@@ -46,7 +50,7 @@ public class SExpireDatePnl extends JPanel
     private JButton queryOptionbtn = new JButton(getConfigValue("query.option.chain", TConst.CONFIG_I18N_FILE)); // 查询期权链
     private static int reqid = -1;
     private List<ContractDetails> contractDetailsList = new ArrayList<>();
-    private  Map<String, List<ContractDetails>> day2CtrdMap = new HashMap<>();
+    private Map<String, List<ContractDetails>> day2CtrdMap = new HashMap<>();
 
 
     public SExpireDatePnl(Component parentWin)
@@ -82,7 +86,7 @@ public class SExpireDatePnl extends JPanel
     private void onExpireDateChanged(ItemEvent e)
     {
         // 根据选择的日期查询出当前价格上下5个点之间的期权链
-        if(e.getStateChange() == SELECTED)
+        if (e.getStateChange() == SELECTED)
         {
             Object selecteddate = expireDataComb.getSelectedItem();
             if (selecteddate instanceof String)
@@ -91,29 +95,27 @@ public class SExpireDatePnl extends JPanel
                 double curSymbolRealPrice = 249.5;  // 需要用一个方法获取当前symbol的价格
                 List<ContractDetails> ctrdetailLst = day2CtrdMap.get(selecteddate);
 
-                if(notNullAndEmptyCollection(ctrdetailLst))
+                if (notNullAndEmptyCollection(ctrdetailLst))
                 {
                     for (ContractDetails ctrDtails : ctrdetailLst)
                     {
                         Double strike = ctrDtails.contract().strike();
-                        if (Double.compare(Math.abs(curSymbolRealPrice - strike),3.0) == -1)
+                        if (Double.compare(Math.abs(curSymbolRealPrice - strike), 3.0) == -1)
                         {
                             List<ContractDetails> contractDetailsLst = strike2ContractDtalsLst.get(strike);
-                            if(contractDetailsLst == null)
+                            if (contractDetailsLst == null)
                             {
                                 contractDetailsLst = new ArrayList<>();
-                                strike2ContractDtalsLst.put(strike,contractDetailsLst);
+                                strike2ContractDtalsLst.put(strike, contractDetailsLst);
                             }
                             contractDetailsLst.add(ctrDtails);
                         }
                     }
                 }
-
                 // 发送构造好的当前期权链的消息
-                TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(strike2ContractDtalsLst);
+                TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(new OptionChainMap(strike2ContractDtalsLst));
             }
         }
-
     }
 
     /**
@@ -141,7 +143,7 @@ public class SExpireDatePnl extends JPanel
     {
         setLayout(new FlowLayout(FlowLayout.LEFT, 15, 0));
         add(expireDate);
-        expireDataComb.setPreferredSize(new Dimension(150,30));
+        expireDataComb.setPreferredSize(new Dimension(150, 30));
         add(expireDataComb);
         add(queryOptionbtn);
     }
@@ -161,10 +163,10 @@ public class SExpireDatePnl extends JPanel
     @Handler(filters = {@Filter(optionChainFilter.class)})
     private void getOptionChain(AnswerObj msg)
     {
-         Object obj = msg.getAnswerObj();
-        if(obj instanceof ContractDetails)
+        Object obj = msg.getAnswerObj();
+        if (obj instanceof ContractDetails)
         {
-            contractDetailsList.add((ContractDetails)obj);
+            contractDetailsList.add((ContractDetails) obj);
         }
     }
 
@@ -176,9 +178,9 @@ public class SExpireDatePnl extends JPanel
         @Override
         public boolean accepts(String msg, SubscriptionContext subscriptionContext)
         {
-            if(msg.startsWith(AK_CONTRACT_DETAIL_END))
+            if (msg.startsWith(AK_CONTRACT_DETAIL_END))
             {
-              return  String.valueOf(reqid).equals(getAKmsg(AK_CONTRACT_DETAIL_END,msg));
+                return String.valueOf(reqid).equals(getAKmsg(AK_CONTRACT_DETAIL_END, msg));
             }
             return false;
         }
@@ -187,38 +189,36 @@ public class SExpireDatePnl extends JPanel
     @Handler(filters = {@Filter(contractDetailEndFilter.class)})
     private void getContractDetailend(String msg)
     {
-        if(day2CtrdMap == null)
+        if (day2CtrdMap == null)
         {
             day2CtrdMap = new HashMap<>();
-        }
-        else
+        } else
         {
             day2CtrdMap.clear();
         }
 
-        if(notNullAndEmptyCollection(contractDetailsList))
+        if (notNullAndEmptyCollection(contractDetailsList))
         {
-            for(ContractDetails ctrd: contractDetailsList)
+            for (ContractDetails ctrd : contractDetailsList)
             {
                 String lastDay = ctrd.contract().lastTradeDateOrContractMonth();
-                if(day2CtrdMap.containsKey(lastDay))
+                if (day2CtrdMap.containsKey(lastDay))
                 {
                     day2CtrdMap.get(lastDay).add(ctrd);
-                }
-                else
+                } else
                 {
                     List<ContractDetails> ctrLst = new ArrayList<>();
                     ctrLst.add(ctrd);
-                    day2CtrdMap.put(lastDay,ctrLst);
+                    day2CtrdMap.put(lastDay, ctrLst);
                 }
             }
         }
-        if(notNullAndEmptyMap(day2CtrdMap))
+        if (notNullAndEmptyMap(day2CtrdMap))
         {
             List<String> dateLst = new ArrayList<>(day2CtrdMap.keySet());
             Collections.sort(dateLst);
             expireDataComb.removeAllItems();
-            for(String day: dateLst)
+            for (String day : dateLst)
             {
                 expireDataComb.addItem(day);
             }

@@ -1,5 +1,6 @@
 package com.view.panel.smallPanel;
 
+import com.dataModel.mbassadorObj.OptionChainMap;
 import com.ib.client.ContractDetails;
 import com.ib.client.Types;
 import com.table.SOptionLinkTable;
@@ -7,6 +8,14 @@ import com.table.TCyTableModel;
 import com.utils.GBC;
 import com.utils.TConst;
 import com.utils.TMbassadorSingleton;
+import net.engio.mbassy.listener.Filter;
+import net.engio.mbassy.listener.Handler;
+import net.engio.mbassy.listener.IMessageFilter;
+import net.engio.mbassy.subscription.SubscriptionContext;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -18,13 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import net.engio.mbassy.listener.Filter;
-import net.engio.mbassy.listener.Handler;
-import net.engio.mbassy.listener.IMessageFilter;
-import net.engio.mbassy.subscription.SubscriptionContext;
+
 import static com.utils.SUtil.getDimension;
 import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TFileUtil.getConfigValue;
@@ -63,7 +66,6 @@ public class SOptionLinkTablePnl extends JPanel
 
     private void buildGUI()
     {
-        // setLayout(new BorderLayout());
         optionLinkTable = new SOptionLinkTable();
         JScrollPane scrollPane = new JScrollPane(optionLinkTable);
         optionLinkTable.setFillsViewportHeight(true);
@@ -92,8 +94,7 @@ public class SOptionLinkTablePnl extends JPanel
                     {
                         TCyTableModel cyTableModel = (TCyTableModel) optionLinkTable.getModel();
                         cyTableModel.removeAllData();
-                    }
-                    else
+                    } else
                     {
                         optionLinkTable.updateData(null);
 
@@ -110,18 +111,18 @@ public class SOptionLinkTablePnl extends JPanel
 
 
     // 接收处理过后的期权链消息过滤器
-    static public class processedOptionChainFilter implements IMessageFilter<Map<Double, List<ContractDetails>>>
+    static public class processedOptionChainFilter implements IMessageFilter<OptionChainMap>
     {
         @Override
-        public boolean accepts(Map<Double, List<ContractDetails>> msg, SubscriptionContext subscriptionContext)
+        public boolean accepts(OptionChainMap msg, SubscriptionContext subscriptionContext)
         {
-            return notNullAndEmptyMap(msg);
+            return msg != null && notNullAndEmptyMap(msg.getStrike2ContractDtalsLst());
         }
     }
 
     // 连接消息处理器
     @Handler(filters = {@Filter(processedOptionChainFilter.class)})
-    private void setProcessedOptionChain(Map<Double, List<ContractDetails>> msg)
+    private void setProcessedOptionChain(OptionChainMap msg)
     {
         // 需要实施以下操作
         // 1: 发送取消订阅期权链中各个期权的实时价格
@@ -131,16 +132,18 @@ public class SOptionLinkTablePnl extends JPanel
         TCyTableModel cyTableModel = (TCyTableModel) optionLinkTable.getModel();
         cyTableModel.removeAllData();
 
-        if (msg != null)
+        Map<Double, List<ContractDetails>> optionChainMap = (msg != null) ? msg.getStrike2ContractDtalsLst() : null;
+        if (optionChainMap != null)
         {
+
             String callRaise = getConfigValue("call.raise", TConst.CONFIG_I18N_FILE); //CALL涨
             String putDown = getConfigValue("put.down", TConst.CONFIG_I18N_FILE); //PUT跌
 
-            List<Double> strikeLst = new ArrayList<>(msg.keySet());
+            List<Double> strikeLst = new ArrayList<>(optionChainMap.keySet());
             Collections.sort(strikeLst);
             for (Double strike : strikeLst)
             {
-                List<ContractDetails> contractDetailsList = msg.get(strike);
+                List<ContractDetails> contractDetailsList = optionChainMap.get(strike);
                 if (notNullAndEmptyCollection(contractDetailsList) && contractDetailsList.size() == 2)
                 {
                     ContractDetails callDts = contractDetailsList.get(0);
