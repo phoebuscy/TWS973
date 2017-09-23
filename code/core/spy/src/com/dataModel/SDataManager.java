@@ -1,5 +1,6 @@
 package com.dataModel;
 
+import com.dataModel.mbassadorObj.MBAtickPrice;
 import com.ib.client.CommissionReport;
 import com.ib.client.Contract;
 import com.ib.client.ContractDescription;
@@ -31,10 +32,8 @@ import java.util.Set;
 
 import static com.utils.SUtil.getDate;
 import static com.utils.SUtil.getSysYear;
-import static com.utils.SUtil.isIntNumeric;
 import static com.utils.TConst.AK_CONNECTED;
 import static com.utils.TConst.AK_CONTRACT_DETAIL_END;
-import static com.utils.TConst.AK_REAL_PRICE;
 import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TPubUtil.makeAKmsg;
 import static com.utils.TStringUtil.notNullAndEmptyStr;
@@ -58,8 +57,7 @@ public class SDataManager implements EWrapper
     private EClientSocket m_client;
     private EReader m_reader;
 
-    private Symbol symbol = new Symbol(instance);
-
+    public Symbol symbol = null;
 
     private static int reqId = 100000;
 
@@ -94,22 +92,9 @@ public class SDataManager implements EWrapper
 
     private SDataManager()
     {
+        symbol = new Symbol(this);
     }
 
-    public Symbol getSymbol()
-    {
-        return symbol;
-    }
-
-    public void setSymbolVal(String symbolVal)
-    {
-        symbol.setSymbolVal(symbolVal);
-    }
-
-    public String getSymbleVal()
-    {
-        return symbol != null ? symbol.getSymbolVal() : null;
-    }
 
     public static SDataManager getInstance()
     {
@@ -144,6 +129,10 @@ public class SDataManager implements EWrapper
         }
     }
 
+    public Symbol getSymbol()
+    {
+        return symbol;
+    }
 
     public void disconnect()
     {
@@ -156,29 +145,11 @@ public class SDataManager implements EWrapper
         return reqId;
     }
 
-    // 查询实时价格，返回的tickeid
-    public String queryRealTimePrice(String symbol)
-    {
-        if (notNullAndEmptyStr(symbol))
-        {
-            Contract contract = new Contract();
-            contract.conid(0);
-            contract.symbol(symbol);
-            contract.secType("STK");
-            contract.exchange("SMART");
-            contract.primaryExch("ISLAND");
-            contract.currency("USD");
-            int tickID = getReqId();
-            m_client.reqMktData(tickID, contract, "", false, false, null);
-            return String.valueOf(tickID);
-        }
-        return null;
-    }
 
     // 查询期权链
     public int queryOptionChain()
     {
-        String symbol = getSymbleVal();
+        String symbol = "SPY";
         if (notNullAndEmptyStr(symbol))
         {
             Contract contract = new Contract();
@@ -195,15 +166,6 @@ public class SDataManager implements EWrapper
             return tickID;
         }
         return -1;
-    }
-
-
-    public void cancelQueryRealTimePrice(String reqId)
-    {
-        if (m_client != null && isIntNumeric(reqId))
-        {
-            m_client.cancelMktData(Integer.valueOf(reqId));
-        }
     }
 
 
@@ -262,10 +224,9 @@ public class SDataManager implements EWrapper
     @Override
     public void tickPrice(int tickerId, int field, double price, TickAttr attrib)
     {
-        TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(makeAKmsg(AK_REAL_PRICE,
-                                                                          String.valueOf(tickerId),
-                                                                          String.valueOf(field),
-                                                                          String.valueOf(price)));
+        MBAtickPrice mbAtickPrice = new MBAtickPrice(tickerId,field,price,attrib);
+        TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(mbAtickPrice);
+
     }
 
     @Override

@@ -2,7 +2,7 @@ package com.view.panel.smallPanel;
 
 import com.answermodel.AnswerObj;
 import com.dataModel.SDataManager;
-import com.dataModel.mbassadorObj.OptionChainMap;
+import com.dataModel.mbassadorObj.MBAOptionChainMap;
 import com.ib.client.ContractDetails;
 import com.utils.TConst;
 import com.utils.TMbassadorSingleton;
@@ -113,7 +113,7 @@ public class SExpireDatePnl extends JPanel
                     }
                 }
                 // 发送构造好的当前期权链的消息
-                TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(new OptionChainMap(strike2ContractDtalsLst));
+                TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(new MBAOptionChainMap(strike2ContractDtalsLst));
             }
         }
     }

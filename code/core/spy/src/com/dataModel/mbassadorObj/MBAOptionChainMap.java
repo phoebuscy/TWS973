@@ -6,13 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class OptionChainMap
+public class MBAOptionChainMap
 {
 
     private Map<Double, List<ContractDetails>> strike2ContractDtalsLst = new HashMap<>();
 
 
-    public OptionChainMap(Map<Double, List<ContractDetails>> optionChainMap)
+    public MBAOptionChainMap(Map<Double, List<ContractDetails>> optionChainMap)
     {
         strike2ContractDtalsLst = optionChainMap != null? optionChainMap: new HashMap<>();
     }

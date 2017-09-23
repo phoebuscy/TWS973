@@ -1,6 +1,6 @@
 package com.view.panel.smallPanel;
 
-import com.dataModel.mbassadorObj.OptionChainMap;
+import com.dataModel.mbassadorObj.MBAOptionChainMap;
 import com.ib.client.ContractDetails;
 import com.ib.client.Types;
 import com.table.SOptionLinkTable;
@@ -111,10 +111,10 @@ public class SOptionLinkTablePnl extends JPanel
 
 
     // 接收处理过后的期权链消息过滤器
-    static public class processedOptionChainFilter implements IMessageFilter<OptionChainMap>
+    static public class processedOptionChainFilter implements IMessageFilter<MBAOptionChainMap>
     {
         @Override
-        public boolean accepts(OptionChainMap msg, SubscriptionContext subscriptionContext)
+        public boolean accepts(MBAOptionChainMap msg, SubscriptionContext subscriptionContext)
         {
             return msg != null && notNullAndEmptyMap(msg.getStrike2ContractDtalsLst());
         }
@@ -122,7 +122,7 @@ public class SOptionLinkTablePnl extends JPanel
 
     // 连接消息处理器
     @Handler(filters = {@Filter(processedOptionChainFilter.class)})
-    private void setProcessedOptionChain(OptionChainMap msg)
+    private void setProcessedOptionChain(MBAOptionChainMap msg)
     {
         // 需要实施以下操作
         // 1: 发送取消订阅期权链中各个期权的实时价格
