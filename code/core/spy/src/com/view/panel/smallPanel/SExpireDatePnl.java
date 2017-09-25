@@ -1,39 +1,30 @@
 package com.view.panel.smallPanel;
 
-import com.answermodel.AnswerObj;
 import com.dataModel.SDataManager;
 import com.dataModel.mbassadorObj.MBAOptionChainMap;
+import com.dataModel.mbassadorObj.MBAOptionExpireDayList;
 import com.ib.client.ContractDetails;
 import com.utils.TConst;
 import com.utils.TMbassadorSingleton;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ItemEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-
 import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
-
 import static com.utils.SUtil.getDimension;
-import static com.utils.TConst.AK_CONTRACT_DETAIL_END;
 import static com.utils.TConst.DATAMAAGER_BUS;
+import static com.utils.TConst.SYMBOL_BUS;
 import static com.utils.TFileUtil.getConfigValue;
-import static com.utils.TPubUtil.getAKmsg;
-import static com.utils.TPubUtil.notNullAndEmptyCollection;
-import static com.utils.TPubUtil.notNullAndEmptyMap;
 import static java.awt.event.ItemEvent.SELECTED;
 
 /**
@@ -47,10 +38,8 @@ public class SExpireDatePnl extends JPanel
 
     private JLabel expireDate = new JLabel("ExpireDate:");
     private JComboBox expireDataComb = new JComboBox();
-    private JButton queryOptionbtn = new JButton(getConfigValue("query.option.chain", TConst.CONFIG_I18N_FILE)); // 查询期权链
-    private static int reqid = -1;
-    private List<ContractDetails> contractDetailsList = new ArrayList<>();
-    private Map<String, List<ContractDetails>> day2CtrdMap = new HashMap<>();
+    private JButton queryOptionbtn = new JButton(getConfigValue("query.option.chain",
+                                                                TConst.CONFIG_I18N_FILE)); // 查询期权链
 
 
     public SExpireDatePnl(Component parentWin)
@@ -64,20 +53,17 @@ public class SExpireDatePnl extends JPanel
         addActionListener();
 
         // 订阅消息总线名称为 DATAMAAGER_BUS 的 消息
-        TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
+        TMbassadorSingleton.getInstance(SYMBOL_BUS).subscribe(this);
     }
 
     private void addActionListener()
     {
-        queryOptionbtn.addActionListener(e ->
-        {
-            contractDetailsList.clear();
+        queryOptionbtn.addActionListener(e -> {
             expireDataComb.removeAllItems();
-            reqid = queryOptionChain();
+            SDataManager.getInstance().getSymbol().queryOptionChain();  // 查询期权链
         });
 
-        expireDataComb.addItemListener(e ->
-        {
+        expireDataComb.addItemListener(e -> {
             onExpireDateChanged(e);
         });
 
@@ -91,41 +77,16 @@ public class SExpireDatePnl extends JPanel
             Object selecteddate = expireDataComb.getSelectedItem();
             if (selecteddate instanceof String)
             {
-                Map<Double, List<ContractDetails>> strike2ContractDtalsLst = new HashMap<>();
-                double curSymbolRealPrice = 249.5;  // 需要用一个方法获取当前symbol的价格
-                List<ContractDetails> ctrdetailLst = day2CtrdMap.get(selecteddate);
-
-                if (notNullAndEmptyCollection(ctrdetailLst))
-                {
-                    for (ContractDetails ctrDtails : ctrdetailLst)
-                    {
-                        Double strike = ctrDtails.contract().strike();
-                        if (Double.compare(Math.abs(curSymbolRealPrice - strike), 3.0) == -1)
-                        {
-                            List<ContractDetails> contractDetailsLst = strike2ContractDtalsLst.get(strike);
-                            if (contractDetailsLst == null)
-                            {
-                                contractDetailsLst = new ArrayList<>();
-                                strike2ContractDtalsLst.put(strike, contractDetailsLst);
-                            }
-                            contractDetailsLst.add(ctrDtails);
-                        }
-                    }
-                }
+                String expireDay = (String) selecteddate;
+                Map<Double, List<ContractDetails>> strike2ContractDtalsLst = SDataManager.getInstance().getSymbol()
+                                                                                         .getStrike2ContractDtalsLst(
+                                                                                                 expireDay);
                 // 发送构造好的当前期权链的消息
                 TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(new MBAOptionChainMap(strike2ContractDtalsLst));
             }
         }
     }
 
-    /**
-     * 查询期权链
-     */
-    private int queryOptionChain()
-    {
-        int tickID = SDataManager.getInstance().queryOptionChain();
-        return tickID;
-    }
 
     private void setExpireDataComb()
     {
@@ -148,84 +109,31 @@ public class SExpireDatePnl extends JPanel
         add(queryOptionbtn);
     }
 
-    ////////////////////////////////////////////////////////////
-    // 接收期权链消息过滤器
-    static public class optionChainFilter implements IMessageFilter<AnswerObj>
+    /////////////////////////////
+    // 接收期权链到期日期的过滤器
+    static public class optionExpireDayFilter implements IMessageFilter<MBAOptionExpireDayList>
     {
         @Override
-        public boolean accepts(AnswerObj msg, SubscriptionContext subscriptionContext)
+        public boolean accepts(MBAOptionExpireDayList msg, SubscriptionContext subscriptionContext)
         {
-            return msg.getReqid() == reqid;
+            return msg != null;
         }
     }
 
-    // 连接消息处理器
-    @Handler(filters = {@Filter(optionChainFilter.class)})
-    private void getOptionChain(AnswerObj msg)
+    // 处理期权到期日的处理器
+    @Handler(filters = {@Filter(optionExpireDayFilter.class)})
+    private void proccessOptionExpireDays(MBAOptionExpireDayList msg)
     {
-        Object obj = msg.getAnswerObj();
-        if (obj instanceof ContractDetails)
+        expireDataComb.removeAllItems();
+        if (msg != null && msg.optionExpireDayList != null)
         {
-            contractDetailsList.add((ContractDetails) obj);
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////
-
-    // 接收查询contractDetail完毕的过滤器
-    static public class contractDetailEndFilter implements IMessageFilter<String>
-    {
-        @Override
-        public boolean accepts(String msg, SubscriptionContext subscriptionContext)
-        {
-            if (msg.startsWith(AK_CONTRACT_DETAIL_END))
-            {
-                return String.valueOf(reqid).equals(getAKmsg(AK_CONTRACT_DETAIL_END, msg));
-            }
-            return false;
-        }
-    }
-
-    @Handler(filters = {@Filter(contractDetailEndFilter.class)})
-    private void getContractDetailend(String msg)
-    {
-        if (day2CtrdMap == null)
-        {
-            day2CtrdMap = new HashMap<>();
-        } else
-        {
-            day2CtrdMap.clear();
-        }
-
-        if (notNullAndEmptyCollection(contractDetailsList))
-        {
-            for (ContractDetails ctrd : contractDetailsList)
-            {
-                String lastDay = ctrd.contract().lastTradeDateOrContractMonth();
-                if (day2CtrdMap.containsKey(lastDay))
-                {
-                    day2CtrdMap.get(lastDay).add(ctrd);
-                } else
-                {
-                    List<ContractDetails> ctrLst = new ArrayList<>();
-                    ctrLst.add(ctrd);
-                    day2CtrdMap.put(lastDay, ctrLst);
-                }
-            }
-        }
-        if (notNullAndEmptyMap(day2CtrdMap))
-        {
-            List<String> dateLst = new ArrayList<>(day2CtrdMap.keySet());
-            Collections.sort(dateLst);
-            expireDataComb.removeAllItems();
-            for (String day : dateLst)
+            for (String day : msg.optionExpireDayList)
             {
                 expireDataComb.addItem(day);
             }
         }
-
-        int a = 1;
     }
 
-
 }
+
+

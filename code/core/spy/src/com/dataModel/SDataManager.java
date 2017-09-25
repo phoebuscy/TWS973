@@ -146,29 +146,6 @@ public class SDataManager implements EWrapper
     }
 
 
-    // 查询期权链
-    public int queryOptionChain()
-    {
-        String symbol = "SPY";
-        if (notNullAndEmptyStr(symbol))
-        {
-            Contract contract = new Contract();
-            contract.conid(0);
-            contract.symbol(symbol);
-            contract.secType("OPT");
-            contract.lastTradeDateOrContractMonth(getSysYear());  // 获取当前年份 如：2017
-            contract.strike(0.0);
-            contract.exchange("SMART");
-            contract.currency("USD");
-
-            int tickID = getReqId();
-            m_client.reqContractDetails(tickID, contract);
-            return tickID;
-        }
-        return -1;
-    }
-
-
     public void orderTick()
     {
         Contract contract = new Contract();
