@@ -209,7 +209,7 @@ public class SDataManager implements EWrapper
     @Override
     public void tickSize(int tickerId, int field, int size)
     {
-
+        int a = 1;
     }
 
     @Override
@@ -224,6 +224,7 @@ public class SDataManager implements EWrapper
                                       double theta,
                                       double undPrice)
     {
+        int a = 1;
 
     }
 

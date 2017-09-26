@@ -75,6 +75,30 @@ public class Symbol
         return symbolRealPrice;
     }
 
+    public int reqOptionMktData(Contract contract)
+    {
+        EClientSocket m_client = dataManager.getM_client();
+        if (m_client != null && contract != null)
+        {
+            int reqId = getReqId();
+            String genericTickList = "";
+            boolean snapshot = false;
+            boolean regulatorySnaphsot = false;
+            m_client.reqMktData( reqId, contract, genericTickList, snapshot, regulatorySnaphsot, Collections.emptyList() );
+            return reqId;
+        }
+        return -1;
+    }
+
+    public void cancelMktData(int reqId)
+    {
+        EClientSocket m_client = dataManager.getM_client();
+        if (m_client != null && reqId > 0)
+        {
+            m_client.cancelMktData(reqId);
+        }
+    }
+
     public void querySymbolRealPrice()
     {
         EClientSocket m_client = dataManager.getM_client();
