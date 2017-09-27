@@ -5,6 +5,7 @@ import com.dataModel.Symbol;
 import com.dataModel.mbassadorObj.MBAOptionChainMap;
 import com.dataModel.mbassadorObj.MBAtickPrice;
 import com.ib.client.ContractDetails;
+import com.ib.client.TickType;
 import com.ib.client.Types;
 import com.table.SOptionLinkTable;
 import com.table.TCyTableModel;
@@ -243,15 +244,36 @@ public class SOptionLinkTablePnl extends JPanel
         TCyTableModel cyTableModel = (TCyTableModel) optionLinkTable.getModel();
         ContractDetails contractDetails = reqID2ContractsMap.get(msg.tickerId);
         int rowIndex = cyTableModel.getRowIndexByUserObj(contractDetails);
-        if(rowIndex >= 0)
+        if (rowIndex >= 0)
         {
-            if(msg.field == 1) // 买价
+            TickType tickType = TickType.get(msg.field);
+            int colIndex = -1;
+            switch (tickType)
             {
-                optionLinkTable.setValueAt(rowIndex, 6, msg.price);
+                case BID:
+                case DELAYED_BID:
+                    colIndex = 8;
+                    break;
+                case ASK:
+                case DELAYED_ASK:
+                    colIndex = 7;
+                    break;
+                case LAST:
+                case DELAYED_LAST:
+                    colIndex = 2;
+                    break;
+                case OPEN:
+                case DELAYED_OPEN:
+                    colIndex = 3;
+                    break;
+                case CLOSE:
+                case DELAYED_CLOSE:
+                    colIndex = 4;
+                    break;
             }
-            else if(msg.field == 2) // 卖价
+            if (colIndex != -1)
             {
-                optionLinkTable.setValueAt(rowIndex, 5, msg.price);
+                optionLinkTable.setValueAt(rowIndex, colIndex, msg.price);
             }
         }
     }

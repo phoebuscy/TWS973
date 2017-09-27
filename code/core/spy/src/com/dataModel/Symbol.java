@@ -36,14 +36,13 @@ public class Symbol
 {
 
     private String symbolVal = "";                 // 对象名称
-    private int querySymbolRealPriceTickid = -1;   // 查询symbol实时价格的tickid，用于接收实时数据和取消订阅之用
+    private static int querySymbolRealPriceTickid = -1;   // 查询symbol实时价格的tickid，用于接收实时数据和取消订阅之用
     private SDataManager dataManager;
     private double symbolRealPrice = 0.0;          // symbol的实时价格
     private static int queryOptionChainReqId = -1; // 查询期权链的reqid
     private List<ContractDetails> contractDetailsList = new ArrayList<>();
     private Map<String, List<ContractDetails>> day2CtrdMap = new HashMap<>();
     private List<String> optionExpireDayLst = new ArrayList<>();   // 排序的期权结束日期
-
 
 
     public Symbol(SDataManager dataManager)
@@ -84,7 +83,12 @@ public class Symbol
             String genericTickList = "";
             boolean snapshot = false;
             boolean regulatorySnaphsot = false;
-            m_client.reqMktData( reqId, contract, genericTickList, snapshot, regulatorySnaphsot, Collections.emptyList() );
+            m_client.reqMktData(reqId,
+                                contract,
+                                genericTickList,
+                                snapshot,
+                                regulatorySnaphsot,
+                                Collections.emptyList());
             return reqId;
         }
         return -1;
@@ -177,8 +181,6 @@ public class Symbol
     }
 
 
-
-
     //------------------------------ 以下是处理动态返回的数据-------------------------------
 
 
@@ -188,7 +190,7 @@ public class Symbol
         @Override
         public boolean accepts(MBAtickPrice msg, SubscriptionContext subscriptionContext)
         {
-            return msg != null && msg.tickerId > 0;
+            return msg.tickerId == querySymbolRealPriceTickid;
         }
     }
 
@@ -196,9 +198,13 @@ public class Symbol
     @Handler(filters = {@Filter(recvSymbolRealPriceFilter.class)})
     private void getSymbolRealPrice(MBAtickPrice msg)
     {
-        symbolRealPrice = msg.price;
-        // Symbol发布数据
-        TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBASymbolRealPrice(symbolRealPrice));
+        //   1 = 买价   2 = 卖价   4 = 最后价  6 = 最高价   7 = 最低价      9 = 收盘价
+        if(msg.field == 4)
+        {
+            symbolRealPrice = msg.price;
+            // Symbol发布数据
+            TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBASymbolRealPrice(symbolRealPrice));
+        }
     }
 
 
@@ -243,7 +249,8 @@ public class Symbol
         if (day2CtrdMap == null)
         {
             day2CtrdMap = new HashMap<>();
-        } else
+        }
+        else
         {
             day2CtrdMap.clear();
         }
@@ -256,7 +263,8 @@ public class Symbol
                 if (day2CtrdMap.containsKey(lastDay))
                 {
                     day2CtrdMap.get(lastDay).add(ctrd);
-                } else
+                }
+                else
                 {
                     List<ContractDetails> ctrLst = new ArrayList<>();
                     ctrLst.add(ctrd);
@@ -273,7 +281,6 @@ public class Symbol
         }
         int a = 1;
     }
-
 
 
 }

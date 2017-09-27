@@ -231,13 +231,14 @@ public class SDataManager implements EWrapper
     @Override
     public void tickGeneric(int tickerId, int tickType, double value)
     {
+        int a = 1;
 
     }
 
     @Override
     public void tickString(int tickerId, int tickType, String value)
     {
-
+        int a = 1;
     }
 
     @Override
@@ -251,7 +252,7 @@ public class SDataManager implements EWrapper
                         double dividendImpact,
                         double dividendsToLastTradeDate)
     {
-
+        int a = 1;
     }
 
     @Override
@@ -355,7 +356,7 @@ public class SDataManager implements EWrapper
     @Override
     public void updateMktDepth(int tickerId, int position, int operation, int side, double price, int size)
     {
-
+        int a = 1;
     }
 
     @Override
@@ -367,7 +368,7 @@ public class SDataManager implements EWrapper
                                  double price,
                                  int size)
     {
-
+        int a = 1;
     }
 
     @Override
@@ -472,7 +473,7 @@ public class SDataManager implements EWrapper
                             double wap,
                             int count)
     {
-
+        int a = 1;
     }
 
     @Override
