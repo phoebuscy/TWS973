@@ -7,6 +7,7 @@ import com.dataModel.mbassadorObj.MBAtickPrice;
 import com.ib.client.Contract;
 import com.ib.client.ContractDetails;
 import com.ib.client.EClientSocket;
+import com.ib.client.TagValue;
 import com.utils.TMbassadorSingleton;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +27,7 @@ import static com.utils.TPubUtil.getAKmsg;
 import static com.utils.TPubUtil.notNullAndEmptyCollection;
 import static com.utils.TPubUtil.notNullAndEmptyMap;
 import static com.utils.TStringUtil.notNullAndEmptyStr;
+import static com.utils.TStringUtil.nullOrEmptyStr;
 
 /**
  * 对象类,如SPY
@@ -178,6 +180,71 @@ public class Symbol
             }
         }
         return strike2ContractDtalsLst;
+    }
+
+    /**
+     * 获取历史数据 （当单位选 秒 时，最小时间bar为5秒）
+     * 例如：查询 spy option  的历史数据 ，其 Contract 如下(即查询回来的Contract)
+     * Contract optCtr = new Contract();
+     optCtr.conid(289715299);
+     optCtr.symbol("SPY");
+     optCtr.secType(Types.SecType.OPT);
+     optCtr.lastTradeDateOrContractMonth("20171006");
+     optCtr.strike(253.5);
+     optCtr.right(Types.Right.Call);
+     optCtr.multiplier("100");
+     optCtr.exchange("SMART");
+     optCtr.currency("USD");
+     optCtr.localSymbol("SPY  171006C00253500");
+     optCtr.tradingClass("SPY");
+     optCtr.includeExpired(false);
+     *  注意： m_client.reqHistoricalData 的参数中
+     *  endDateTime 格式为：20171006 23:59:00
+     *  durationStr 格式为：10000 S
+     *  barSize  格式为：10 secs
+     *  whatToShow 格式为：TRADES
+     *  useRTH  格式为： rthOnly ? 1 : 0
+     *  formatDate 格式为：2
+     *  chartOptions 格式为： Collections.emptyList()
+     *
+     * @param symbol
+     * @param endDataTime
+     * @param durationStr
+     * @param barSize
+     */
+    public void reqHistoryDatas(String symbol, String endDataTime, String durationStr, String barSize)
+    {
+        EClientSocket m_client = dataManager.getM_client();
+        if (m_client != null && notNullAndEmptyStr(symbolVal))
+        {
+            String t_symbol = nullOrEmptyStr(symbol) ? "SPY" : symbol;
+            String t_endDataTime = nullOrEmptyStr(endDataTime) ? "20170726 12:00:00" : endDataTime;
+            String t_durationStr = nullOrEmptyStr(durationStr) ? "1 D" : durationStr;
+            String t_barSize = nullOrEmptyStr(barSize) ? "1 minute" : barSize;
+
+            Contract contract = new Contract();
+            contract.conid(0);
+            contract.symbol(t_symbol);
+            contract.secType("STK");
+            contract.exchange("SMART");
+            contract.primaryExch("ISLAND");
+            contract.currency("USD");
+
+            String whatToShow = "TRADES";
+            int useRTH = 0;
+            int formatData = 2;
+            List<TagValue> tagValueList = new ArrayList<>();
+
+            m_client.reqHistoricalData(getReqId(),
+                                       contract,
+                                       t_endDataTime,
+                                       t_durationStr,
+                                       t_barSize,
+                                       whatToShow,
+                                       useRTH,
+                                       formatData,
+                                       tagValueList);
+        }
     }
 
 

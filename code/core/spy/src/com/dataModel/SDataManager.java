@@ -19,6 +19,7 @@ import com.ib.client.OrderState;
 import com.ib.client.SoftDollarTier;
 import com.ib.client.TagValue;
 import com.ib.client.TickAttr;
+import com.ib.client.TickType;
 import com.utils.TMbassadorSingleton;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -158,51 +159,18 @@ public class SDataManager implements EWrapper
         m_client.reqMktData(getReqId(), contract, "mdoff,292", false, false, null);
     }
 
-    /**
-     * 获取历史数据
-     *
-     * @param symbol
-     * @param endDataTime
-     * @param durationStr
-     * @param barSize
-     */
-    public void reqHistoryDatas(String symbol, String endDataTime, String durationStr, String barSize)
-    {
-        String t_symbol = nullOrEmptyStr(symbol) ? "SPY" : symbol;
-        String t_endDataTime = nullOrEmptyStr(endDataTime) ? "20170726 12:00:00" : endDataTime;
-        String t_durationStr = nullOrEmptyStr(durationStr) ? "1 D" : durationStr;
-        String t_barSize = nullOrEmptyStr(barSize) ? "1 minute" : barSize;
-
-        Contract contract = new Contract();
-        contract.conid(0);
-        contract.symbol(t_symbol);
-        contract.secType("STK");
-        contract.exchange("SMART");
-        contract.primaryExch("ISLAND");
-        contract.currency("USD");
-
-        String whatToShow = "TRADES";
-        int useRTH = 0;
-        int formatData = 2;
-        List<TagValue> tagValueList = new ArrayList<>();
-
-        m_client.reqHistoricalData(getReqId(),
-                                   contract,
-                                   t_endDataTime,
-                                   t_durationStr,
-                                   t_barSize,
-                                   whatToShow,
-                                   useRTH,
-                                   formatData,
-                                   tagValueList);
-    }
-
 
     @Override
     public void tickPrice(int tickerId, int field, double price, TickAttr attrib)
     {
         MBAtickPrice mbAtickPrice = new MBAtickPrice(tickerId,field,price,attrib);
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(mbAtickPrice);
+
+        TickType tickType = TickType.get(field);
+        if(tickType == TickType.OPEN)
+        {
+            int a = 1;
+        }
 
     }
 
@@ -224,21 +192,33 @@ public class SDataManager implements EWrapper
                                       double theta,
                                       double undPrice)
     {
-        int a = 1;
+        TickType tickType = TickType.get(field);
+        if(tickType == TickType.OPEN)
+        {
+            int a = 1;
+        }
 
     }
 
     @Override
     public void tickGeneric(int tickerId, int tickType, double value)
     {
-        int a = 1;
+        TickType tickT = TickType.get(tickType);
+        if(tickT == TickType.OPEN)
+        {
+            int a = 1;
+        }
 
     }
 
     @Override
     public void tickString(int tickerId, int tickType, String value)
     {
-        int a = 1;
+        TickType tickT = TickType.get(tickType);
+        if(tickT == TickType.OPEN)
+        {
+            int a = 1;
+        }
     }
 
     @Override
