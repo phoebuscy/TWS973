@@ -26,7 +26,7 @@ public class STopoFramContentPnl extends JPanel
         setLayout(new BorderLayout());
         Point parentWinLocation = parentWin.getLocation();  // getLocation是获取相对于父窗口的位置
 
-        // 构造左边面板
+        // 构造左边显示数据面板
         JSplitPane leftSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         leftSplitPane.setDividerSize(4);
         Dimension leftSplitPanDim = getDimension(parentWin.getSize(), 0.5, 1.0);
