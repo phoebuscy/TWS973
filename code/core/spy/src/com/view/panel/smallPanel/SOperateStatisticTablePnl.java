@@ -1,11 +1,13 @@
 package com.view.panel.smallPanel;
 
+import com.utils.TConst;
 import javax.swing.*;
 import javax.swing.table.TableModel;
 import java.awt.*;
 
 import static com.utils.SUtil.getDimension;
 import static com.utils.SUtil.setColumWidth;
+import static com.utils.TFileUtil.getConfigValue;
 
 /**
  * Created by caiyong on 2016/12/25.
@@ -44,7 +46,14 @@ public class SOperateStatisticTablePnl extends JPanel
 
     private JTable crtTable()
     {
-        String[] columnNames = {"标的","买价", "卖价", "数量","盈亏", "时间"};
+        String symbol = getConfigValue("symbol", TConst.CONFIG_I18N_FILE); // 标的
+        String buyprice = getConfigValue("buy.price", TConst.CONFIG_I18N_FILE); // 买价
+        String saleprice  = getConfigValue("sale.price", TConst.CONFIG_I18N_FILE); // 卖家
+        String count = getConfigValue("count", TConst.CONFIG_I18N_FILE); // 数量
+        String yinorkui = getConfigValue("yin.or.kui", TConst.CONFIG_I18N_FILE); // 盈亏/
+        String time = getConfigValue("time", TConst.CONFIG_I18N_FILE); // 时间
+
+        String[] columnNames = {symbol,buyprice,saleprice,count,yinorkui, time};
         Object[][] data = {
                 {"SPY 20161116 215.5 PUT", 1.50, 2.50, 10, 100, "201610122330"},
                 {"SPY 20161116 215.5 PUT", 1.50, 2.50, 10, 100, "201610122330"},

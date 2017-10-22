@@ -3,11 +3,13 @@ package com.view.panel.smallPanel;
 import com.utils.Cst;
 import com.utils.GBC;
 
+import com.utils.TConst;
 import javax.swing.*;
 import java.awt.*;
 
 import static com.utils.SUtil.isIntNumeric;
 import static com.utils.SUtil.isIntOrDoubleNumber;
+import static com.utils.TFileUtil.getConfigValue;
 
 /**
  * Created by caiyong on 2016/12/25.
@@ -42,10 +44,10 @@ public class SStatisticInfoPnl extends JPanel
     private void buildGUI()
     {
         setLayout(new GridBagLayout());
-        setBorder(BorderFactory.createTitledBorder("统计"));
+        setBorder(BorderFactory.createTitledBorder(getConfigValue("statistics",TConst.CONFIG_I18N_FILE))); // 统计
 
-        JLabel label1 = new JLabel("当日操作次数：");
-        JLabel label2 = new JLabel("当日浮动盈利：");
+        JLabel label1 = new JLabel(getConfigValue("cur.day.operate.count",TConst.CONFIG_I18N_FILE));//当日操作次数
+        JLabel label2 = new JLabel(getConfigValue("cur.day.fd.provice", TConst.CONFIG_I18N_FILE)); //"当日浮动盈利
         label1.setFont(new Font("Dialog", 1, 15));
         label2.setFont(new Font("Dialog", 1, 15));
         operateCountLabel.setFont(new Font("Dialog", 1, 15));

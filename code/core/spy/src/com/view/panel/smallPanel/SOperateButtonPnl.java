@@ -1,6 +1,7 @@
 package com.view.panel.smallPanel;
 
 import com.utils.Cst;
+import com.utils.TConst;
 import com.utils.TMbassadorSingleton;
 import com.enums.SCallOrPut;
 import com.utils.GBC;
@@ -16,6 +17,7 @@ import java.awt.event.ActionListener;
 
 import static com.utils.SUtil.getDimension;
 import static com.utils.SUtil.isIntOrDoubleNumber;
+import static com.utils.TFileUtil.getConfigValue;
 import static com.utils.TIconUtil.getProjIcon;
 
 /**
@@ -68,7 +70,7 @@ public class SOperateButtonPnl extends JPanel
         public ChangeOperateButton()
         {
             setIcon(changeIco);
-            setText("平/反");
+            setText(getConfigValue("ping.and.fan",TConst.CONFIG_I18N_FILE)); // 平/反
             addActionListener(new ActionListener()
             {
                 @Override
@@ -148,14 +150,14 @@ public class SOperateButtonPnl extends JPanel
             setPreferredSize(new Dimension(100,15));
             setFont(new java.awt.Font("Dialog", 1, 15));
             setIcon(waitIco);
-            setText(callOrPut.toString() + "开仓");
+            setText(callOrPut.toString() + getConfigValue("begin.buy",TConst.CONFIG_I18N_FILE));
             setActionListerner();
         }
 
         private void initIcon()
         {
             setIcon(waitIco);
-            setText(callOrPut.toString() + "开仓");
+            setText(callOrPut.toString() + getConfigValue("begin.buy", TConst.CONFIG_I18N_FILE));
         }
 
         public void setProfit(String realAddStr, String percentStr)
@@ -185,7 +187,8 @@ public class SOperateButtonPnl extends JPanel
                 color = Cst.GreenColor;
             }
             setForeground(color);
-            String txt = String.format("%.2f  %.2f%% 平", realAdd, percent);
+            String beginClose = getConfigValue("begin.close", TConst.CONFIG_I18N_FILE); // 平
+            String txt = String.format("%.2f  %.2f%% %s", realAdd, percent, beginClose);
             setText(txt);
         }
 

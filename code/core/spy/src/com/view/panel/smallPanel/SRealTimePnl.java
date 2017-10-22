@@ -35,7 +35,9 @@ public class SRealTimePnl extends JPanel
 
     private ChartPanel createChartPnl(String chartContent, String title, String yaxisName)
     {
-        return new ChartPanel(createChart(chartContent,title,yaxisName));
+        ChartPanel chartPanel = new ChartPanel(createChart(chartContent,title,yaxisName));
+        chartPanel.setMouseZoomable(false);
+        return chartPanel;
     }
 
     private JFreeChart createChart(String chartContent, String title, String yaxisName)

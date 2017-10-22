@@ -47,7 +47,7 @@ public class SOptionLinkTablePnl extends JPanel
     private SOptionLinkTable optionLinkTable;
     private static Map<Integer, ContractDetails> reqID2ContractsMap = new HashMap<>();  // 查询买卖价的市场数据reqid和contract的map
 
-    public JButton testButton = new JButton("期权表格测试");
+    public JButton testButton = new JButton( getConfigValue("option.table.test", TConst.CONFIG_I18N_FILE)); //"期权表格测试"
 
     public SOptionLinkTablePnl(Component parentWin)
     {
@@ -90,7 +90,6 @@ public class SOptionLinkTablePnl extends JPanel
                 {
                     // test 临时测试代码
                     //    optionLinkTable.updateData(null);
-
                     Random random = new Random();
                     boolean b = random.nextBoolean();
                     if (b)
