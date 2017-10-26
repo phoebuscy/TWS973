@@ -5,22 +5,20 @@ import com.dataModel.Symbol;
 import com.dataModel.mbassadorObj.MBASymbolRealPrice;
 import com.utils.TConst;
 import com.utils.TMbassadorSingleton;
-import net.engio.mbassy.listener.Filter;
-import net.engio.mbassy.listener.Handler;
-import net.engio.mbassy.listener.IMessageFilter;
-import net.engio.mbassy.subscription.SubscriptionContext;
-
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
-
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import net.engio.mbassy.listener.Filter;
+import net.engio.mbassy.listener.Handler;
+import net.engio.mbassy.listener.IMessageFilter;
+import net.engio.mbassy.subscription.SubscriptionContext;
 import static com.utils.SUtil.getDimension;
 import static com.utils.TConst.SYMBOL_BUS;
 import static com.utils.TFileUtil.getConfigValue;
@@ -32,11 +30,23 @@ public class SSymbolePanel extends JPanel
 {
     private Component parentWin;
     private Dimension parentDimension;
-
-    private JLabel symbol = new JLabel("Symbol:");
+    private JLabel symbolStr = new JLabel("Symbol:");
     private JTextField symbolText = new JTextField("spy", 10);
     private JButton btnQuery = crtQueryBtn(); // 查询实时价格按钮
     private JLabel price = new JLabel("225.71    +0.33    +0.15%:");
+
+    private double realTimePrice = 0.0; // 当前实时价格
+    private double todayOpenPrice = 258.2; // 今开价格
+    private double yesterdayClosePrice = 261.2;  // 昨收价格
+
+
+    private final String curPriceStr = getConfigValue("current.price", TConst.CONFIG_I18N_FILE);  // 最新价
+    private final String yesterdayCloseStr = getConfigValue("yesterday.close", TConst.CONFIG_I18N_FILE);  // 昨收
+    private final String todayOpenStr = getConfigValue("today.open", TConst.CONFIG_I18N_FILE); // 今开
+    private final String zdeStr = getConfigValue("zde", TConst.CONFIG_I18N_FILE); // 涨跌额
+    private final String zdfStr = getConfigValue("zdf", TConst.CONFIG_I18N_FILE);  // 涨跌幅
+
+    private Symbol symbol = SDataManager.getInstance().getSymbol();
 
     public SSymbolePanel(Component parentWin)
     {
@@ -45,7 +55,7 @@ public class SSymbolePanel extends JPanel
         parentDimension = parentWin.getSize();
         setDimension();
         buildGUI();
-        setPrice(257.8888, 3.2678);
+        setPrice(realTimePrice, todayOpenPrice, yesterdayClosePrice);
 
         // 订阅消息总线名称为 DATAMAAGER_BUS 的 消息
         TMbassadorSingleton.getInstance(SYMBOL_BUS).subscribe(this);
@@ -60,20 +70,34 @@ public class SSymbolePanel extends JPanel
     private void buildGUI()
     {
         setLayout(new FlowLayout(FlowLayout.LEFT, 15, 0));
-        add(symbol);
+        add(symbolStr);
         add(symbolText);
         add(btnQuery);
         add(price);
     }
 
-    public void setPrice(double currentPrice, double add)
+    public void setPrice(double realTimePrice, double todayOpenPrice, double yesterdayClosePrice)
     {
-        boolean addFlag = (add > 0.0) ? true : false;
-        String str = String.format("%.2f   %.2f   %.2f%%", currentPrice, add, add / currentPrice * 100);
+        double add = realTimePrice - yesterdayClosePrice;
+        double addRate = (realTimePrice != 0.0) ? add / realTimePrice * 100 : 0.0;
+
+        String str = String.format("%s:  %.2f    %s:  %.2f   %s: %.2f%%    %s: %.2f   %s: %.2f",
+                                   curPriceStr,
+                                   realTimePrice,
+                                   zdeStr,
+                                   add,
+                                   zdfStr,
+                                   addRate,
+                                   todayOpenStr,
+                                   todayOpenPrice,
+                                   yesterdayCloseStr,
+                                   yesterdayClosePrice);
+        // 当前价格 258.39   涨 1.23  涨幅 5.2%  今开 259.5  昨收 258.5
         price.setText(str);
         // “dialog”代表字体，1代表样式(1是粗体，0是平常的）15是字号设置字体
-        //price.setFont(new java.awt.Font("Dialog",   1,   15));
-        price.setForeground(addFlag ? Color.RED : Color.blue);
+        price.setFont(new java.awt.Font("Dialog", 1, 15));
+        Color backColor = (realTimePrice == 0.0) ? Color.black : (add > 0.0 ? Color.RED : Color.blue);
+        price.setForeground(backColor);
     }
 
     // 开始查询symbolText中的实时价格
@@ -85,11 +109,15 @@ public class SSymbolePanel extends JPanel
             @Override
             public void actionPerformed(ActionEvent e)
             {
+                realTimePrice = 0D;
+                todayOpenPrice = 0D;
+                yesterdayClosePrice = 0D;
+                setPrice(realTimePrice, todayOpenPrice, yesterdayClosePrice);
+
                 // 1: 查询当前symbol的实时价格
                 // 2: 查询期权链
                 // 3：默认查询最近期权链数据
-                Symbol symbol = SDataManager.getInstance().getSymbol();
-                if(symbol != null)
+                if (symbol != null)
                 {
                     symbol.cancelQuerySymbolRealPrice();
                     symbol.setSymbolVal(symbolText.getText().trim());
@@ -115,7 +143,9 @@ public class SSymbolePanel extends JPanel
     @Handler(filters = {@Filter(realPriceStatusFilter.class)})
     private void getRealPrice(MBASymbolRealPrice msg)
     {
-        setPrice(msg.symbolRealPrice, 0.0);
+        todayOpenPrice = symbol.getSymbolTodayOpenPrice();
+        yesterdayClosePrice = symbol.getSymbolYesterdayClosePrice();
+        setPrice(msg.symbolRealPrice, todayOpenPrice, yesterdayClosePrice);
     }
 
 }

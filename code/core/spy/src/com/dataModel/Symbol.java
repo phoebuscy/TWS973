@@ -8,6 +8,7 @@ import com.ib.client.Contract;
 import com.ib.client.ContractDetails;
 import com.ib.client.EClientSocket;
 import com.ib.client.TagValue;
+import com.ib.client.TickType;
 import com.utils.TMbassadorSingleton;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,7 +41,9 @@ public class Symbol
     private String symbolVal = "";                 // 对象名称
     private static int querySymbolRealPriceTickid = -1;   // 查询symbol实时价格的tickid，用于接收实时数据和取消订阅之用
     private SDataManager dataManager;
-    private double symbolRealPrice = 0.0;          // symbol的实时价格
+    private double symbolRealPrice = 0D;          // symbol的实时价格
+    private double symbolTodayOpenPrice = 0D;   // symbol 今开价格
+    private double symbolYesterdayClosePrice = 0D;  // symbol 昨收价格
     private static int queryOptionChainReqId = -1; // 查询期权链的reqid
     private List<ContractDetails> contractDetailsList = new ArrayList<>();
     private Map<String, List<ContractDetails>> day2CtrdMap = new HashMap<>();
@@ -74,6 +77,16 @@ public class Symbol
     public Double getSymbolRealPrice()
     {
         return symbolRealPrice;
+    }
+
+    public Double getSymbolYesterdayClosePrice()
+    {
+        return symbolYesterdayClosePrice;
+    }
+
+    public Double getSymbolTodayOpenPrice()
+    {
+        return symbolTodayOpenPrice;
     }
 
     public int reqOptionMktData(Contract contract)
@@ -266,11 +279,19 @@ public class Symbol
     private void getSymbolRealPrice(MBAtickPrice msg)
     {
         //   1 = 买价   2 = 卖价   4 = 最后价  6 = 最高价   7 = 最低价      9 = 收盘价
-        if(msg.field == 4)
+        if( msg.field == TickType.LAST.index())
         {
             symbolRealPrice = msg.price;
             // Symbol发布数据
             TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBASymbolRealPrice(symbolRealPrice));
+        }
+        else if(msg.field == TickType.OPEN.index())
+        {
+            symbolTodayOpenPrice = msg.price;
+        }
+        else if(msg.field == TickType.CLOSE.index())
+        {
+            symbolYesterdayClosePrice = msg.price;
         }
     }
 
