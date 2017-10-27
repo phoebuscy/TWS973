@@ -1,7 +1,12 @@
 package com.utils;
 
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -214,7 +219,7 @@ public class SUtil
             if (isIntOrDoubleNumber(oneNum) && isIntOrDoubleNumber(otherNum))
             {
                 double abs = Math.abs(Double.parseDouble(otherNum) - Double.parseDouble(oneNum));
-                return Double.compare(abs,betweendiff) == -1;
+                return Double.compare(abs, betweendiff) == -1;
             }
         }
         return false;
@@ -378,6 +383,39 @@ public class SUtil
         Calendar date = Calendar.getInstance();
         String year = String.valueOf(date.get(Calendar.YEAR));
         return year;
+    }
+
+
+    public static List<Date> getBeginEndDate()
+    {
+        List<Date> dateZonelst = new ArrayList<>();
+        LocalDateTime nowDateTime = LocalDateTime.now();
+        int nowYear = nowDateTime.getYear();
+        int nowMonth = nowDateTime.getMonthValue();
+        int nowDay = nowDateTime.getDayOfMonth();
+        int nowHour = nowDateTime.getHour();
+
+        int beginDay = nowHour > 21 ? nowDay : nowDateTime.plusDays(-1).getDayOfMonth();
+        LocalDateTime beginDateTime = LocalDateTime.of(nowYear, nowMonth, beginDay, 21, 30);
+        LocalDateTime endDateTime = beginDateTime.plusHours(6).plusMinutes(30);
+
+        Date begDate = changeToDate(beginDateTime);
+        Date endDate = changeToDate(endDateTime);
+        dateZonelst.add(begDate);
+        dateZonelst.add(endDate);
+        return dateZonelst;
+    }
+
+    public static Date changeToDate(LocalDateTime localDateTime)
+    {
+        if (localDateTime != null)
+        {
+            ZoneId zone = ZoneId.systemDefault();
+            Instant instant = localDateTime.atZone(zone).toInstant();
+            Date date = Date.from(instant);
+            return date;
+        }
+        return null;
     }
 
 
