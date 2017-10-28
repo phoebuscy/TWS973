@@ -2,6 +2,7 @@ package com.view.panel.smallPanel;
 
 import com.dataModel.SDataManager;
 import com.dataModel.Symbol;
+import com.dataModel.mbassadorObj.MBABeginQuerySymbol;
 import com.dataModel.mbassadorObj.MBASymbolRealPrice;
 import com.utils.TConst;
 import com.utils.TMbassadorSingleton;
@@ -32,7 +33,7 @@ public class SSymbolePanel extends JPanel
     private Dimension parentDimension;
     private JLabel symbolStr = new JLabel("Symbol:");
     private JTextField symbolText = new JTextField("spy", 10);
-    private JButton btnQuery = crtQueryBtn(); // 查询实时价格按钮
+    private JButton btnQuery = crtQueryBtn();                  // 查询实时价格按钮
     private JLabel price = new JLabel("225.71    +0.33    +0.15%:");
 
     private double realTimePrice = 0.0; // 当前实时价格
@@ -57,7 +58,7 @@ public class SSymbolePanel extends JPanel
         buildGUI();
         setPrice(realTimePrice, todayOpenPrice, yesterdayClosePrice);
 
-        // 订阅消息总线名称为 DATAMAAGER_BUS 的 消息
+        // 订阅消息总线名称为 SYMBOL_BUS 的 消息
         TMbassadorSingleton.getInstance(SYMBOL_BUS).subscribe(this);
     }
 
@@ -119,10 +120,16 @@ public class SSymbolePanel extends JPanel
                 // 3：默认查询最近期权链数据
                 if (symbol != null)
                 {
+                    String symbolVal = symbolText.getText().trim();
                     symbol.cancelQuerySymbolRealPrice();
-                    symbol.setSymbolVal(symbolText.getText().trim());
+                    symbol.setSymbolVal(symbolVal);
                     symbol.querySymbolRealPrice();
+
+                    // 发送开始查询symbol消息
+                    TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBABeginQuerySymbol(symbolVal));
                 }
+
+
             }
         });
         return btnQuery;

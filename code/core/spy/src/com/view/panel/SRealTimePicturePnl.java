@@ -1,29 +1,33 @@
 package com.view.panel;
 
+import com.dataModel.SDataManager;
+import com.dataModel.Symbol;
+import com.dataModel.mbassadorObj.MBABeginQuerySymbol;
 import com.dataModel.mbassadorObj.MBASymbolRealPrice;
 import com.utils.GBC;
 import com.utils.SUtil;
 import com.utils.TMbassadorSingleton;
 import com.view.panel.smallPanel.SRealTimePnl;
-
-import com.view.panel.smallPanel.SSymbolePanel;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridBagLayout;
 import java.util.Date;
 import java.util.List;
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JPanel;
 import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
 import org.jfree.data.Range;
 import static com.utils.TConst.SYMBOL_BUS;
+import static com.utils.TStringUtil.notNullAndEmptyStr;
 
 /**
  * Created by 123 on 2016/12/18.
  */
 public class SRealTimePicturePnl extends JPanel
 {
-    private Component parentWin;
+    private Symbol symbol = SDataManager.getInstance().getSymbol();
     private SRealTimePnl sSpyRealTimePnl = new SRealTimePnl("spy", new Dimension(100, 200));
     private SRealTimePnl sCallRealTimePnl = new SRealTimePnl("Call", new Dimension(100, 150));
     private SRealTimePnl sPutRealTimePnl = new SRealTimePnl("Put", new Dimension(100, 150));
@@ -43,7 +47,6 @@ public class SRealTimePicturePnl extends JPanel
         sSpyRealTimePnl.setXRange(beginDate, endDate);
 
         //   setBackground(Color.cyan);
-        this.parentWin = parentWin;
         parentDimension = parentWin.getSize();
         setDimension();
 
@@ -54,6 +57,29 @@ public class SRealTimePicturePnl extends JPanel
     private void setDimension()
     {
         setSize(SUtil.getDimension(parentDimension, 0.5, 1.0));
+    }
+
+    // 接收开始查询symbol的消息
+    static public class beginQuerySymbolFilter implements IMessageFilter<MBABeginQuerySymbol>
+    {
+        @Override
+        public boolean accepts(MBABeginQuerySymbol msg, SubscriptionContext subscriptionContext)
+        {
+            return  notNullAndEmptyStr(msg.getSymbol());
+        }
+    }
+
+    // 处理始查询symbol消息
+    @Handler(filters = {@Filter(beginQuerySymbolFilter.class)})
+    private void processBeginQuerySymbol(MBABeginQuerySymbol msg)
+    {
+        // 查询symbol的历史数据 （当前 或前一交易日的 5秒 历史数据）
+        if (symbol != null && notNullAndEmptyStr(msg.getSymbol()))
+        {
+            //此处需要计算出要查询历史数据的时间
+          //  symbol.reqHistoryDatas(msg.getSymbol(),);
+        }
+
     }
 
 
@@ -68,7 +94,7 @@ public class SRealTimePicturePnl extends JPanel
     }
 
     // 连接消息处理器
-    @Handler(filters = {@Filter(SSymbolePanel.realPriceStatusFilter.class)})
+    @Handler(filters = {@Filter(realPriceStatusFilter.class)})
     private void getRealPrice(MBASymbolRealPrice msg)
     {
         Range yRange = sSpyRealTimePnl.getYRange();
