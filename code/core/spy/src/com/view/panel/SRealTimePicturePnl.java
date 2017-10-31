@@ -19,6 +19,8 @@ import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
 import org.jfree.data.Range;
+import static com.utils.SUtil.changeToDate;
+import static com.utils.SUtil.getAmericaLocalDateTime;
 import static com.utils.TConst.SYMBOL_BUS;
 import static com.utils.TStringUtil.notNullAndEmptyStr;
 
@@ -76,8 +78,8 @@ public class SRealTimePicturePnl extends JPanel
         // 查询symbol的历史数据 （当前 或前一交易日的 5秒 历史数据）
         if (symbol != null && notNullAndEmptyStr(msg.getSymbol()))
         {
-            //此处需要计算出要查询历史数据的时间
-          //  symbol.reqHistoryDatas(msg.getSymbol(),);
+            //此处需要计算出要查询历史数据的时间,
+           // symbol.reqHistoryDatas(msg.getSymbol(),);
         }
 
     }
@@ -102,12 +104,12 @@ public class SRealTimePicturePnl extends JPanel
         Double lower = yRange.getLowerBound();
         Double upper = yRange.getUpperBound();
 
-        if (yRange == null || msg.symbolRealPrice < lower || (msg.symbolRealPrice - lower) > 0.5 ||
-            msg.symbolRealPrice > upper || (upper - msg.symbolRealPrice) > 1.5)
+        if (yRange == null || msg.symbolRealPrice < lower || (msg.symbolRealPrice - lower) > 0.6 ||
+            msg.symbolRealPrice > upper || (upper - msg.symbolRealPrice) > 0.6)
         {
-            sSpyRealTimePnl.setYRange(msg.symbolRealPrice - 1.0, msg.symbolRealPrice + 1.0);
+            sSpyRealTimePnl.setYRange(msg.symbolRealPrice - 0.5, msg.symbolRealPrice + 0.5);
         }
-        Date date = new Date();
+        Date date = changeToDate(getAmericaLocalDateTime());
         sSpyRealTimePnl.addValue(date, msg.symbolRealPrice);
         // msg.symbolRealPrice
 

@@ -1,9 +1,13 @@
 package com.utils;
 
 
+import java.time.DayOfWeek;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -23,6 +27,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static java.time.DayOfWeek.SATURDAY;
+import static java.time.DayOfWeek.SUNDAY;
 
 /**
  * Created by 123 on 2016/12/18.
@@ -35,8 +41,9 @@ public class SUtil
         String src = "10";
         String des = "1";
 
-        ReturnObj returnObj = getPercentValStr(src, des);
-        String ret = (String) returnObj.returnObj;
+        LocalDate  usadate = getAmericalLocalDate();
+
+        boolean ismdlt = isAmericanDaylightSavingTime(2017, 11, 6);
 
         double a = Double.parseDouble("2.2");
         double b = a;
@@ -385,25 +392,154 @@ public class SUtil
         return year;
     }
 
+    // 获取当前美国时间
+    public static LocalDateTime getAmericaLocalDateTime()
+    {
+        Instant timestamp = new Date().toInstant();
+        LocalDateTime usaLocalDateTime = LocalDateTime.ofInstant(timestamp, ZoneId.of("America/New_York"));
+        return usaLocalDateTime;
+
+    }
+
+    // 获取当前美国日期
+    public static LocalDate getAmericalLocalDate()
+    {
+        LocalDate usaLocalDate = LocalDate.now(ZoneId.of("America/New_York"));
+        return usaLocalDate;
+    }
+
+    // 美国股市放假时间
+    /*
+    2017年1月2日 ： 新年元旦次日，休市一天。
+　　2017年1月16日 ： 马丁-路德-金纪念日，休市一天。
+　　2017年2月20日 ： 华盛顿诞辰日（总统日），休市一天。
+　　2017年4月14日 ： 耶稣受难日，休市一天。
+　　2017年5月29日 ： 美国亡兵纪念日，休市一天。
+　　2017年7月4日 ： 美国独立日，休市一天。
+　　2017年9月4日 ： 美国的劳工日，休市一天。
+　　2017年11月23日 ： 感恩节，休市一天。
+　　2017年11月24日 ： 感恩节次日，休市三小时（即提前三小时收盘）。
+　　2017年12月25日 ： 圣诞节，休市一天。
+     */
+    public static boolean notOpenDay()
+    {
+        LocalDateTime nowDateTime = getAmericaLocalDateTime();
+        int m = nowDateTime.getMonthValue();
+        int d = nowDateTime.getDayOfMonth();
+        DayOfWeek dayOfWeek = nowDateTime.getDayOfWeek();
+        if ((m == 1 && d == 2) || (m == 1 && d == 16) || (m == 2 && d == 20) || (m == 4 && d == 14) ||
+            (m == 5 && d == 29) || (m == 7 && d == 4) || (m == 9 && d == 4) || (m == 11 && d == 23) ||
+            (m == 12 && d == 25) || SATURDAY.equals(dayOfWeek) || SUNDAY.equals(dayOfWeek))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    // 是否是感恩节:注意 2017年11月24日 ： 感恩节次日，休市三小时（即提前三小时收盘）。
+    public static boolean isGanEnJie()
+    {
+        LocalDateTime nowDateTime = getAmericaLocalDateTime();
+        int m = nowDateTime.getMonthValue();
+        int d = nowDateTime.getDayOfMonth();
+        return m == 11 && d == 24;
+
+    }
+
+    // 判断当前是否是开盘时间: 注意 2017年11月24日 ： 感恩节次日，休市三小时（即提前三小时收盘）。
+    public static boolean ifNowIsOpenTime()
+    {
+        if (!notOpenDay())
+        {
+            LocalDateTime nowDateTime = getAmericaLocalDateTime();
+            int year = nowDateTime.getYear();
+            int month = nowDateTime.getMonthValue();
+            int day = nowDateTime.getDayOfMonth();
+            int hour = nowDateTime.getHour();
+            int min = nowDateTime.getMinute();
+            boolean isAmericanDaylightSavingTime = isAmericanDaylightSavingTime(); // 是否是夏令时
+            if (isAmericanDaylightSavingTime)
+            {
+                if (isGanEnJie()) // 感恩节
+                {
+                    return nowDateTime.isAfter(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(9, 30))) &&
+                           nowDateTime.isBefore(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(13, 0)));
+                }
+                else
+                {
+                    return nowDateTime.isAfter(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(9, 30))) &&
+                           nowDateTime.isBefore(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(10, 0)));
+                }
+            }
+        }
+        return false;
+    }
+
+
+    // 判断美国是否是夏令时间：美国的夏令时从三月的第二个周日开始到十一月的第一个周日结束
+    public static boolean isAmericanDaylightSavingTime()
+    {
+        LocalDateTime nowDateTime = getAmericaLocalDateTime();
+        return isAmericanDaylightSavingTime(nowDateTime);
+    }
+
+    public static boolean isAmericanDaylightSavingTime(LocalDateTime localDateTime)
+    {
+        int nowYear = localDateTime.getYear();
+        LocalDateTime dltBeginDate = LocalDateTime.of(nowYear, 3, 1, 2, 0);
+        int sunday = 0;
+        do
+        {
+            dltBeginDate = dltBeginDate.plusDays(1);
+            if (SUNDAY.equals(dltBeginDate.getDayOfWeek()))
+            {
+                sunday++;
+            }
+        } while (sunday < 2);
+
+        LocalDateTime dltEndDate = LocalDateTime.of(nowYear, 11, 1, 2, 0);
+        sunday = 0;
+        do
+        {
+            dltEndDate = dltEndDate.plusDays(1);
+            if (SUNDAY.equals(dltEndDate.getDayOfWeek()))
+            {
+                sunday++;
+            }
+        } while (sunday < 1);
+        return localDateTime.isAfter(dltBeginDate) && localDateTime.isBefore(dltEndDate);
+    }
+
+    public static boolean isAmericanDaylightSavingTime(int year, int month, int day)
+    {
+        LocalDateTime localDateTime = LocalDateTime.of(year, month, day, 0, 0);
+        return isAmericanDaylightSavingTime(localDateTime);
+    }
+
 
     public static List<Date> getBeginEndDate()
     {
+        LocalDateTime openDateTime = LocalDateTime.of(getAmericalLocalDate(), LocalTime.of(9,30));
+        LocalDateTime closeDateTime = LocalDateTime.of(getAmericalLocalDate(), LocalTime.of(16,0));
+        Date begDate = changeToDate(openDateTime);
+        Date endDate = changeToDate(closeDateTime);
         List<Date> dateZonelst = new ArrayList<>();
-        LocalDateTime nowDateTime = LocalDateTime.now();
-        int nowYear = nowDateTime.getYear();
-        int nowMonth = nowDateTime.getMonthValue();
-        int nowDay = nowDateTime.getDayOfMonth();
-        int nowHour = nowDateTime.getHour();
-
-        int beginDay = nowHour > 21 ? nowDay : nowDateTime.plusDays(-1).getDayOfMonth();
-        LocalDateTime beginDateTime = LocalDateTime.of(nowYear, nowMonth, beginDay, 21, 30);
-        LocalDateTime endDateTime = beginDateTime.plusHours(6).plusMinutes(30);
-
-        Date begDate = changeToDate(beginDateTime);
-        Date endDate = changeToDate(endDateTime);
         dateZonelst.add(begDate);
         dateZonelst.add(endDate);
+
         return dateZonelst;
+    }
+
+
+    public static Date changeToDate(ZonedDateTime zonedDateTime)
+    {
+        if (zonedDateTime != null)
+        {
+            Instant instant = zonedDateTime.toInstant();
+            Date date = Date.from(instant);
+            return date;
+        }
+        return null;
     }
 
     public static Date changeToDate(LocalDateTime localDateTime)

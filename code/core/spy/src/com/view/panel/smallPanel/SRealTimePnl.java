@@ -1,10 +1,11 @@
 package com.view.panel.smallPanel;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.ZonedDateTime;
+import java.util.Date;
+import javax.swing.JPanel;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -14,11 +15,6 @@ import org.jfree.data.Range;
 import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
-
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.util.Date;
 
 public class SRealTimePnl extends JPanel
 {
@@ -47,7 +43,7 @@ public class SRealTimePnl extends JPanel
 
     public void setXRange(Date begin, Date end)
     {
-        if ( jfreechart != null && begin != null && end != null)
+        if (jfreechart != null && begin != null && end != null)
         {
             // X坐标设定
             XYPlot xyplot = jfreechart.getXYPlot();
@@ -56,13 +52,12 @@ public class SRealTimePnl extends JPanel
             xAxis.setAutoRange(false);
             xAxis.setRange(begin.getTime(), end.getTime());
 
-
         }
     }
 
     public void setYRange(Double lower, Double upper)
     {
-        if(jfreechart != null && lower != null && upper != null)
+        if (jfreechart != null && lower != null && upper != null)
         {
             XYPlot xyplot = jfreechart.getXYPlot();
             // 设置Y轴范围
@@ -76,7 +71,7 @@ public class SRealTimePnl extends JPanel
 
     public Range getYRange()
     {
-        if(jfreechart != null)
+        if (jfreechart != null)
         {
             XYPlot xyplot = jfreechart.getXYPlot();
             ValueAxis yAxis = xyplot.getRangeAxis();
@@ -140,7 +135,6 @@ public class SRealTimePnl extends JPanel
             timeSeries.add(new Millisecond(date), value);
         }
     }
-
 
 
 }
