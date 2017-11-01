@@ -45,6 +45,9 @@ public class SUtil
 
         boolean ismdlt = isAmericanDaylightSavingTime(2017, 11, 6);
 
+        LocalDateTime bjTm = LocalDateTime.of(2017,10,31,23,20);
+        LocalDateTime usaTm = changeToUSADateTime(bjTm);
+
         double a = Double.parseDouble("2.2");
         double b = a;
 
@@ -553,6 +556,18 @@ public class SUtil
         }
         return null;
     }
+
+    public static LocalDateTime changeToUSADateTime(LocalDateTime localDateTime)
+    {
+        if (localDateTime != null)
+        {
+            ZoneId zone = ZoneId.systemDefault();
+            Instant instant = localDateTime.atZone(zone).toInstant();
+            return LocalDateTime.ofInstant(instant, ZoneId.of("America/New_York"));
+        }
+        return null;
+    }
+
 
 
 }
