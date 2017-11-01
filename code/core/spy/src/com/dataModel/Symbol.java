@@ -9,7 +9,10 @@ import com.ib.client.ContractDetails;
 import com.ib.client.EClientSocket;
 import com.ib.client.TagValue;
 import com.ib.client.TickType;
+import com.ib.client.Types;
 import com.utils.TMbassadorSingleton;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -199,41 +202,45 @@ public class Symbol
      * 获取历史数据 （当单位选 秒 时，最小时间bar为5秒）
      * 例如：查询 spy option  的历史数据 ，其 Contract 如下(即查询回来的Contract)
      * Contract optCtr = new Contract();
-     optCtr.conid(289715299);
-     optCtr.symbol("SPY");
-     optCtr.secType(Types.SecType.OPT);
-     optCtr.lastTradeDateOrContractMonth("20171006");
-     optCtr.strike(253.5);
-     optCtr.right(Types.Right.Call);
-     optCtr.multiplier("100");
-     optCtr.exchange("SMART");
-     optCtr.currency("USD");
-     optCtr.localSymbol("SPY  171006C00253500");
-     optCtr.tradingClass("SPY");
-     optCtr.includeExpired(false);
-     *  注意： m_client.reqHistoricalData 的参数中
-     *  endDateTime 格式为：20171006 23:59:00
-     *  durationStr 格式为：10000 S
-     *  barSize  格式为：10 secs
-     *  whatToShow 格式为：TRADES
-     *  useRTH  格式为： rthOnly ? 1 : 0
-     *  formatDate 格式为：2
-     *  chartOptions 格式为： Collections.emptyList()
+     * optCtr.conid(289715299);
+     * optCtr.symbol("SPY");
+     * optCtr.secType(Types.SecType.OPT);
+     * optCtr.lastTradeDateOrContractMonth("20171006");
+     * optCtr.strike(253.5);
+     * optCtr.right(Types.Right.Call);
+     * optCtr.multiplier("100");
+     * optCtr.exchange("SMART");
+     * optCtr.currency("USD");
+     * optCtr.localSymbol("SPY  171006C00253500");
+     * optCtr.tradingClass("SPY");
+     * optCtr.includeExpired(false);
+     * 注意： m_client.reqHistoricalData 的参数中
+     * endDateTime 格式为：20171006 23:59:00
+     * durationStr 格式为：10000 S
+     * barSize  格式为：10 secs
+     * whatToShow 格式为：TRADES
+     * useRTH  格式为： rthOnly ? 1 : 0
+     * formatDate 格式为：2
+     * chartOptions 格式为： Collections.emptyList()
      *
      * @param symbol
-     * @param endDataTime
-     * @param durationStr
+     * @param localDateTimeOfEndTime
+     * @param duration
      * @param barSize
      */
-    public void reqHistoryDatas(String symbol, String endDataTime, String durationStr, String barSize)
+    public int reqHistoryDatas(String symbol,
+                                LocalDateTime localDateTimeOfEndTime,
+                                int duration,
+                                Types.DurationUnit durationUnit,
+                                Types.BarSize barSize)
     {
         EClientSocket m_client = dataManager.getM_client();
-        if (m_client != null && notNullAndEmptyStr(symbolVal))
+        if (m_client != null && notNullAndEmptyStr(symbol) && localDateTimeOfEndTime != null)
         {
-            String t_symbol = nullOrEmptyStr(symbol) ? "SPY" : symbol;
-            String t_endDataTime = nullOrEmptyStr(endDataTime) ? "20170726 12:00:00" : endDataTime;
-            String t_durationStr = nullOrEmptyStr(durationStr) ? "1 D" : durationStr;
-            String t_barSize = nullOrEmptyStr(barSize) ? "1 minute" : barSize;
+            String t_symbol = symbol;
+            String t_endDataTime = localDateTimeOfEndTime.format(DateTimeFormatter.ofPattern("yyyymmdd hh:mm:ss"));
+            String t_durationStr = duration + " " + durationUnit.toString().charAt(0);
+            String t_barSize = barSize.toString();
 
             Contract contract = new Contract();
             contract.conid(0);
@@ -246,9 +253,11 @@ public class Symbol
             String whatToShow = "TRADES";
             int useRTH = 0;
             int formatData = 2;
-            List<TagValue> tagValueList = new ArrayList<>();
+            List<TagValue> tagValueList = Collections.emptyList();
 
-            m_client.reqHistoricalData(getReqId(),
+            int reqid = getReqId();
+
+            m_client.reqHistoricalData(reqid,
                                        contract,
                                        t_endDataTime,
                                        t_durationStr,
@@ -257,6 +266,17 @@ public class Symbol
                                        useRTH,
                                        formatData,
                                        tagValueList);
+            return reqid;
+        }
+        return -1;
+    }
+
+    public void cancelReqHistoricalData(int reqid)
+    {
+        EClientSocket m_client = dataManager.getM_client();
+        if(reqid > 0 && m_client != null)
+        {
+            m_client.cancelHistoricalData(reqid);
         }
     }
 
@@ -279,17 +299,17 @@ public class Symbol
     private void getSymbolRealPrice(MBAtickPrice msg)
     {
         //   1 = 买价   2 = 卖价   4 = 最后价  6 = 最高价   7 = 最低价      9 = 收盘价
-        if( msg.field == TickType.LAST.index())
+        if (msg.field == TickType.LAST.index())
         {
             symbolRealPrice = msg.price;
             // Symbol发布数据
             TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBASymbolRealPrice(symbolRealPrice));
         }
-        else if(msg.field == TickType.OPEN.index())
+        else if (msg.field == TickType.OPEN.index())
         {
             symbolTodayOpenPrice = msg.price;
         }
-        else if(msg.field == TickType.CLOSE.index())
+        else if (msg.field == TickType.CLOSE.index())
         {
             symbolYesterdayClosePrice = msg.price;
         }

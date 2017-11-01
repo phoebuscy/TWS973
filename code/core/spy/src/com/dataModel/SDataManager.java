@@ -1,5 +1,7 @@
 package com.dataModel;
 
+import com.dataModel.mbassadorObj.MBAHistoricalData;
+import com.dataModel.mbassadorObj.MBAHistoricalDataEnd;
 import com.dataModel.mbassadorObj.MBAtickPrice;
 import com.ib.client.CommissionReport;
 import com.ib.client.Contract;
@@ -163,11 +165,11 @@ public class SDataManager implements EWrapper
     @Override
     public void tickPrice(int tickerId, int field, double price, TickAttr attrib)
     {
-        MBAtickPrice mbAtickPrice = new MBAtickPrice(tickerId,field,price,attrib);
+        MBAtickPrice mbAtickPrice = new MBAtickPrice(tickerId, field, price, attrib);
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(mbAtickPrice);
 
         TickType tickType = TickType.get(field);
-        if(tickType == TickType.OPEN)
+        if (tickType == TickType.OPEN)
         {
             int a = 1;
         }
@@ -193,7 +195,7 @@ public class SDataManager implements EWrapper
                                       double undPrice)
     {
         TickType tickType = TickType.get(field);
-        if(tickType == TickType.OPEN)
+        if (tickType == TickType.OPEN)
         {
             int a = 1;
         }
@@ -204,7 +206,7 @@ public class SDataManager implements EWrapper
     public void tickGeneric(int tickerId, int tickType, double value)
     {
         TickType tickT = TickType.get(tickType);
-        if(tickT == TickType.OPEN)
+        if (tickT == TickType.OPEN)
         {
             int a = 1;
         }
@@ -215,7 +217,7 @@ public class SDataManager implements EWrapper
     public void tickString(int tickerId, int tickType, String value)
     {
         TickType tickT = TickType.get(tickType);
-        if(tickT == TickType.OPEN)
+        if (tickT == TickType.OPEN)
         {
             int a = 1;
         }
@@ -381,6 +383,19 @@ public class SDataManager implements EWrapper
                                double WAP,
                                boolean hasGaps)
     {
+        MBAHistoricalData mbaHistoricalData = new MBAHistoricalData(reqId,
+                                                                    date,
+                                                                    open,
+                                                                    high,
+                                                                    low,
+                                                                    close,
+                                                                    volume,
+                                                                    count,
+                                                                    WAP,
+                                                                    hasGaps);
+        TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(mbaHistoricalData);
+
+        /*
         StringBuilder strBuilder = new StringBuilder(100);
 
         strBuilder.append("reqId:");
@@ -415,6 +430,7 @@ public class SDataManager implements EWrapper
         strBuilder.append(hasGaps);
 
         LogMsg.info(strBuilder.toString());
+        */
 
     }
 
@@ -670,7 +686,8 @@ public class SDataManager implements EWrapper
     @Override
     public void historicalDataEnd(int reqId, String startDateStr, String endDateStr)
     {
-
+        MBAHistoricalDataEnd mbaHistoricalDataEnd = new MBAHistoricalDataEnd(reqId, startDateStr, endDateStr);
+        TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(mbaHistoricalDataEnd);
     }
 
     @Override

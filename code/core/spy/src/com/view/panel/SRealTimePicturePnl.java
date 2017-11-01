@@ -3,7 +3,10 @@ package com.view.panel;
 import com.dataModel.SDataManager;
 import com.dataModel.Symbol;
 import com.dataModel.mbassadorObj.MBABeginQuerySymbol;
+import com.dataModel.mbassadorObj.MBAHistoricalData;
+import com.dataModel.mbassadorObj.MBAHistoricalDataEnd;
 import com.dataModel.mbassadorObj.MBASymbolRealPrice;
+import com.ib.client.Types;
 import com.utils.GBC;
 import com.utils.SUtil;
 import com.utils.TMbassadorSingleton;
@@ -11,6 +14,8 @@ import com.view.panel.smallPanel.SRealTimePnl;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.swing.JPanel;
@@ -29,6 +34,8 @@ import static com.utils.TStringUtil.notNullAndEmptyStr;
  */
 public class SRealTimePicturePnl extends JPanel
 {
+    private static int reqHistoritDataReqid = -1;
+    private List<MBAHistoricalData> historicalDataList = new ArrayList<>();
     private Symbol symbol = SDataManager.getInstance().getSymbol();
     private SRealTimePnl sSpyRealTimePnl = new SRealTimePnl("spy", new Dimension(100, 200));
     private SRealTimePnl sCallRealTimePnl = new SRealTimePnl("Call", new Dimension(100, 150));
@@ -67,7 +74,7 @@ public class SRealTimePicturePnl extends JPanel
         @Override
         public boolean accepts(MBABeginQuerySymbol msg, SubscriptionContext subscriptionContext)
         {
-            return  notNullAndEmptyStr(msg.getSymbol());
+            return notNullAndEmptyStr(msg.getSymbol());
         }
     }
 
@@ -78,10 +85,51 @@ public class SRealTimePicturePnl extends JPanel
         // 查询symbol的历史数据 （当前 或前一交易日的 5秒 历史数据）
         if (symbol != null && notNullAndEmptyStr(msg.getSymbol()))
         {
-            //此处需要计算出要查询历史数据的时间,
-           // symbol.reqHistoryDatas(msg.getSymbol(),);
-        }
+            reqHistoritDataReqid = symbol.reqHistoryDatas(msg.getSymbol(),
+                                   LocalDateTime.now(),
+                                   25000,
+                                   Types.DurationUnit.SECOND,
+                                   Types.BarSize._1_min);
 
+            //此处需要计算出要查询历史数据的时间,
+            // symbol.reqHistoryDatas(msg.getSymbol(),);
+        }
+    }
+
+    // 接收历史数据消息过滤器
+    static public class historicDataFilter implements IMessageFilter<MBAHistoricalData>
+    {
+        @Override
+        public boolean accepts(MBAHistoricalData msg, SubscriptionContext subscriptionContext)
+        {
+            return msg.reqId == reqHistoritDataReqid;
+        }
+    }
+
+    @Handler(filters = {@Filter(historicDataFilter.class)})
+    private void getHistoricalData(MBAHistoricalData msg)
+    {
+        historicalDataList.add(msg);
+    }
+
+    // 接收历史数据消息结束
+    static public class historicDataEndFilter implements IMessageFilter<MBAHistoricalDataEnd>
+    {
+        @Override
+        public boolean accepts(MBAHistoricalDataEnd msg, SubscriptionContext subscriptionContext)
+        {
+            return msg.reqId == reqHistoritDataReqid;
+        }
+    }
+    // 处理历史数据消息介绍
+    @Handler(filters = {@Filter(historicDataEndFilter.class)})
+    private void processHistoricDataEnd(MBAHistoricalDataEnd msg)
+    {
+        symbol.cancelReqHistoricalData(reqHistoritDataReqid);
+        for(MBAHistoricalData historicalData: historicalDataList)
+        {
+
+        }
     }
 
 

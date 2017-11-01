@@ -41,12 +41,7 @@ public class SUtil
         String src = "10";
         String des = "1";
 
-        LocalDate  usadate = getAmericalLocalDate();
 
-        boolean ismdlt = isAmericanDaylightSavingTime(2017, 11, 6);
-
-        LocalDateTime bjTm = LocalDateTime.of(2017,10,31,23,20);
-        LocalDateTime usaTm = changeToUSADateTime(bjTm);
 
         double a = Double.parseDouble("2.2");
         double b = a;
@@ -533,17 +528,6 @@ public class SUtil
         return dateZonelst;
     }
 
-
-    public static Date changeToDate(ZonedDateTime zonedDateTime)
-    {
-        if (zonedDateTime != null)
-        {
-            Instant instant = zonedDateTime.toInstant();
-            Date date = Date.from(instant);
-            return date;
-        }
-        return null;
-    }
 
     public static Date changeToDate(LocalDateTime localDateTime)
     {
