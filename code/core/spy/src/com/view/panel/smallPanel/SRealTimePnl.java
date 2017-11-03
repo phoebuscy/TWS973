@@ -132,7 +132,7 @@ public class SRealTimePnl extends JPanel
     {
         if (date != null && value != null)
         {
-            timeSeries.add(new Millisecond(date), value);
+            timeSeries.addOrUpdate(new Millisecond(date), value);
         }
     }
 

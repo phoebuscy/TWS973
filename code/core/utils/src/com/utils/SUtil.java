@@ -1,16 +1,27 @@
 package com.utils;
 
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Toolkit;
+import java.math.BigInteger;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javafx.util.Pair;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -18,15 +29,6 @@ import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.TableColumnModel;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Toolkit;
-import java.math.BigInteger;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import static java.time.DayOfWeek.SATURDAY;
 import static java.time.DayOfWeek.SUNDAY;
 
@@ -41,6 +43,16 @@ public class SUtil
         String src = "10";
         String des = "1";
 
+        String dateStr = "1509629405";
+
+
+         Instant instant = Instant.ofEpochSecond(1509629405);
+
+       LocalDateTime lt =  LocalDateTime.ofInstant(instant, ZoneId.of("America/New_York"));
+
+      //  ZoneOffset zoneOffset =  ZoneOffset.of("Asia/Shanghai"); //  ZoneOffset.SHORT_IDS.get()
+        // LocalDateTime lt = LocalDateTime.ofEpochSecond(Long.parseLong(dateStr),0,zoneOffset);
+      //  LocalDateTime dateFromBase = LocalDateTime.ofEpochSecond(Long.parseLong(dateStr), 0, );
 
 
         double a = Double.parseDouble("2.2");
@@ -453,25 +465,53 @@ public class SUtil
             int year = nowDateTime.getYear();
             int month = nowDateTime.getMonthValue();
             int day = nowDateTime.getDayOfMonth();
-            int hour = nowDateTime.getHour();
-            int min = nowDateTime.getMinute();
             boolean isAmericanDaylightSavingTime = isAmericanDaylightSavingTime(); // 是否是夏令时
-            if (isAmericanDaylightSavingTime)
-            {
-                if (isGanEnJie()) // 感恩节
-                {
-                    return nowDateTime.isAfter(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(9, 30))) &&
-                           nowDateTime.isBefore(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(13, 0)));
-                }
-                else
-                {
-                    return nowDateTime.isAfter(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(9, 30))) &&
-                           nowDateTime.isBefore(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(10, 0)));
-                }
-            }
+            boolean isGanEnJie = isGanEnJie();
+
+            int beginHour = isAmericanDaylightSavingTime ? 9 : 10;
+            int endHour = isAmericanDaylightSavingTime ? 16 : 17;
+            endHour = isGanEnJie ? 13 : endHour;
+            return nowDateTime.isAfter(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(beginHour, 30))) &&
+                   nowDateTime.isBefore(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(endHour, 0)));
         }
         return false;
     }
+
+    // 获取当天美国开盘时间
+    public static LocalDateTime getCurrentDayUSAOpenDateTime()
+    {
+        if (!notOpenDay())
+        {
+            LocalDateTime nowDateTime = getAmericaLocalDateTime();
+            int year = nowDateTime.getYear();
+            int month = nowDateTime.getMonthValue();
+            int day = nowDateTime.getDayOfMonth();
+            boolean isAmericanDaylightSavingTime = isAmericanDaylightSavingTime(); // 是否是夏令时
+            int beginHour = isAmericanDaylightSavingTime ? 9 : 10;
+
+            return LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(beginHour, 30));
+        }
+        return null;
+    }
+
+    // 获取当天美国收盘时间
+    public static LocalDateTime getCurrentDayUSACloseDateTime()
+    {
+        if (!notOpenDay())
+        {
+            LocalDateTime nowDateTime = getAmericaLocalDateTime();
+            int year = nowDateTime.getYear();
+            int month = nowDateTime.getMonthValue();
+            int day = nowDateTime.getDayOfMonth();
+            boolean isAmericanDaylightSavingTime = isAmericanDaylightSavingTime(); // 是否是夏令时
+            boolean isGanEnJie = isGanEnJie();
+            int endHour = isAmericanDaylightSavingTime ? 16 : 17;
+            endHour = isGanEnJie ? 13 : endHour;
+            return LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(endHour, 0));
+        }
+        return null;
+    }
+
 
 
     // 判断美国是否是夏令时间：美国的夏令时从三月的第二个周日开始到十一月的第一个周日结束
@@ -517,8 +557,8 @@ public class SUtil
 
     public static List<Date> getBeginEndDate()
     {
-        LocalDateTime openDateTime = LocalDateTime.of(getAmericalLocalDate(), LocalTime.of(9,30));
-        LocalDateTime closeDateTime = LocalDateTime.of(getAmericalLocalDate(), LocalTime.of(16,0));
+        LocalDateTime openDateTime = LocalDateTime.of(getAmericalLocalDate(), LocalTime.of(9, 30));
+        LocalDateTime closeDateTime = LocalDateTime.of(getAmericalLocalDate(), LocalTime.of(16, 0));
         Date begDate = changeToDate(openDateTime);
         Date endDate = changeToDate(closeDateTime);
         List<Date> dateZonelst = new ArrayList<>();
@@ -551,6 +591,20 @@ public class SUtil
         }
         return null;
     }
+
+    // 根据 秒 获取美国时间
+    public static LocalDateTime getUSADateTimeByEpochSecond(String epochSecond)
+    {
+        if (isIntNumeric(epochSecond))
+        {
+            long epocSecs = Long.parseLong(epochSecond);
+            Instant instant = Instant.ofEpochSecond(epocSecs);
+            LocalDateTime lt = LocalDateTime.ofInstant(instant, ZoneId.of("America/New_York"));
+            return lt;
+        }
+        return null;
+    }
+
 
 
 

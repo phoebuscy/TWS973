@@ -224,21 +224,21 @@ public class Symbol
      * chartOptions ¸ñÊ½Îª£º Collections.emptyList()
      *
      * @param symbol
-     * @param localDateTimeOfEndTime
+     * @param endDateTime
      * @param duration
      * @param barSize
      */
     public int reqHistoryDatas(String symbol,
-                                LocalDateTime localDateTimeOfEndTime,
-                                int duration,
+                                String endDateTime,
+                                long duration,
                                 Types.DurationUnit durationUnit,
                                 Types.BarSize barSize)
     {
         EClientSocket m_client = dataManager.getM_client();
-        if (m_client != null && notNullAndEmptyStr(symbol) && localDateTimeOfEndTime != null)
+        if (m_client != null && notNullAndEmptyStr(symbol) && notNullAndEmptyStr(endDateTime))
         {
             String t_symbol = symbol;
-            String t_endDataTime = localDateTimeOfEndTime.format(DateTimeFormatter.ofPattern("yyyymmdd hh:mm:ss"));
+            String t_endDataTime = endDateTime;
             String t_durationStr = duration + " " + durationUnit.toString().charAt(0);
             String t_barSize = barSize.toString();
 
