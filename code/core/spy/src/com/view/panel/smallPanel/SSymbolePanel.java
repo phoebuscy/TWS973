@@ -2,8 +2,8 @@ package com.view.panel.smallPanel;
 
 import com.dataModel.SDataManager;
 import com.dataModel.Symbol;
-import com.dataModel.mbassadorObj.MBABeginQuerySymbol;
-import com.dataModel.mbassadorObj.MBASymbolRealPrice;
+import com.commdata.mbassadorObj.MBABeginQuerySymbol;
+import com.commdata.mbassadorObj.MBASymbolRealPrice;
 import com.utils.TConst;
 import com.utils.TMbassadorSingleton;
 import java.awt.Color;

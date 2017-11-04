@@ -1,4 +1,4 @@
-package com.enums;
+package com.commdata.enums;
 
 /**
  * Created by caiyong on 2016/12/26.

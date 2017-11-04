@@ -1,8 +1,8 @@
 package com.dataModel;
 
-import com.dataModel.mbassadorObj.MBAHistoricalData;
-import com.dataModel.mbassadorObj.MBAHistoricalDataEnd;
-import com.dataModel.mbassadorObj.MBAtickPrice;
+import com.commdata.mbassadorObj.MBAHistoricalData;
+import com.commdata.mbassadorObj.MBAHistoricalDataEnd;
+import com.commdata.mbassadorObj.MBAtickPrice;
 import com.ib.client.CommissionReport;
 import com.ib.client.Contract;
 import com.ib.client.ContractDescription;
@@ -19,7 +19,6 @@ import com.ib.client.NewsProvider;
 import com.ib.client.Order;
 import com.ib.client.OrderState;
 import com.ib.client.SoftDollarTier;
-import com.ib.client.TagValue;
 import com.ib.client.TickAttr;
 import com.ib.client.TickType;
 import com.utils.TMbassadorSingleton;
@@ -27,20 +26,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.utils.SUtil.getDate;
-import static com.utils.SUtil.getSysYear;
 import static com.utils.TConst.AK_CONNECTED;
 import static com.utils.TConst.AK_CONTRACT_DETAIL_END;
 import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TPubUtil.makeAKmsg;
 import static com.utils.TStringUtil.notNullAndEmptyStr;
-import static com.utils.TStringUtil.nullOrEmptyStr;
 
 /**
  * Created by caiyong on 2017/2/3.

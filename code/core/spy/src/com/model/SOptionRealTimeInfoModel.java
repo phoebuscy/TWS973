@@ -1,6 +1,6 @@
 package com.model;
 
-import com.enums.SCallOrPut;
+import com.commdata.enums.SCallOrPut;
 
 /**
  * Created by caiyong on 2016/12/26.

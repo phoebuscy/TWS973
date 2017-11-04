@@ -2,10 +2,10 @@ package com.view.panel;
 
 import com.dataModel.SDataManager;
 import com.dataModel.Symbol;
-import com.dataModel.mbassadorObj.MBABeginQuerySymbol;
-import com.dataModel.mbassadorObj.MBAHistoricalData;
-import com.dataModel.mbassadorObj.MBAHistoricalDataEnd;
-import com.dataModel.mbassadorObj.MBASymbolRealPrice;
+import com.commdata.mbassadorObj.MBABeginQuerySymbol;
+import com.commdata.mbassadorObj.MBAHistoricalData;
+import com.commdata.mbassadorObj.MBAHistoricalDataEnd;
+import com.commdata.mbassadorObj.MBASymbolRealPrice;
 import com.ib.client.Types;
 import com.utils.GBC;
 import com.utils.SUtil;
@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javafx.util.Pair;
 import javax.swing.JPanel;
 import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
@@ -29,6 +30,7 @@ import org.jfree.data.Range;
 import static com.utils.SUtil.changeToDate;
 import static com.utils.SUtil.getAmericaLocalDateTime;
 import static com.utils.SUtil.getCurrentDayUSAOpenDateTime;
+import static com.utils.SUtil.getLowHighPair;
 import static com.utils.SUtil.getUSADateTimeByEpochSecond;
 import static com.utils.SUtil.ifNowIsOpenTime;
 import static com.utils.TConst.DATAMAAGER_BUS;
@@ -143,6 +145,16 @@ public class SRealTimePicturePnl extends JPanel
         // 根据BarSize来获取 “ 开价，最高价，最低价，收价’的时间间隔
         int stepSec = getStepSecond(barSize);
 
+        // 获取历史数据中最低和最高值
+        Pair lowHighPair = getLowHighPair(historicalDataList);
+        if (lowHighPair != null)
+        {
+            price_low = (Double) lowHighPair.getKey();
+            price_high = (Double) lowHighPair.getValue();
+            Double meg = (price_high - price_low) * 0.1;
+            sSpyRealTimePnl.setYRange(price_low - meg, price_high + meg);
+        }
+
         for (MBAHistoricalData historicalData : historicalDataList)
         {
             LocalDateTime usaDateTime = getUSADateTimeByEpochSecond(historicalData.date);
@@ -152,29 +164,6 @@ public class SRealTimePicturePnl extends JPanel
             val[2] = historicalData.low;
             val[3] = historicalData.close;
 
-            if (price_high == 0D)
-            {
-                price_low = historicalData.low;
-                price_high = historicalData.high;
-            }
-            else
-            {
-                Double old_low = price_low;
-                Double old_high = price_high;
-                price_low = historicalData.low < price_low ? historicalData.low : price_low;
-                price_high = historicalData.high > price_high ? historicalData.high : price_high;
-            }
-            //////////
-            Range yRange = sSpyRealTimePnl.getYRange();
-
-            Double lower = yRange.getLowerBound();
-            Double upper = yRange.getUpperBound();
-
-            if (price_low < lower || (price_low - lower) > 0.6 || price_high > upper || (upper - price_high) > 0.6)
-            {
-                sSpyRealTimePnl.setYRange(historicalData.low - 0.5, historicalData.high + 0.5);
-            }
-            /////////
             for (int i = 0; i < 4; i++)
             {
                 usaDateTime.plusSeconds(i * stepSec);
@@ -183,30 +172,6 @@ public class SRealTimePicturePnl extends JPanel
             }
         }
 
-    }
-
-
-    // 根据BarSize来获取 “ 开价，最高价，最低价，收价’的时间间隔
-    private int getStepSecond(Types.BarSize barSize)
-    {
-        int stepSec = 1;
-        if (Types.BarSize._5_secs == barSize)
-        {
-            stepSec = 1;
-        }
-        else if (Types.BarSize._10_secs == barSize)
-        {
-            stepSec = 2;
-        }
-        else if (Types.BarSize._15_secs == barSize)
-        {
-            stepSec = 3;
-        }
-        else if (Types.BarSize._30_secs == barSize)
-        {
-            stepSec = 6;
-        }
-        return stepSec;
     }
 
 
@@ -225,7 +190,6 @@ public class SRealTimePicturePnl extends JPanel
     private void getRealPrice(MBASymbolRealPrice msg)
     {
         Range yRange = sSpyRealTimePnl.getYRange();
-
         Double lower = yRange.getLowerBound();
         Double upper = yRange.getUpperBound();
 
@@ -272,6 +236,30 @@ public class SRealTimePicturePnl extends JPanel
             return Types.BarSize._30_secs;
         }
 
+    }
+
+
+    // 根据BarSize来获取 “ 开价，最高价，最低价，收价’的时间间隔
+    private int getStepSecond(Types.BarSize barSize)
+    {
+        int stepSec = 1;
+        if (Types.BarSize._5_secs == barSize)
+        {
+            stepSec = 1;
+        }
+        else if (Types.BarSize._10_secs == barSize)
+        {
+            stepSec = 2;
+        }
+        else if (Types.BarSize._15_secs == barSize)
+        {
+            stepSec = 3;
+        }
+        else if (Types.BarSize._30_secs == barSize)
+        {
+            stepSec = 6;
+        }
+        return stepSec;
     }
 
 

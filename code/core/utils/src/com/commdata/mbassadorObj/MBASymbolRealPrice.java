@@ -1,4 +1,4 @@
-package com.dataModel.mbassadorObj;
+package com.commdata.mbassadorObj;
 
 public class MBASymbolRealPrice
 {

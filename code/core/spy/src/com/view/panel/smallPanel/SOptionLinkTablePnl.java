@@ -2,8 +2,8 @@ package com.view.panel.smallPanel;
 
 import com.dataModel.SDataManager;
 import com.dataModel.Symbol;
-import com.dataModel.mbassadorObj.MBAOptionChainMap;
-import com.dataModel.mbassadorObj.MBAtickPrice;
+import com.commdata.mbassadorObj.MBAOptionChainMap;
+import com.commdata.mbassadorObj.MBAtickPrice;
 import com.ib.client.ContractDetails;
 import com.ib.client.TickType;
 import com.ib.client.Types;

@@ -1,6 +1,7 @@
 package com.utils;
 
 
+import com.commdata.mbassadorObj.MBAHistoricalData;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -29,6 +30,7 @@ import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.TableColumnModel;
+import static com.utils.TPubUtil.notNullAndEmptyCollection;
 import static java.time.DayOfWeek.SATURDAY;
 import static java.time.DayOfWeek.SUNDAY;
 
@@ -46,13 +48,13 @@ public class SUtil
         String dateStr = "1509629405";
 
 
-         Instant instant = Instant.ofEpochSecond(1509629405);
+        Instant instant = Instant.ofEpochSecond(1509629405);
 
-       LocalDateTime lt =  LocalDateTime.ofInstant(instant, ZoneId.of("America/New_York"));
+        LocalDateTime lt = LocalDateTime.ofInstant(instant, ZoneId.of("America/New_York"));
 
-      //  ZoneOffset zoneOffset =  ZoneOffset.of("Asia/Shanghai"); //  ZoneOffset.SHORT_IDS.get()
+        //  ZoneOffset zoneOffset =  ZoneOffset.of("Asia/Shanghai"); //  ZoneOffset.SHORT_IDS.get()
         // LocalDateTime lt = LocalDateTime.ofEpochSecond(Long.parseLong(dateStr),0,zoneOffset);
-      //  LocalDateTime dateFromBase = LocalDateTime.ofEpochSecond(Long.parseLong(dateStr), 0, );
+        //  LocalDateTime dateFromBase = LocalDateTime.ofEpochSecond(Long.parseLong(dateStr), 0, );
 
 
         double a = Double.parseDouble("2.2");
@@ -513,7 +515,6 @@ public class SUtil
     }
 
 
-
     // 判断美国是否是夏令时间：美国的夏令时从三月的第二个周日开始到十一月的第一个周日结束
     public static boolean isAmericanDaylightSavingTime()
     {
@@ -605,7 +606,22 @@ public class SUtil
         return null;
     }
 
-
+    // 获取历史数据中最低和最高值
+    public static Pair getLowHighPair(List<MBAHistoricalData> historicalDataList)
+    {
+        if (notNullAndEmptyCollection(historicalDataList))
+        {
+            Double low = Double.MAX_VALUE;
+            Double high = Double.MIN_VALUE;
+            for(MBAHistoricalData historydata: historicalDataList)
+            {
+               low = historydata.low < low? historydata.low : low;
+               high = historydata.high > high? historydata.high: high;
+            }
+            return  new Pair<>(low,high);
+        }
+        return null;
+    }
 
 
 }

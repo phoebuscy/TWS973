@@ -63,9 +63,9 @@ public class SRealTimePnl extends JPanel
             // 设置Y轴范围
             ValueAxis yAxis = xyplot.getRangeAxis();
             yAxis.setRange(lower, upper);
-            // rangeAxis.setAutoRange(true);
-            xyplot.getRangeAxis().setUpperMargin(1.1);// 设置顶部Y坐标轴间距,防止数据无法显示
-            xyplot.getRangeAxis().setLowerMargin(1.1);// 设置底部Y坐标轴间距
+            yAxis.setAutoRange(true);
+            // xyplot.getRangeAxis().setUpperMargin(1.1);// 设置顶部Y坐标轴间距,防止数据无法显示
+            //  xyplot.getRangeAxis().setLowerMargin(1.1);// 设置底部Y坐标轴间距
         }
     }
 
