@@ -28,7 +28,7 @@ import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
 import org.jfree.data.Range;
 import static com.utils.SUtil.changeToDate;
-import static com.utils.SUtil.getAmericaLocalDateTime;
+import static com.utils.SUtil.getCurrentAmericaLocalDateTime;
 import static com.utils.SUtil.getCurrentDayUSAOpenDateTime;
 import static com.utils.SUtil.getLowHighPair;
 import static com.utils.SUtil.getUSADateTimeByEpochSecond;
@@ -98,9 +98,19 @@ public class SRealTimePicturePnl extends JPanel
         if (symbol != null && notNullAndEmptyStr(msg.getSymbol()))
         {
             // 计算当前时间到开盘时间的时间间隔, 单位秒
-            long duration = getLastOpenTimeSeconds();
-            barSize = getBarSizebyDurationSeconds(duration);
-            String locatime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
+            long duration = -1;
+            String locatime = null;
+            if(ifNowIsOpenTime()) // 如果现在是开盘时间，则取当前时间
+            {
+                duration = getLastOpenTimeSeconds();
+                barSize = getBarSizebyDurationSeconds(duration);
+                locatime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
+            }
+            else // 如果不是开盘时间，则取上一天的开盘时间/
+            {
+
+            }
+
             reqHistoritDataReqid = symbol.reqHistoryDatas(msg.getSymbol(),
                                                           locatime,
                                                           duration,
@@ -198,7 +208,7 @@ public class SRealTimePicturePnl extends JPanel
         {
             sSpyRealTimePnl.setYRange(msg.symbolRealPrice - 0.5, msg.symbolRealPrice + 0.5);
         }
-        Date date = changeToDate(getAmericaLocalDateTime());
+        Date date = changeToDate(getCurrentAmericaLocalDateTime());
         sSpyRealTimePnl.addValue(date, msg.symbolRealPrice);
 
     }
@@ -209,7 +219,7 @@ public class SRealTimePicturePnl extends JPanel
         if (ifNowIsOpenTime())
         {
             LocalDateTime usaOpentTime = getCurrentDayUSAOpenDateTime();
-            LocalDateTime curUsaTime = getAmericaLocalDateTime();
+            LocalDateTime curUsaTime = getCurrentAmericaLocalDateTime();
             Duration duration = Duration.between(usaOpentTime, curUsaTime);
             return duration.getSeconds();
         }
@@ -235,7 +245,6 @@ public class SRealTimePicturePnl extends JPanel
         {
             return Types.BarSize._30_secs;
         }
-
     }
 
 
