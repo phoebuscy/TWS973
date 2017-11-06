@@ -29,10 +29,14 @@ import net.engio.mbassy.subscription.SubscriptionContext;
 import org.jfree.data.Range;
 import static com.utils.SUtil.changeToDate;
 import static com.utils.SUtil.getCurrentAmericaLocalDateTime;
+import static com.utils.SUtil.getCurrentDayUSACloseDateTime;
 import static com.utils.SUtil.getCurrentDayUSAOpenDateTime;
+import static com.utils.SUtil.getUSAOpenDateTimeByLastDay;
 import static com.utils.SUtil.getLowHighPair;
+import static com.utils.SUtil.getOpenCloseDate;
 import static com.utils.SUtil.getUSADateTimeByEpochSecond;
 import static com.utils.SUtil.ifNowIsOpenTime;
+import static com.utils.SUtil.usaChangeToLocalDateTime;
 import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TConst.SYMBOL_BUS;
 import static com.utils.TStringUtil.notNullAndEmptyStr;
@@ -44,6 +48,9 @@ public class SRealTimePicturePnl extends JPanel
 {
     private Double price_low = 0D;
     private Double price_high = 0D;
+    private LocalDateTime openUsaDateTime = null;
+    private LocalDateTime closeUsaDateTime = null;
+    private boolean hasDarwHistory = false;
     private static int reqHistoritDataReqid = -1;
     private Types.BarSize barSize = Types.BarSize._10_secs;
     private List<MBAHistoricalData> historicalDataList = new ArrayList<>();
@@ -61,10 +68,10 @@ public class SRealTimePicturePnl extends JPanel
         add(sCallRealTimePnl, new GBC(0, 1).setWeight(50, 10).setFill(GBC.BOTH));
         add(sPutRealTimePnl, new GBC(0, 2).setWeight(50, 10).setFill(GBC.BOTH));
 
-        List<Date> beginEndDateLst = SUtil.getBeginEndDate();
-        Date beginDate = beginEndDateLst.get(0);
-        Date endDate = beginEndDateLst.get(1);
-        sSpyRealTimePnl.setXRange(beginDate, endDate);
+        //   List<Date> beginEndDateLst = SUtil.getBeginEndDate();
+        // Date beginDate = beginEndDateLst.get(0);
+        //  Date endDate = beginEndDateLst.get(1);
+        //  sSpyRealTimePnl.setXRange(beginDate, endDate);
 
         //   setBackground(Color.cyan);
         parentDimension = parentWin.getSize();
@@ -78,6 +85,15 @@ public class SRealTimePicturePnl extends JPanel
     private void setDimension()
     {
         setSize(SUtil.getDimension(parentDimension, 0.5, 1.0));
+    }
+
+    private void setXRange(LocalDateTime openDateTime, LocalDateTime closeDateTime)
+    {
+        if (openDateTime != null && closeDateTime != null && sSpyRealTimePnl != null)
+        {
+            Pair<Date, Date> openClosePair = getOpenCloseDate(openDateTime, closeDateTime);
+            sSpyRealTimePnl.setXRange(openClosePair.getKey(), openClosePair.getValue());
+        }
     }
 
     // 接收开始查询symbol的消息
@@ -97,20 +113,39 @@ public class SRealTimePicturePnl extends JPanel
         // 查询symbol的历史数据 （当前 或前一交易日的 5秒 历史数据）
         if (symbol != null && notNullAndEmptyStr(msg.getSymbol()))
         {
+            sSpyRealTimePnl.clearAllData();
+
             // 计算当前时间到开盘时间的时间间隔, 单位秒
             long duration = -1;
             String locatime = null;
-            if(ifNowIsOpenTime()) // 如果现在是开盘时间，则取当前时间
+
+            LocalDateTime curUsaOpenDateTime = getCurrentDayUSAOpenDateTime();
+            LocalDateTime curUsaLocalDateTime = getCurrentAmericaLocalDateTime();
+            // 如果现在是开盘时间，则取当前时间
+            if (ifNowIsOpenTime() || curUsaLocalDateTime.plusMinutes(3).isAfter(curUsaOpenDateTime))
             {
+                openUsaDateTime = getCurrentDayUSAOpenDateTime();
+                closeUsaDateTime = getCurrentDayUSACloseDateTime();
+
                 duration = getLastOpenTimeSeconds();
                 barSize = getBarSizebyDurationSeconds(duration);
                 locatime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
             }
             else // 如果不是开盘时间，则取上一天的开盘时间/
             {
+                // 获取指定天数之前的开盘的本地时间, 参数 lastDay 是表示之前多少天
+                Pair<LocalDateTime, LocalDateTime> lastUsaOpenCloseTime = getUSAOpenDateTimeByLastDay(1);
+                LocalDateTime localCloseDateTime = usaChangeToLocalDateTime(lastUsaOpenCloseTime.getValue());
+                openUsaDateTime = lastUsaOpenCloseTime.getKey();
+                closeUsaDateTime = lastUsaOpenCloseTime.getValue();
 
+                duration = 30000;
+                barSize = Types.BarSize._30_secs;
+                locatime = localCloseDateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
             }
-
+            // 注意：设置X轴需要用美国时间
+            setXRange(openUsaDateTime, closeUsaDateTime);
+            // 注意：查询历史数据需要用本地时间
             reqHistoritDataReqid = symbol.reqHistoryDatas(msg.getSymbol(),
                                                           locatime,
                                                           duration,
@@ -181,7 +216,7 @@ public class SRealTimePicturePnl extends JPanel
                 sSpyRealTimePnl.addValue(date, val[i]);
             }
         }
-
+        hasDarwHistory = ifNowIsOpenTime()? false:true;
     }
 
 
@@ -191,7 +226,7 @@ public class SRealTimePicturePnl extends JPanel
         @Override
         public boolean accepts(MBASymbolRealPrice msg, SubscriptionContext subscriptionContext)
         {
-            return msg != null;
+            return msg != null && ifNowIsOpenTime();
         }
     }
 
@@ -199,6 +234,14 @@ public class SRealTimePicturePnl extends JPanel
     @Handler(filters = {@Filter(realPriceStatusFilter.class)})
     private void getRealPrice(MBASymbolRealPrice msg)
     {
+        if (hasDarwHistory)
+        {
+            openUsaDateTime = getCurrentDayUSAOpenDateTime();
+            closeUsaDateTime = getCurrentDayUSACloseDateTime();
+            setXRange(openUsaDateTime, closeUsaDateTime);
+            hasDarwHistory = false;
+        }
+
         Range yRange = sSpyRealTimePnl.getYRange();
         Double lower = yRange.getLowerBound();
         Double upper = yRange.getUpperBound();
@@ -210,7 +253,6 @@ public class SRealTimePicturePnl extends JPanel
         }
         Date date = changeToDate(getCurrentAmericaLocalDateTime());
         sSpyRealTimePnl.addValue(date, msg.symbolRealPrice);
-
     }
 
     // 计算当前时间到开盘时间的时间间隔, 单位秒

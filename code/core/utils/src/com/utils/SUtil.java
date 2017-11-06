@@ -58,8 +58,8 @@ public class SUtil
         // LocalDateTime lt = LocalDateTime.ofEpochSecond(Long.parseLong(dateStr),0,zoneOffset);
         //  LocalDateTime dateFromBase = LocalDateTime.ofEpochSecond(Long.parseLong(dateStr), 0, );
 
-        int lastDay = 7;
-        LocalDateTime localDate = getLocalOpenDateTimeByLastDay(lastDay);
+        int lastDay = 1;
+        Pair lastOPencloseLocalTime = getUSAOpenDateTimeByLastDay(lastDay);
 
 
         double a = Double.parseDouble("2.2");
@@ -158,7 +158,8 @@ public class SUtil
         try
         {
             UIManager.setLookAndFeel(sty);
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             e.printStackTrace();
         }
@@ -342,17 +343,20 @@ public class SUtil
             if (ifPer)
             {
                 label.setText(getPercentValStr(num));
-            } else
+            }
+            else
             {
                 label.setText(num.toString());
             }
-        } else if (isDoubleNumber(num))
+        }
+        else if (isDoubleNumber(num))
         {
             db = Double.valueOf(num.toString());
             if (ifPer)
             {
                 label.setText(getPercentValStr(num));
-            } else
+            }
+            else
             {
                 label.setText(String.format("%.2f", db));
             }
@@ -371,10 +375,12 @@ public class SUtil
             if (integer > 0 || db > 0.0)
             {
                 label.setForeground(Cst.ReadColor);
-            } else if (integer < 0 || db < 0.0)
+            }
+            else if (integer < 0 || db < 0.0)
             {
                 label.setForeground(Cst.GreenColor);
-            } else
+            }
+            else
             {
                 label.setForeground(Cst.BlackColor);
             }
@@ -441,8 +447,8 @@ public class SUtil
             int d = usaDateTime.getDayOfMonth();
             DayOfWeek dayOfWeek = usaDateTime.getDayOfWeek();
             if ((m == 1 && d == 2) || (m == 1 && d == 16) || (m == 2 && d == 20) || (m == 4 && d == 14) ||
-                    (m == 5 && d == 29) || (m == 7 && d == 4) || (m == 9 && d == 4) || (m == 11 && d == 23) ||
-                    (m == 12 && d == 25) || SATURDAY.equals(dayOfWeek) || SUNDAY.equals(dayOfWeek))
+                (m == 5 && d == 29) || (m == 7 && d == 4) || (m == 9 && d == 4) || (m == 11 && d == 23) ||
+                (m == 12 && d == 25) || SATURDAY.equals(dayOfWeek) || SUNDAY.equals(dayOfWeek))
             {
                 return false;
             }
@@ -471,14 +477,14 @@ public class SUtil
             int year = curUSADateTime.getYear();
             int month = curUSADateTime.getMonthValue();
             int day = curUSADateTime.getDayOfMonth();
-            boolean isAmericanDaylightSavingTime = isAmericanDaylightSavingTime(); // 是否是夏令时
             boolean isGanEnJie = isGanEnJie();
 
-            int beginHour = isAmericanDaylightSavingTime ? 9 : 10;
-            int endHour = isAmericanDaylightSavingTime ? 16 : 17;
+            int beginHour = 9;
+            int endHour = 16;
             endHour = isGanEnJie ? 13 : endHour;
-            return curUSADateTime.isAfter(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(beginHour, 30))) &&
-                    curUSADateTime.isBefore(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(endHour, 0)));
+            return curUSADateTime.isAfter(LocalDateTime
+                                                  .of(LocalDate.of(year, month, day), LocalTime.of(beginHour, 30))) &&
+                   curUSADateTime.isBefore(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(endHour, 0)));
         }
         return false;
     }
@@ -493,10 +499,7 @@ public class SUtil
             int year = curUsaDateTime.getYear();
             int month = curUsaDateTime.getMonthValue();
             int day = curUsaDateTime.getDayOfMonth();
-            boolean isAmericanDaylightSavingTime = isAmericanDaylightSavingTime(); // 是否是夏令时
-            int beginHour = isAmericanDaylightSavingTime ? 9 : 10;
-
-            return LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(beginHour, 30));
+            return LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(9, 30));
         }
         return null;
     }
@@ -510,10 +513,8 @@ public class SUtil
             int year = currentAmericaLocalDateTime.getYear();
             int month = currentAmericaLocalDateTime.getMonthValue();
             int day = currentAmericaLocalDateTime.getDayOfMonth();
-            boolean isAmericanDaylightSavingTime = isAmericanDaylightSavingTime(); // 是否是夏令时
             boolean isGanEnJie = isGanEnJie();
-            int endHour = isAmericanDaylightSavingTime ? 16 : 17;
-            endHour = isGanEnJie ? 13 : endHour;
+            int endHour = isGanEnJie ? 13 : 16;
             return LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(endHour, 0));
         }
         return null;
@@ -572,6 +573,17 @@ public class SUtil
         dateZonelst.add(endDate);
 
         return dateZonelst;
+    }
+
+    public static Pair<Date, Date> getOpenCloseDate(LocalDateTime openDateTime, LocalDateTime closeDateTime)
+    {
+        if (openDateTime != null && closeDateTime != null)
+        {
+            Date begDate = changeToDate(openDateTime);
+            Date endDate = changeToDate(closeDateTime);
+            return new Pair<>(begDate, endDate);
+        }
+        return null;
     }
 
 
@@ -641,10 +653,11 @@ public class SUtil
     }
 
     // 获取指定天数之前的开盘的本地时间, 参数 lastDay 是表示之前多少天
-    public static LocalDateTime getLocalOpenDateTimeByLastDay(int lastDay)
+    public static Pair<LocalDateTime, LocalDateTime> getUSAOpenDateTimeByLastDay(int lastDay)
     {
         if (lastDay > 0)
         {
+
             // 获取当前美国日期
             LocalDateTime curUSADateTime = getCurrentAmericaLocalDateTime();
             int tmpDay = 0;
@@ -657,9 +670,26 @@ public class SUtil
                 }
             } while (tmpDay < lastDay);
 
-            LocalDateTime localDateTime = usaChangeToLocalDateTime(curUSADateTime);
 
-            return localDateTime;
+            // 获取开盘时间
+            boolean isAmericanDaylightSavingTime = isAmericanDaylightSavingTime(curUSADateTime); // 是否是夏令时
+            int beginHour = isAmericanDaylightSavingTime ? 9 : 10;
+
+            // 获取收盘时间
+            boolean isGanEnJie = isGanEnJie();
+            int endHour = isAmericanDaylightSavingTime ? 16 : 17;
+            endHour = isGanEnJie ? 13 : endHour;
+
+            LocalDate usaLocalDate = LocalDate.of(curUSADateTime.getYear(),
+                                                  curUSADateTime.getMonthValue(),
+                                                  curUSADateTime.getDayOfMonth());
+
+            LocalDateTime openUsaDateTime = LocalDateTime.of(usaLocalDate, LocalTime.of(beginHour, 30));
+            LocalDateTime closeUsaDateTime = LocalDateTime.of(usaLocalDate, LocalTime.of(endHour, 0));
+
+            //  LocalDateTime localOpenDateTime = usaChangeToLocalDateTime(openUsaDateTime);
+            // LocalDateTime localCloseDateTime = usaChangeToLocalDateTime(closeUsaDateTime);
+            return new Pair<>(openUsaDateTime, closeUsaDateTime);
         }
         return null;
     }

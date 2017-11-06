@@ -51,8 +51,19 @@ public class SRealTimePnl extends JPanel
             // 自动设置数据轴数据范围
             xAxis.setAutoRange(false);
             xAxis.setRange(begin.getTime(), end.getTime());
-
         }
+    }
+
+    public Range getXRange()
+    {
+        if (jfreechart != null)
+        {
+            // X坐标设定
+            XYPlot xyplot = jfreechart.getXYPlot();
+            ValueAxis xAxis = xyplot.getDomainAxis();
+            return xAxis.getRange();
+        }
+        return null;
     }
 
     public void setYRange(Double lower, Double upper)
@@ -133,6 +144,14 @@ public class SRealTimePnl extends JPanel
         if (date != null && value != null)
         {
             timeSeries.addOrUpdate(new Millisecond(date), value);
+        }
+    }
+
+    public void clearAllData()
+    {
+        if (timeSeries != null)
+        {
+            timeSeries.clear();
         }
     }
 
