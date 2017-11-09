@@ -1,9 +1,11 @@
 package com.view.panel.smallPanel;
 
-import com.dataModel.SDataManager;
-import com.dataModel.Symbol;
+import com.commdata.mbassadorObj.MBAHistoricalData;
+import com.commdata.mbassadorObj.MBAHistoricalDataEnd;
 import com.commdata.mbassadorObj.MBAOptionChainMap;
 import com.commdata.mbassadorObj.MBAtickPrice;
+import com.dataModel.SDataManager;
+import com.dataModel.Symbol;
 import com.ib.client.ContractDetails;
 import com.ib.client.TickType;
 import com.ib.client.Types;
@@ -18,6 +20,8 @@ import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,8 +35,17 @@ import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import static com.utils.SUtil.getBarSizebyDurationSeconds;
+import static com.utils.SUtil.getCurrentDayUSAOpenDateTime;
 import static com.utils.SUtil.getDimension;
+import static com.utils.SUtil.getLastOpenTimeSeconds;
+import static com.utils.SUtil.getUSADateTimeByEpochSecond;
+import static com.utils.SUtil.ifNowIsOpenTime;
+import static com.utils.SUtil.usaChangeToLocalDateTime;
 import static com.utils.TConst.DATAMAAGER_BUS;
+import static com.utils.TConst.SYMBOL_BUS;
 import static com.utils.TFileUtil.getConfigValue;
 import static com.utils.TPubUtil.notNullAndEmptyCollection;
 import static com.utils.TPubUtil.notNullAndEmptyMap;
@@ -42,12 +55,21 @@ import static com.utils.TPubUtil.notNullAndEmptyMap;
  */
 public class SOptionLinkTablePnl extends JPanel
 {
+    private static Logger LogMsg = LogManager.getLogger("datamsg");
     private Component parentWin;
     private Dimension parentDimension;
     private SOptionLinkTable optionLinkTable;
-    private static Map<Integer, ContractDetails> reqID2ContractsMap = new HashMap<>();  // 查询买卖价的市场数据reqid和contract的map
+    // 查询买卖价的市场数据reqid和contract的map
+    private static Map<Integer, ContractDetails> topMktDataReqID2ContractsMap = new HashMap<>();  //
+    // 查询历史数据的reqid和Conracsd Map
+    private static Map<Integer, ContractDetails> historicReqID2ContactsMap = new HashMap<>(); //
+    // 历史数据保存器
+    private Map<Integer, List<MBAHistoricalData>> reqId2historicalDataListMap = new HashMap<>();
 
-    public JButton testButton = new JButton( getConfigValue("option.table.test", TConst.CONFIG_I18N_FILE)); //"期权表格测试"
+    private Symbol symbol = SDataManager.getInstance().getSymbol();
+
+
+    public JButton testButton = new JButton(getConfigValue("option.table.test", TConst.CONFIG_I18N_FILE)); //"期权表格测试"
 
     public SOptionLinkTablePnl(Component parentWin)
     {
@@ -59,6 +81,7 @@ public class SOptionLinkTablePnl extends JPanel
         setTestButtonListener();
 
         // 订阅消息总线名称为 DATAMAAGER_BUS 的 消息
+        TMbassadorSingleton.getInstance(SYMBOL_BUS).subscribe(this);
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
     }
 
@@ -106,7 +129,6 @@ public class SOptionLinkTablePnl extends JPanel
                         optionLinkTable.setValueAt(1, 2, b ? 952.8 : 13.3);
                         optionLinkTable.setValueAt(2, 3, b ? 55.8 : 883.3);
                     }
-                    //  SDataManager.getInstance().reqHistoryDatas("","","","");
                 }
             });
         }
@@ -134,6 +156,8 @@ public class SOptionLinkTablePnl extends JPanel
 
         // 取消订阅市场数据
         cancelMarketData();
+        // 取消历史数据的请求
+        cancelHistoricData();
 
         // 设置期权链于表格中
         TCyTableModel cyTableModel = (TCyTableModel) optionLinkTable.getModel();
@@ -147,17 +171,30 @@ public class SOptionLinkTablePnl extends JPanel
 
     private void cancelMarketData()
     {
-        if (reqID2ContractsMap != null)
+        if (symbol != null && topMktDataReqID2ContractsMap != null)
         {
-            Symbol symbol = SDataManager.getInstance().getSymbol();
-            for (Integer reqid : reqID2ContractsMap.keySet())
+            for (Integer reqid : topMktDataReqID2ContractsMap.keySet())
             {
-                if (symbol != null)
-                {
-                    symbol.cancelMktData(reqid);
-                }
+                symbol.cancelMktData(reqid);
             }
-            reqID2ContractsMap.clear();
+            topMktDataReqID2ContractsMap.clear();
+        }
+    }
+
+    // 取消历史数据的请求
+    private void cancelHistoricData()
+    {
+        if (symbol != null && historicReqID2ContactsMap != null)
+        {
+            for (Integer reqid : historicReqID2ContactsMap.keySet())
+            {
+                symbol.cancelReqHistoricalData(reqid);
+            }
+            historicReqID2ContactsMap.clear();
+            if (reqId2historicalDataListMap != null)
+            {
+                reqId2historicalDataListMap.clear();
+            }
         }
     }
 
@@ -207,9 +244,11 @@ public class SOptionLinkTablePnl extends JPanel
 
     private void queryOptionMarketData(Map<Double, List<ContractDetails>> optionChainMap)
     {
-        reqID2ContractsMap.clear();
+        topMktDataReqID2ContractsMap.clear();
+        historicReqID2ContactsMap.clear();
+        reqId2historicalDataListMap.clear();
         //发送订阅实时数据请求,注意需要保留 reqid 和 contrcontract的对应关系，便于获取后更新数据
-        Symbol symbol = SDataManager.getInstance().getSymbol();
+
         if (optionChainMap != null && symbol != null)
         {
             List<ContractDetails> contractDetailsList = new ArrayList<>();
@@ -220,8 +259,29 @@ public class SOptionLinkTablePnl extends JPanel
 
             for (ContractDetails ctrDts : contractDetailsList)
             {
+                // 查询期权实时价格
                 int reqid = symbol.reqOptionMktData(ctrDts.contract());
-                reqID2ContractsMap.put(reqid, ctrDts);
+                topMktDataReqID2ContractsMap.put(reqid, ctrDts);
+
+                // 查询期权历史价格（最近一次开盘时间）
+                if (ifNowIsOpenTime())
+                {
+                    LocalDateTime openUsaDateTime = getCurrentDayUSAOpenDateTime();
+                    LocalDateTime endDatetime = usaChangeToLocalDateTime(openUsaDateTime.plusSeconds(60));
+                    String endTimeStr = endDatetime.format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
+
+                    long duration = 60;//  getLastOpenTimeSeconds();// + 60; // 注意，此处要加60秒，是为了获取今天开盘时间的价格
+                    String endDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
+                    reqid = symbol.reqOptionHistoricDatas(ctrDts.contract(),
+                                                          endTimeStr,
+                                                          duration,
+                                                          Types.DurationUnit.SECOND,
+                                                          Types.BarSize._30_secs);
+                    if (-1 != reqid)
+                    {
+                        historicReqID2ContactsMap.put(reqid, ctrDts);
+                    }
+                }
             }
         }
     }
@@ -232,16 +292,16 @@ public class SOptionLinkTablePnl extends JPanel
         @Override
         public boolean accepts(MBAtickPrice msg, SubscriptionContext subscriptionContext)
         {
-            return reqID2ContractsMap.containsKey(msg.tickerId);
+            return topMktDataReqID2ContractsMap.containsKey(msg.tickerId);
         }
     }
 
-    // 连接消息处理器
+    // 实时消息处理器
     @Handler(filters = {@Filter(recvOptionMktDataFilter.class)})
     private void processOptionMktData(MBAtickPrice msg)
     {
         TCyTableModel cyTableModel = (TCyTableModel) optionLinkTable.getModel();
-        ContractDetails contractDetails = reqID2ContractsMap.get(msg.tickerId);
+        ContractDetails contractDetails = topMktDataReqID2ContractsMap.get(msg.tickerId);
         int rowIndex = cyTableModel.getRowIndexByUserObj(contractDetails);
         if (rowIndex >= 0)
         {
@@ -275,6 +335,84 @@ public class SOptionLinkTablePnl extends JPanel
                 optionLinkTable.setValueAt(rowIndex, colIndex, msg.price);
             }
         }
+    }
+
+    // 接收历史数据消息过滤器
+    static public class historicDataFilter implements IMessageFilter<MBAHistoricalData>
+    {
+        @Override
+        public boolean accepts(MBAHistoricalData msg, SubscriptionContext subscriptionContext)
+        {
+            return historicReqID2ContactsMap.containsKey(msg.reqId);
+        }
+    }
+
+    @Handler(filters = {@Filter(historicDataFilter.class)})
+    private void getHistoricalData(MBAHistoricalData msg)
+    {
+        List<MBAHistoricalData> hisDatalst = reqId2historicalDataListMap.get(msg.reqId);
+        if (hisDatalst == null)
+        {
+            hisDatalst = new ArrayList<>();
+        }
+        hisDatalst.add(msg);
+        reqId2historicalDataListMap.put(msg.reqId, hisDatalst);
+    }
+
+    // 接收历史数据消息结束
+    static public class historicDataEndFilter implements IMessageFilter<MBAHistoricalDataEnd>
+    {
+        @Override
+        public boolean accepts(MBAHistoricalDataEnd msg, SubscriptionContext subscriptionContext)
+        {
+            return historicReqID2ContactsMap.containsKey(msg.reqId);
+        }
+    }
+
+    // 接收历史数据结束后的处理：取出开盘时间的开盘价格,填入到表格中
+    @Handler(filters = {@Filter(historicDataEndFilter.class)})
+    private void processHistoricDataEnd(MBAHistoricalDataEnd msg)
+    {
+        // 取消获取历史数据申请
+        symbol.cancelReqHistoricalData(msg.reqId);
+        List<MBAHistoricalData> historicalDataList = reqId2historicalDataListMap.get(msg.reqId);
+
+        if (historicalDataList != null)
+        {
+            ContractDetails contractDetails = historicReqID2ContactsMap.get(msg.reqId);
+            // 获取到开始时间的开盘价
+            TCyTableModel cyTableModel = (TCyTableModel) optionLinkTable.getModel();
+            int rowIndex = cyTableModel.getRowIndexByUserObj(contractDetails);
+            if (rowIndex >= 0)
+            {
+                int colIndex = 3; // 第3列是 ‘开盘价’
+                Double openPrice = getCurrentDayOpenPrice(historicalDataList);
+                optionLinkTable.setValueAt(rowIndex, colIndex, openPrice);
+            }
+        }
+    }
+
+    // 从当前历史数据中获取开盘价
+    private Double getCurrentDayOpenPrice(List<MBAHistoricalData> historicalDataList)
+    {
+        if (notNullAndEmptyCollection(historicalDataList))
+        {
+            LocalDateTime todayOpenDateTime = getCurrentDayUSAOpenDateTime();
+            for (MBAHistoricalData hisData : historicalDataList)
+            {
+                LocalDateTime usaDateTime = getUSADateTimeByEpochSecond(hisData.date);
+
+                LogMsg.info("REQ_historicID: " + hisData.reqId + "  Time: " + usaDateTime.toString() + " price: " +
+                            hisData.open);
+
+                if (todayOpenDateTime.equals(usaDateTime) || (usaDateTime.isAfter(todayOpenDateTime.plusSeconds(-1)) &&
+                                                              usaDateTime.isBefore(todayOpenDateTime.plusSeconds(50))))
+                {
+                    return hisData.open;
+                }
+            }
+        }
+        return 0D;
     }
 
 

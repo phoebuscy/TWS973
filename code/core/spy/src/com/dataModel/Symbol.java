@@ -196,6 +196,69 @@ public class Symbol
     }
 
     /**
+     * 获取期权的历史数据 （当单位选 秒 时，最小时间bar为5秒）
+     * 例如：查询 spy option  的历史数据 ，其 Contract 如下(即查询回来的Contract)
+     * Contract optCtr = new Contract();
+     * optCtr.conid(289715299);
+     * optCtr.symbol("SPY");
+     * optCtr.secType(Types.SecType.OPT);
+     * optCtr.lastTradeDateOrContractMonth("20171006");
+     * optCtr.strike(253.5);
+     * optCtr.right(Types.Right.Call);
+     * optCtr.multiplier("100");
+     * optCtr.exchange("SMART");
+     * optCtr.currency("USD");
+     * optCtr.localSymbol("SPY  171006C00253500");
+     * optCtr.tradingClass("SPY");
+     * optCtr.includeExpired(false);
+     * 注意： m_client.reqHistoricalData 的参数中
+     * endDateTime 格式为：20171006 23:59:00
+     * durationStr 格式为：10000 S
+     * barSize  格式为：10 secs
+     * whatToShow 格式为：TRADES
+     * useRTH  格式为： rthOnly ? 1 : 0
+     * formatDate 格式为：2
+     * chartOptions 格式为： Collections.emptyList()
+     *
+     * @param endDateTime
+     * @param duration
+     * @param barSize
+     */
+    public int reqOptionHistoricDatas(Contract contract,
+                                      String endDateTime,
+                                      long duration,
+                                      Types.DurationUnit durationUnit,
+                                      Types.BarSize barSize)
+    {
+
+        EClientSocket m_client = dataManager.getM_client();
+        if (m_client != null && contract != null && notNullAndEmptyStr(endDateTime) && duration > 0 &&
+            durationUnit != null && barSize != null)
+        {
+            String t_endDataTime = endDateTime;
+            String t_durationStr = duration + " " + durationUnit.toString().charAt(0);
+            String t_barSize = barSize.toString();
+            String whatToShow = "TRADES";
+            int useRTH = 0;
+            int formatData = 2;
+            List<TagValue> tagValueList = Collections.emptyList();
+            int reqid = getReqId();
+
+            m_client.reqHistoricalData(reqid,
+                                       contract,
+                                       t_endDataTime,
+                                       t_durationStr,
+                                       t_barSize,
+                                       whatToShow,
+                                       useRTH,
+                                       formatData,
+                                       tagValueList);
+            return reqid;
+        }
+        return -1;
+    }
+
+    /**
      * 获取历史数据 （当单位选 秒 时，最小时间bar为5秒）
      * 例如：查询 spy option  的历史数据 ，其 Contract 如下(即查询回来的Contract)
      * Contract optCtr = new Contract();
@@ -225,7 +288,7 @@ public class Symbol
      * @param duration
      * @param barSize
      */
-    public int reqHistoryDatas(String symbol,
+    public int reqHistoricDatas(String symbol,
                                 String endDateTime,
                                 long duration,
                                 Types.DurationUnit durationUnit,
@@ -271,7 +334,7 @@ public class Symbol
     public void cancelReqHistoricalData(int reqid)
     {
         EClientSocket m_client = dataManager.getM_client();
-        if(reqid > 0 && m_client != null)
+        if (reqid > 0 && m_client != null)
         {
             m_client.cancelHistoricalData(reqid);
         }

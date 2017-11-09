@@ -1,11 +1,11 @@
 package com.view.panel;
 
-import com.dataModel.SDataManager;
-import com.dataModel.Symbol;
 import com.commdata.mbassadorObj.MBABeginQuerySymbol;
 import com.commdata.mbassadorObj.MBAHistoricalData;
 import com.commdata.mbassadorObj.MBAHistoricalDataEnd;
 import com.commdata.mbassadorObj.MBASymbolRealPrice;
+import com.dataModel.SDataManager;
+import com.dataModel.Symbol;
 import com.ib.client.Types;
 import com.utils.GBC;
 import com.utils.SUtil;
@@ -14,7 +14,6 @@ import com.view.panel.smallPanel.SRealTimePnl;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -28,13 +27,15 @@ import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
 import org.jfree.data.Range;
 import static com.utils.SUtil.changeToDate;
+import static com.utils.SUtil.getBarSizebyDurationSeconds;
 import static com.utils.SUtil.getCurrentAmericaLocalDateTime;
 import static com.utils.SUtil.getCurrentDayUSACloseDateTime;
 import static com.utils.SUtil.getCurrentDayUSAOpenDateTime;
-import static com.utils.SUtil.getUSAOpenDateTimeByLastDay;
+import static com.utils.SUtil.getLastOpenTimeSeconds;
 import static com.utils.SUtil.getLowHighPair;
 import static com.utils.SUtil.getOpenCloseDate;
 import static com.utils.SUtil.getUSADateTimeByEpochSecond;
+import static com.utils.SUtil.getUSAOpenDateTimeByLastDay;
 import static com.utils.SUtil.ifNowIsOpenTime;
 import static com.utils.SUtil.usaChangeToLocalDateTime;
 import static com.utils.TConst.DATAMAAGER_BUS;
@@ -122,7 +123,7 @@ public class SRealTimePicturePnl extends JPanel
             LocalDateTime curUsaOpenDateTime = getCurrentDayUSAOpenDateTime();
             LocalDateTime curUsaLocalDateTime = getCurrentAmericaLocalDateTime();
             // 如果现在是开盘时间，则取当前时间
-            if (ifNowIsOpenTime() || curUsaLocalDateTime.plusMinutes(3).isAfter(curUsaOpenDateTime))
+            if (ifNowIsOpenTime() || curUsaLocalDateTime.plusMinutes(10).isAfter(curUsaOpenDateTime))
             {
                 openUsaDateTime = getCurrentDayUSAOpenDateTime();
                 closeUsaDateTime = getCurrentDayUSACloseDateTime();
@@ -146,11 +147,11 @@ public class SRealTimePicturePnl extends JPanel
             // 注意：设置X轴需要用美国时间
             setXRange(openUsaDateTime, closeUsaDateTime);
             // 注意：查询历史数据需要用本地时间
-            reqHistoritDataReqid = symbol.reqHistoryDatas(msg.getSymbol(),
-                                                          locatime,
-                                                          duration,
-                                                          Types.DurationUnit.SECOND,
-                                                          barSize);
+            reqHistoritDataReqid = symbol.reqHistoricDatas(msg.getSymbol(),
+                                                           locatime,
+                                                           duration,
+                                                           Types.DurationUnit.SECOND,
+                                                           barSize);
         }
     }
 
@@ -253,40 +254,6 @@ public class SRealTimePicturePnl extends JPanel
         }
         Date date = changeToDate(getCurrentAmericaLocalDateTime());
         sSpyRealTimePnl.addValue(date, msg.symbolRealPrice);
-    }
-
-    // 计算当前时间到开盘时间的时间间隔, 单位秒
-    private long getLastOpenTimeSeconds()
-    {
-        if (ifNowIsOpenTime())
-        {
-            LocalDateTime usaOpentTime = getCurrentDayUSAOpenDateTime();
-            LocalDateTime curUsaTime = getCurrentAmericaLocalDateTime();
-            Duration duration = Duration.between(usaOpentTime, curUsaTime);
-            return duration.getSeconds();
-        }
-        return -1;
-    }
-
-    // 根据时间间隔 获取到 BarSize
-    private Types.BarSize getBarSizebyDurationSeconds(long seconds)
-    {
-        if (seconds <= 10000)
-        {
-            return Types.BarSize._5_secs;
-        }
-        else if (seconds <= 20000)
-        {
-            return Types.BarSize._10_secs;
-        }
-        else if (seconds <= 30000)
-        {
-            return Types.BarSize._15_secs;
-        }
-        else
-        {
-            return Types.BarSize._30_secs;
-        }
     }
 
 

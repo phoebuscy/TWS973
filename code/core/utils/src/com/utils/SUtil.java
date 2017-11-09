@@ -3,6 +3,7 @@ package com.utils;
 
 import com.commdata.mbassadorObj.MBAHistoricalData;
 
+import com.ib.client.Types;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -10,6 +11,7 @@ import java.awt.Toolkit;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -635,6 +637,19 @@ public class SUtil
         return null;
     }
 
+    // 根据 秒 获取本地时间
+    public static LocalDateTime getLocalDateTimeByEpochSecond(String epochSecond)
+    {
+        if (isIntNumeric(epochSecond))
+        {
+            long epocSecs = Long.parseLong(epochSecond);
+            Instant instant = Instant.ofEpochSecond(epocSecs);
+            LocalDateTime lt = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+            return lt;
+        }
+        return null;
+    }
+
     // 获取历史数据中最低和最高值
     public static Pair getLowHighPair(List<MBAHistoricalData> historicalDataList)
     {
@@ -692,6 +707,41 @@ public class SUtil
             return new Pair<>(openUsaDateTime, closeUsaDateTime);
         }
         return null;
+    }
+
+
+    // 计算当前时间到开盘时间的时间间隔, 单位秒
+    public static long getLastOpenTimeSeconds()
+    {
+        if (ifNowIsOpenTime())
+        {
+            LocalDateTime usaOpentTime = getCurrentDayUSAOpenDateTime();
+            LocalDateTime curUsaTime = getCurrentAmericaLocalDateTime();
+            Duration duration = Duration.between(usaOpentTime, curUsaTime);
+            return duration.getSeconds();
+        }
+        return -1;
+    }
+
+    // 根据时间间隔 获取到 BarSize
+    public static Types.BarSize getBarSizebyDurationSeconds(long seconds)
+    {
+        if (seconds <= 10000)
+        {
+            return Types.BarSize._5_secs;
+        }
+        else if (seconds <= 20000)
+        {
+            return Types.BarSize._10_secs;
+        }
+        else if (seconds <= 30000)
+        {
+            return Types.BarSize._15_secs;
+        }
+        else
+        {
+            return Types.BarSize._30_secs;
+        }
     }
 
 
