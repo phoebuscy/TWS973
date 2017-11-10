@@ -5,6 +5,7 @@ import com.render.SRoserender;
 import com.utils.TConst;
 import java.util.List;
 import javax.swing.JTable;
+import static com.utils.SUtil.isDoubleNumber;
 import static com.utils.SUtil.setColumWidth;
 import static com.utils.TFileUtil.getConfigValue;
 
@@ -71,6 +72,21 @@ public class SOptionLinkTable extends JTable
         if (optionLinkTabelModel != null)
         {
             optionLinkTabelModel.setValueAt(value, rowIndex, colIndex);
+
+            // 如果设置了最新值 或昨收值，则判断 最新值和昨收值是否有效，如果有效，则设置涨跌额和涨跌幅
+            Object curPrice = null;
+            Object zsPrice = null;
+            if (colIndex == 2 || colIndex == 4)
+            {
+                curPrice = optionLinkTabelModel.getValueAt(rowIndex, 2);
+                zsPrice = optionLinkTabelModel.getValueAt(rowIndex, 4);
+            }
+            if (isDoubleNumber(curPrice) && isDoubleNumber(zsPrice))
+            {
+                optionLinkTabelModel.setValueAt((Double) curPrice - (Double) zsPrice, rowIndex, 5);
+                optionLinkTabelModel.setValueAt(((Double) curPrice - (Double) zsPrice) / (Double) zsPrice, rowIndex, 6);
+            }
+
         }
     }
 

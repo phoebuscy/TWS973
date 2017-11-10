@@ -4,6 +4,7 @@ import com.answermodel.AnswerObj;
 import com.commdata.mbassadorObj.MBAOptionExpireDayList;
 import com.commdata.mbassadorObj.MBASymbolRealPrice;
 import com.commdata.mbassadorObj.MBAtickPrice;
+import com.commdata.pubdata.OptionHistoricReqParams;
 import com.ib.client.Contract;
 import com.ib.client.ContractDetails;
 import com.ib.client.EClientSocket;
@@ -48,6 +49,8 @@ public class Symbol
     private List<ContractDetails> contractDetailsList = new ArrayList<>();
     private Map<String, List<ContractDetails>> day2CtrdMap = new HashMap<>();
     private List<String> optionExpireDayLst = new ArrayList<>();   // 排序的期权结束日期
+
+    private List<OptionHistoricReqParams> optHistoricReqParamLst = new ArrayList<>(); // 保存查询历史数据的参数
 
 
     public Symbol(SDataManager dataManager)
@@ -180,7 +183,7 @@ public class Symbol
             for (ContractDetails ctrDtails : ctrdetailLst)
             {
                 Double strike = ctrDtails.contract().strike();
-                if (Double.compare(Math.abs(curSymbolRealPrice - strike), 3.0) == -1)
+                if (Double.compare(Math.abs(curSymbolRealPrice - strike), 1.00) == -1)
                 {
                     List<ContractDetails> contractDetailsLst = strike2ContractDtalsLst.get(strike);
                     if (contractDetailsLst == null)
@@ -257,6 +260,17 @@ public class Symbol
         }
         return -1;
     }
+
+    // 该方法仅仅是把接收到的数据保存到缓存列表中，后续执行需要新起线程执行，为了控制2秒之内不能超出6个查询请求
+    public int reqOptionHistoricDatas_pub(Contract contract,
+                                          String endDateTime,
+                                          long duration,
+                                          Types.DurationUnit durationUnit,
+                                          Types.BarSize barSize)
+    {
+        return 0;
+    }
+
 
     /**
      * 获取历史数据 （当单位选 秒 时，最小时间bar为5秒）

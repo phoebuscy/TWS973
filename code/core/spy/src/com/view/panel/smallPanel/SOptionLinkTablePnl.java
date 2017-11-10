@@ -37,10 +37,9 @@ import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import static com.utils.SUtil.getBarSizebyDurationSeconds;
+import static com.apidemo.util.Util.sleep;
 import static com.utils.SUtil.getCurrentDayUSAOpenDateTime;
 import static com.utils.SUtil.getDimension;
-import static com.utils.SUtil.getLastOpenTimeSeconds;
 import static com.utils.SUtil.getUSADateTimeByEpochSecond;
 import static com.utils.SUtil.ifNowIsOpenTime;
 import static com.utils.SUtil.usaChangeToLocalDateTime;
@@ -271,7 +270,6 @@ public class SOptionLinkTablePnl extends JPanel
                     String endTimeStr = endDatetime.format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
 
                     long duration = 60;//  getLastOpenTimeSeconds();// + 60; // 注意，此处要加60秒，是为了获取今天开盘时间的价格
-                    String endDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
                     reqid = symbol.reqOptionHistoricDatas(ctrDts.contract(),
                                                           endTimeStr,
                                                           duration,
@@ -398,6 +396,10 @@ public class SOptionLinkTablePnl extends JPanel
         if (notNullAndEmptyCollection(historicalDataList))
         {
             LocalDateTime todayOpenDateTime = getCurrentDayUSAOpenDateTime();
+
+            LocalDateTime beginDataTime = todayOpenDateTime.plusSeconds(-1);
+            LocalDateTime endDateTime = todayOpenDateTime.plusSeconds(31);
+
             for (MBAHistoricalData hisData : historicalDataList)
             {
                 LocalDateTime usaDateTime = getUSADateTimeByEpochSecond(hisData.date);
@@ -405,8 +407,7 @@ public class SOptionLinkTablePnl extends JPanel
                 LogMsg.info("REQ_historicID: " + hisData.reqId + "  Time: " + usaDateTime.toString() + " price: " +
                             hisData.open);
 
-                if (todayOpenDateTime.equals(usaDateTime) || (usaDateTime.isAfter(todayOpenDateTime.plusSeconds(-1)) &&
-                                                              usaDateTime.isBefore(todayOpenDateTime.plusSeconds(50))))
+                if (usaDateTime.isAfter(beginDataTime) && usaDateTime.isBefore(endDateTime))
                 {
                     return hisData.open;
                 }
