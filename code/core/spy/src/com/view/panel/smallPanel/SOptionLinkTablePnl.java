@@ -37,7 +37,6 @@ import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import static com.apidemo.util.Util.sleep;
 import static com.utils.SUtil.getCurrentDayUSAOpenDateTime;
 import static com.utils.SUtil.getDimension;
 import static com.utils.SUtil.getUSADateTimeByEpochSecond;
@@ -270,11 +269,11 @@ public class SOptionLinkTablePnl extends JPanel
                     String endTimeStr = endDatetime.format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
 
                     long duration = 60;//  getLastOpenTimeSeconds();// + 60; // 注意，此处要加60秒，是为了获取今天开盘时间的价格
-                    reqid = symbol.reqOptionHistoricDatas(ctrDts.contract(),
-                                                          endTimeStr,
-                                                          duration,
-                                                          Types.DurationUnit.SECOND,
-                                                          Types.BarSize._30_secs);
+                    reqid = symbol.reqOptionHistoricDatas_pub(ctrDts.contract(),
+                                                              endTimeStr,
+                                                              duration,
+                                                              Types.DurationUnit.SECOND,
+                                                              Types.BarSize._30_secs);
                     if (-1 != reqid)
                     {
                         historicReqID2ContactsMap.put(reqid, ctrDts);

@@ -4,6 +4,7 @@ import com.answermodel.AnswerObj;
 import com.commdata.mbassadorObj.MBAOptionExpireDayList;
 import com.commdata.mbassadorObj.MBASymbolRealPrice;
 import com.commdata.mbassadorObj.MBAtickPrice;
+import com.commdata.pubdata.OptHisDataReqParamStorage;
 import com.commdata.pubdata.OptionHistoricReqParams;
 import com.ib.client.Contract;
 import com.ib.client.ContractDetails;
@@ -12,11 +13,13 @@ import com.ib.client.TagValue;
 import com.ib.client.TickType;
 import com.ib.client.Types;
 import com.utils.TMbassadorSingleton;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javafx.util.Pair;
 import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.IMessageFilter;
@@ -50,12 +53,14 @@ public class Symbol
     private Map<String, List<ContractDetails>> day2CtrdMap = new HashMap<>();
     private List<String> optionExpireDayLst = new ArrayList<>();   // 排序的期权结束日期
 
-    private List<OptionHistoricReqParams> optHistoricReqParamLst = new ArrayList<>(); // 保存查询历史数据的参数
-
+    // 保存查询历史数据的参数 (用于后面的通过线程来下发，注意，这个使用的是线程安全 Queue)
+    private OptHisDataReqParamStorage optHisDataReqParamStorage = new OptHisDataReqParamStorage();
+    private reqOptHisDataThread reqOptHisDataThread = new reqOptHisDataThread(optHisDataReqParamStorage);
 
     public Symbol(SDataManager dataManager)
     {
         this.dataManager = dataManager;
+        reqOptHisDataThread.start();
 
         // 订阅消息总线名称为 DATAMAAGER_BUS 的 消息
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
@@ -227,7 +232,8 @@ public class Symbol
      * @param duration
      * @param barSize
      */
-    public int reqOptionHistoricDatas(Contract contract,
+    public int reqOptionHistoricDatas(int reqId,
+                                      Contract contract,
                                       String endDateTime,
                                       long duration,
                                       Types.DurationUnit durationUnit,
@@ -245,9 +251,8 @@ public class Symbol
             int useRTH = 0;
             int formatData = 2;
             List<TagValue> tagValueList = Collections.emptyList();
-            int reqid = getReqId();
 
-            m_client.reqHistoricalData(reqid,
+            m_client.reqHistoricalData(reqId,
                                        contract,
                                        t_endDataTime,
                                        t_durationStr,
@@ -256,7 +261,7 @@ public class Symbol
                                        useRTH,
                                        formatData,
                                        tagValueList);
-            return reqid;
+            return reqId;
         }
         return -1;
     }
@@ -268,7 +273,92 @@ public class Symbol
                                           Types.DurationUnit durationUnit,
                                           Types.BarSize barSize)
     {
-        return 0;
+
+        int reqId = getReqId();
+        OptionHistoricReqParams optionHistoricReqParams = new OptionHistoricReqParams(contract,
+                                                                                      endDateTime,
+                                                                                      duration,
+                                                                                      durationUnit,
+                                                                                      barSize);
+        optHisDataReqParamStorage.produce(new Pair<>(reqId, optionHistoricReqParams));
+        return reqId;
+    }
+
+    private class reqOptHisDataThread extends Thread
+    {
+        private OptHisDataReqParamStorage optHisDataReqParamStorage;
+
+        public reqOptHisDataThread(OptHisDataReqParamStorage optreqStrg)
+        {
+            optHisDataReqParamStorage = optreqStrg;
+        }
+
+        @Override
+        public void run()
+        {
+
+            int count = 0;
+            while (true)
+            {
+                count++;
+                if (count >= 5)
+                {
+                    count = 0;
+                    System.out.println(" begin sleep: " + LocalDateTime.now().toString());
+                    try
+                    {
+                        Thread.sleep(2000);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+
+                consume();
+            }
+        }
+
+        // 调用仓库Storage的生产函数
+        public void consume()
+        {
+            EClientSocket m_client = dataManager != null ? dataManager.getM_client() : null;
+            if (m_client != null && optHisDataReqParamStorage != null)
+            {
+                List<Pair<Integer, OptionHistoricReqParams>> consumContLst = new ArrayList<>();
+                optHisDataReqParamStorage.consume(consumContLst);
+                if (notNullAndEmptyCollection(consumContLst))
+                {
+                    Pair<Integer, OptionHistoricReqParams> reqidAndReqParam = consumContLst.get(0);
+                    int reqId = reqidAndReqParam.getKey();
+                    OptionHistoricReqParams optReqParam = reqidAndReqParam.getValue();
+
+                    if (optReqParam != null && optReqParam.contract != null &&
+                        notNullAndEmptyStr(optReqParam.endDateTime) && optReqParam.duration > 0 &&
+                        optReqParam.durationUnit != null && optReqParam.barSize != null)
+                    {
+                        String t_endDataTime = optReqParam.endDateTime;
+                        String t_durationStr =
+                                optReqParam.duration + " " + optReqParam.durationUnit.toString().charAt(0);
+                        String t_barSize = optReqParam.barSize.toString();
+                        String whatToShow = "TRADES";
+                        int useRTH = 0;
+                        int formatData = 2;
+                        List<TagValue> tagValueList = Collections.emptyList();
+
+                        m_client.reqHistoricalData(reqId,
+                                                   optReqParam.contract,
+                                                   t_endDataTime,
+                                                   t_durationStr,
+                                                   t_barSize,
+                                                   whatToShow,
+                                                   useRTH,
+                                                   formatData,
+                                                   tagValueList);
+                    }
+                }
+            }
+        }
     }
 
 
@@ -423,6 +513,7 @@ public class Symbol
             }
             return false;
         }
+
     }
 
     @Handler(filters = {@Filter(contractDetailEndFilter.class)})
