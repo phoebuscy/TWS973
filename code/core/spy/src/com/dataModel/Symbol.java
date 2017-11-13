@@ -56,11 +56,11 @@ public class Symbol
     // 保存查询历史数据的参数 (用于后面的通过线程来下发，注意，这个使用的是线程安全 Queue)
     private OptHisDataReqParamStorage optHisDataReqParamStorage = new OptHisDataReqParamStorage();
     private reqOptHisDataThread reqOptHisDataThread = new reqOptHisDataThread(optHisDataReqParamStorage);
+    private boolean reqOptHisDataThreadStartFlg = false;  // reqOptHisDataThread 线程已启动标志
 
     public Symbol(SDataManager dataManager)
     {
         this.dataManager = dataManager;
-        reqOptHisDataThread.start();
 
         // 订阅消息总线名称为 DATAMAAGER_BUS 的 消息
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
@@ -297,11 +297,13 @@ public class Symbol
         public void run()
         {
 
+            LocalDateTime beginTime = LocalDateTime.now();
             int count = 0;
             while (true)
             {
+                LocalDateTime endTime = LocalDateTime.now();
                 count++;
-                if (count >= 5)
+                if (count >= 5 && beginTime.plusSeconds(2).isAfter(endTime))
                 {
                     count = 0;
                     System.out.println(" begin sleep: " + LocalDateTime.now().toString());
@@ -313,6 +315,8 @@ public class Symbol
                     {
                         e.printStackTrace();
                     }
+
+                    beginTime = LocalDateTime.now();
                 }
 
                 consume();
@@ -498,6 +502,13 @@ public class Symbol
         if (obj instanceof ContractDetails)
         {
             contractDetailsList.add((ContractDetails) obj);
+        }
+
+        // 启动一下下发查询期权历史数据线程
+        if(!reqOptHisDataThreadStartFlg)
+        {
+            reqOptHisDataThreadStartFlg = true;
+            reqOptHisDataThread.start();
         }
     }
 
