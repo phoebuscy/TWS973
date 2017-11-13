@@ -188,7 +188,25 @@ public class Symbol
             for (ContractDetails ctrDtails : ctrdetailLst)
             {
                 Double strike = ctrDtails.contract().strike();
-                if (Double.compare(Math.abs(curSymbolRealPrice - strike), 1.00) == -1)
+                long curSymbolRealPrice_round = Math.round(curSymbolRealPrice);  // 当前价四舍五入取整
+
+                Double optStrick = 0D;
+                int compareResult = Double.compare(curSymbolRealPrice_round,curSymbolRealPrice);
+                if(compareResult == -1)
+                {
+                    optStrick = curSymbolRealPrice_round + 0D;
+                }
+                else if(compareResult == 1)
+                {
+                    optStrick = curSymbolRealPrice_round - 0.5;
+                }
+                else
+                {
+                    optStrick = strike;
+                }
+
+               // if (Double.compare(Math.abs(curSymbolRealPrice - strike), 0.49) == -1)
+                if(Double.compare(optStrick, strike) == 0)
                 {
                     List<ContractDetails> contractDetailsLst = strike2ContractDtalsLst.get(strike);
                     if (contractDetailsLst == null)
@@ -296,30 +314,24 @@ public class Symbol
         @Override
         public void run()
         {
-
-            LocalDateTime beginTime = LocalDateTime.now();
             int count = 0;
             while (true)
             {
-                LocalDateTime endTime = LocalDateTime.now();
-                count++;
-                if (count >= 5 && beginTime.plusSeconds(2).isAfter(endTime))
+                if (count >= 4)
                 {
                     count = 0;
                     System.out.println(" begin sleep: " + LocalDateTime.now().toString());
                     try
                     {
-                        Thread.sleep(2000);
+                        Thread.sleep(3000);
                     }
                     catch (InterruptedException e)
                     {
                         e.printStackTrace();
                     }
-
-                    beginTime = LocalDateTime.now();
                 }
-
                 consume();
+                count++;
             }
         }
 
@@ -505,7 +517,7 @@ public class Symbol
         }
 
         // 启动一下下发查询期权历史数据线程
-        if(!reqOptHisDataThreadStartFlg)
+        if (!reqOptHisDataThreadStartFlg)
         {
             reqOptHisDataThreadStartFlg = true;
             reqOptHisDataThread.start();

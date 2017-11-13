@@ -117,6 +117,7 @@ public class SInitDatabaseDlg extends JFrame
             //  createDB(connection);  // 创建数据库
             // createTable(userName, password); // 创建数据库表
             // inserData(userName, password);
+            createReqIDTable(userName, password);  // 创建reqid表
             inserDataByProc(userName, password);  // 调用存储过程插入数据
 
             int a = 1;
@@ -182,7 +183,6 @@ public class SInitDatabaseDlg extends JFrame
 
     /**
      * 创建数据库表
-     *
      * @param
      */
     private void createTable(String username, String password)
@@ -208,8 +208,38 @@ public class SInitDatabaseDlg extends JFrame
             System.out.println("创建失败！或已经存在该表格" + e);
             e.printStackTrace();
         }
-
     }
+
+    /**
+     * 创建查询id表
+     * @param username
+     * @param password
+     */
+   private void createReqIDTable(String username, String password)
+   {
+       try
+       {
+           //加载驱动
+           Class.forName("com.mysql.jdbc.Driver");
+           //链接到数据库
+           String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC";
+           Connection ss = DriverManager.getConnection(url, username, password);
+           //获取对象
+           Statement stmt = ss.createStatement();
+           //插入记录到数据库中
+           String sqlstr = "create table reqid(id int(1));";
+           int ret = stmt.executeUpdate(sqlstr);
+
+           System.out.println("创建成功！");
+           stmt.close();
+           ss.close();
+       } catch (Exception e)
+       {
+           System.out.println("创建失败！或已经存在该表格" + e);
+           e.printStackTrace();
+       }
+
+   }
 
     private void inserData(String username, String password)
     {
