@@ -1,5 +1,9 @@
 package com.database;
 
+import java.sql.CallableStatement;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,19 +23,24 @@ public class DbManager
     private static DbManager instance = new DbManager();
 
 
-
     public static void main(String[] args)
     {
         DbManager dbManager = getInstance();
 
-        dbManager.initDb();
-    }
+        List<Integer> reqidLst = new ArrayList<>();
+        for (int i = 0; i < 10000; i++)
+        {
+            int reqid = dbManager.queryReqID();
+            reqidLst.add(reqid);
+        }
 
+        int a = 1;
+    }
 
 
     private DbManager()
     {
-        initDb();
+        connection = connectDB(dbname, userName, password);
     }
 
     public static DbManager getInstance()
@@ -39,8 +48,10 @@ public class DbManager
         return instance;
     }
 
-    private void initDb()
+    public void initDb(String userName, String password)
     {
+        this.userName = userName;
+        this.password = password;
         Connection mysqlConn = connectMySql(userName, password);
         createTwsDb(mysqlConn, dbname);  // 如果不存在则创建TwsDb数据库
         connection = connectDB(dbname, userName, password);
@@ -58,7 +69,7 @@ public class DbManager
     // 创建数据库的存储过程
     private void createProcedure(Connection connection)
     {
-
+        createQueryReqIdProc(connection);
     }
 
     private void createTwsDb(Connection mysqlConn, String dbname)
@@ -72,7 +83,8 @@ public class DbManager
                 int ret = statement.executeUpdate(hrappSQL);
                 statement.close();
                 mysqlConn.close();
-            } catch (SQLException ex)
+            }
+            catch (SQLException ex)
             {
                 LogApp.error("DbManager createTwsDb failed");
                 ex.printStackTrace();
@@ -90,7 +102,8 @@ public class DbManager
         try
         {
             Class.forName("com.mysql.jdbc.Driver");
-        } catch (ClassNotFoundException e)
+        }
+        catch (ClassNotFoundException e)
         {
             // TODO Auto-generated catch block
             LogApp.error("add mysql jdbc driver failed");  // 找不到驱动！
@@ -103,7 +116,8 @@ public class DbManager
             {
                 LogApp.info("connection successful");
             }
-        } catch (SQLException e)
+        }
+        catch (SQLException e)
         {
             // TODO Auto-generated catch block
             LogApp.error("connection fail");
@@ -122,7 +136,8 @@ public class DbManager
         try
         {
             Class.forName("com.mysql.jdbc.Driver");
-        } catch (ClassNotFoundException e)
+        }
+        catch (ClassNotFoundException e)
         {
             // TODO Auto-generated catch block
             LogApp.error("add mysql jdbc driver failed");  // 找不到驱动！
@@ -135,7 +150,8 @@ public class DbManager
             {
                 LogApp.info("connection successful");
             }
-        } catch (SQLException e)
+        }
+        catch (SQLException e)
         {
             // TODO Auto-generated catch block
             LogApp.error("connection fail");
@@ -146,11 +162,12 @@ public class DbManager
 
     /**
      * 创建查询id表
+     *
      * @param connection
      */
     private void createQueryIDTable(Connection connection)
     {
-        if(connection != null)
+        if (connection != null)
         {
             try
             {
@@ -173,13 +190,59 @@ public class DbManager
 
                 System.out.println("创建成功！");
                 stmt.close();
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 System.out.println("创建失败！或已经存在该表格" + e);
                 e.printStackTrace();
             }
         }
+    }
 
+    /**
+     * 创建查询reqid的存储过程
+     *
+     * @param connection
+     */
+    private void createQueryReqIdProc(Connection connection)
+    {
+        if (connection != null)
+        {
+            try
+            {
+                Statement statement = connection.createStatement();
+                String sqlStr = "create procedure queryReqIDProc(out id int)" + "BEGIN " +
+                                "update queryidtable set reqid=reqid+1;" + "select reqid into id from queryidtable;" +
+                                "END ";
+                statement.executeUpdate(sqlStr);
+            }
+            catch (SQLException e)
+            {
+                LogApp.error("DbManager createQueryReqIdProc failed");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public int queryReqID()
+    {
+        int retid = 0;
+        if (connection != null)
+        {
+            try
+            {
+                CallableStatement cs = connection.prepareCall("{call queryReqIDProc(?)}");
+                cs.registerOutParameter(1, Types.INTEGER);
+                cs.execute();
+                retid = cs.getInt(1);
+            }
+            catch (SQLException e)
+            {
+                e.printStackTrace();
+            }
+
+        }
+        return retid;
     }
 
 

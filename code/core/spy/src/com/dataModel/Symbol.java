@@ -24,7 +24,6 @@ import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
-import static com.dataModel.SDataManager.getReqId;
 import static com.utils.SUtil.getSysYear;
 import static com.utils.TConst.AK_CONTRACT_DETAIL_END;
 import static com.utils.TConst.DATAMAAGER_BUS;
@@ -102,7 +101,7 @@ public class Symbol
         EClientSocket m_client = dataManager.getM_client();
         if (m_client != null && contract != null)
         {
-            int reqId = getReqId();
+            int reqId = dataManager.getReqId();
             String genericTickList = "";
             boolean snapshot = false;
             boolean regulatorySnaphsot = false;
@@ -138,7 +137,7 @@ public class Symbol
             contract.exchange("SMART");
             contract.primaryExch("ISLAND");
             contract.currency("USD");
-            int tickID = getReqId();
+            int tickID = dataManager.getReqId();
             m_client.reqMktData(tickID, contract, "", false, false, null);
             querySymbolRealPriceTickid = tickID;
         }
@@ -167,7 +166,7 @@ public class Symbol
             contract.exchange("SMART");
             contract.currency("USD");
 
-            queryOptionChainReqId = getReqId();
+            queryOptionChainReqId = dataManager.getReqId();
             EClientSocket m_client = dataManager.getM_client();
             if (m_client != null)
             {
@@ -292,7 +291,7 @@ public class Symbol
                                           Types.BarSize barSize)
     {
 
-        int reqId = getReqId();
+        int reqId = dataManager.getReqId();
         OptionHistoricReqParams optionHistoricReqParams = new OptionHistoricReqParams(contract,
                                                                                       endDateTime,
                                                                                       duration,
@@ -435,7 +434,7 @@ public class Symbol
             int formatData = 2;
             List<TagValue> tagValueList = Collections.emptyList();
 
-            int reqid = getReqId();
+            int reqid = dataManager.getReqId();
 
             m_client.reqHistoricalData(reqid,
                                        contract,

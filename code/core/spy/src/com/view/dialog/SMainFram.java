@@ -4,13 +4,6 @@ import com.utils.SUtil;
 import com.utils.TConst;
 import com.utils.TPubUtil;
 import com.view.panel.STopoFramContentPnl;
-import org.apache.logging.log4j.core.config.ConfigurationSource;
-import org.apache.logging.log4j.core.config.Configurator;
-
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,7 +12,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
-
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.Configurator;
 import static com.utils.TFileUtil.getConfigValue;
 import static com.utils.TFileUtil.getProjectFileByName;
 
@@ -61,6 +59,7 @@ public class SMainFram extends JFrame
         {
             e.printStackTrace();
         }
+
 
         setMenuBar();
     }

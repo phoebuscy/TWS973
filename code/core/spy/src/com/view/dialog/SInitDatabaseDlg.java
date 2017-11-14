@@ -1,20 +1,17 @@
 package com.view.dialog;
 
+import com.database.DbManager;
 import com.utils.GBC;
 import com.utils.SUtil;
 import com.utils.TConst;
-
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
-import java.awt.im.InputMethodRequests;
 import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -22,10 +19,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import static com.utils.TFileUtil.getConfigValue;
 
 /*
@@ -52,6 +47,7 @@ import static com.utils.TFileUtil.getConfigValue;
 public class SInitDatabaseDlg extends JFrame
 {
     private static Logger LogApp = LogManager.getLogger("applog");
+    private DbManager dbManager = DbManager.getInstance();
 
     private final String dbname = "twsdb";
 
@@ -113,13 +109,16 @@ public class SInitDatabaseDlg extends JFrame
         {
             String userName = userTextField.getText().trim();
             String password = pwTextField.getText().trim();
+            dbManager.initDb(userName,password);
+
+            /*
             Connection connection = connectDB(userName, password);
             //  createDB(connection);  // 创建数据库
             // createTable(userName, password); // 创建数据库表
             // inserData(userName, password);
             createReqIDTable(userName, password);  // 创建reqid表
             inserDataByProc(userName, password);  // 调用存储过程插入数据
-
+            */
             int a = 1;
         }
     }

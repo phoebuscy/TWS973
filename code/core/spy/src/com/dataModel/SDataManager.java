@@ -3,6 +3,7 @@ package com.dataModel;
 import com.commdata.mbassadorObj.MBAHistoricalData;
 import com.commdata.mbassadorObj.MBAHistoricalDataEnd;
 import com.commdata.mbassadorObj.MBAtickPrice;
+import com.database.DbManager;
 import com.ib.client.CommissionReport;
 import com.ib.client.Contract;
 import com.ib.client.ContractDescription;
@@ -46,6 +47,7 @@ public class SDataManager implements EWrapper
     private static Logger LogMsg = LogManager.getLogger("datamsg");
 
     private static SDataManager instance = new SDataManager();
+    private DbManager dbManager = DbManager.getInstance();
     private String m_host;
     private int m_port;
     private int m_clientid;
@@ -57,7 +59,6 @@ public class SDataManager implements EWrapper
 
     public Symbol symbol = null;
 
-    private static int reqId = 100000;
 
     static
     {
@@ -137,9 +138,9 @@ public class SDataManager implements EWrapper
         m_client.eDisconnect();
     }
 
-    public static synchronized int getReqId()
+    public int getReqId()
     {
-        reqId++;
+        int reqId = dbManager.queryReqID();
         return reqId;
     }
 
