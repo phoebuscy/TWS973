@@ -63,7 +63,7 @@ public class ConnectionMonitor
                 if (m_dataManager.isConnected())
                 {
                     TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(makeAKmsg(AK_CONNECTED, "true"));
-                    LogApp.info("ConnectionMonitor check result : connected");
+                    //LogApp.info("ConnectionMonitor check result : connected");
                     m_dataManager.reqCurrentTime();
                 }
                 else

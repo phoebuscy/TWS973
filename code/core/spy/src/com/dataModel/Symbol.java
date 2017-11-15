@@ -24,6 +24,8 @@ import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import static com.utils.SUtil.getSysYear;
 import static com.utils.TConst.AK_CONTRACT_DETAIL_END;
 import static com.utils.TConst.DATAMAAGER_BUS;
@@ -40,6 +42,8 @@ import static com.utils.TStringUtil.notNullAndEmptyStr;
 
 public class Symbol
 {
+    private static Logger LogApp = LogManager.getLogger("applog");
+    private static Logger LogMsg = LogManager.getLogger("datamsg");
 
     private String symbolVal = "";                 // 对象名称
     private static int querySymbolRealPriceTickid = -1;   // 查询symbol实时价格的tickid，用于接收实时数据和取消订阅之用
@@ -175,6 +179,50 @@ public class Symbol
         }
     }
 
+    // 获取与当前价格最近的contractdetails, 包括 call 和put
+    private List<ContractDetails> getNearestPriceCtrDetails(List<ContractDetails> crtdLst, double curPrice)
+    {
+        List<ContractDetails> retCrtLst = new ArrayList<>();
+        if (notNullAndEmptyCollection(crtdLst) && Double.compare(curPrice, 0D) == 1)
+        {
+            // 获取call最接近的strike
+            double minAbs = 10000000D;
+            ContractDetails retStrick = null;
+            for (ContractDetails crt : crtdLst)
+            {
+                if (crt.contract().right() != Types.Right.Call)
+                {
+                    continue;
+                }
+                Double strike = crt.contract().strike();
+                double abs = Math.abs(curPrice - strike);
+                if (Double.compare(abs, minAbs) == -1)
+                {
+                    minAbs = abs;
+                    retStrick = crt;
+                }
+            }
+            retCrtLst.add(retStrick);
+            // 获取相同价格的put
+            if (notNullAndEmptyCollection(retCrtLst))
+            {
+                ContractDetails callCrt = retCrtLst.get(0);
+                for (ContractDetails crt : crtdLst)
+                {
+                    if (crt.contract().right() != Types.Right.Put)
+                    {
+                        continue;
+                    }
+                    if (Double.compare(crt.contract().strike(), callCrt.contract().strike()) == 0)
+                    {
+                        retCrtLst.add(crt);
+                    }
+                }
+            }
+        }
+        return retCrtLst;
+    }
+
 
     public Map<Double, List<ContractDetails>> getStrike2ContractDtalsLst(String expireDay)
     {
@@ -182,40 +230,16 @@ public class Symbol
         double curSymbolRealPrice = getSymbolRealPrice();  // 需要用一个方法获取当前symbol的价格
         List<ContractDetails> ctrdetailLst = day2CtrdMap.get(expireDay);
 
-        if (notNullAndEmptyCollection(ctrdetailLst))
+        // 获取离当前价格最近的 ContractDetails
+        List<ContractDetails> nearestCrtLst = getNearestPriceCtrDetails(ctrdetailLst, curSymbolRealPrice);
+        if (notNullAndEmptyCollection(nearestCrtLst) && nearestCrtLst.size() == 2)
         {
-            for (ContractDetails ctrDtails : ctrdetailLst)
-            {
-                Double strike = ctrDtails.contract().strike();
-                long curSymbolRealPrice_round = Math.round(curSymbolRealPrice);  // 当前价四舍五入取整
-
-                Double optStrick = 0D;
-                int compareResult = Double.compare(curSymbolRealPrice_round,curSymbolRealPrice);
-                if(compareResult == -1)
-                {
-                    optStrick = curSymbolRealPrice_round + 0D;
-                }
-                else if(compareResult == 1)
-                {
-                    optStrick = curSymbolRealPrice_round - 0.5;
-                }
-                else
-                {
-                    optStrick = strike;
-                }
-
-               // if (Double.compare(Math.abs(curSymbolRealPrice - strike), 0.49) == -1)
-                if(Double.compare(optStrick, strike) == 0)
-                {
-                    List<ContractDetails> contractDetailsLst = strike2ContractDtalsLst.get(strike);
-                    if (contractDetailsLst == null)
-                    {
-                        contractDetailsLst = new ArrayList<>();
-                        strike2ContractDtalsLst.put(strike, contractDetailsLst);
-                    }
-                    contractDetailsLst.add(ctrDtails);
-                }
-            }
+            ContractDetails crtDt = nearestCrtLst.get(0);
+            strike2ContractDtalsLst.put(crtDt.contract().strike(), nearestCrtLst);
+        }
+        else
+        {
+            LogApp.error("Symbol getStrike2ContractDtalsLst get contractdetails faile");
         }
         return strike2ContractDtalsLst;
     }

@@ -6,6 +6,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javafx.util.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * 存储期权历史数据查询参数存储器
@@ -14,6 +16,8 @@ import javafx.util.Pair;
 
 public class OptHisDataReqParamStorage
 {
+    private static Logger LogApp = LogManager.getLogger("applog");
+    private static Logger LogMsg = LogManager.getLogger("datamsg");
 
     private ConcurrentLinkedQueue<Pair<Integer, OptionHistoricReqParams>> optHistReqParamQueue = new
             ConcurrentLinkedQueue();
@@ -29,6 +33,7 @@ public class OptHisDataReqParamStorage
         // 获得锁
         lock.lock();
         optHistReqParamQueue.offer(reqidAndReqParam);
+        LogApp.info("OptHisDataReqParamStorage produce put data: " + reqidAndReqParam.getValue().toString());
         // 唤醒其他所有线程
         empty.signalAll();
         // 释放锁
@@ -57,6 +62,7 @@ public class OptHisDataReqParamStorage
         if (consumContLst != null)
         {
             consumContLst.add(poll);
+            LogApp.info("OptHisDataReqParamStorage consume poll data: " + poll.getValue().toString());
         }
         // 唤醒其他所有线程
         empty.signalAll();

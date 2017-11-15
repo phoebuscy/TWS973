@@ -53,6 +53,7 @@ import static com.utils.TPubUtil.notNullAndEmptyMap;
  */
 public class SOptionLinkTablePnl extends JPanel
 {
+    private static Logger LogApp = LogManager.getLogger("applog");
     private static Logger LogMsg = LogManager.getLogger("datamsg");
     private Component parentWin;
     private Dimension parentDimension;
@@ -154,9 +155,6 @@ public class SOptionLinkTablePnl extends JPanel
 
         // 取消订阅市场数据
         cancelMarketData();
-        // 取消历史数据的请求
-        cancelHistoricData();
-
         // 设置期权链于表格中
         TCyTableModel cyTableModel = (TCyTableModel) optionLinkTable.getModel();
         cyTableModel.removeAllData();
@@ -274,6 +272,7 @@ public class SOptionLinkTablePnl extends JPanel
                                                               duration,
                                                               Types.DurationUnit.SECOND,
                                                               Types.BarSize._30_secs);
+
                     if (-1 != reqid)
                     {
                         historicReqID2ContactsMap.put(reqid, ctrDts);
@@ -351,9 +350,9 @@ public class SOptionLinkTablePnl extends JPanel
         if (hisDatalst == null)
         {
             hisDatalst = new ArrayList<>();
+            reqId2historicalDataListMap.put(msg.reqId, hisDatalst);
         }
         hisDatalst.add(msg);
-        reqId2historicalDataListMap.put(msg.reqId, hisDatalst);
     }
 
     // 接收历史数据消息结束
@@ -411,6 +410,10 @@ public class SOptionLinkTablePnl extends JPanel
                     return hisData.open;
                 }
             }
+        }
+        else
+        {
+            LogApp.error("SOptionLinkTablePnl getCurrentDayOpenPrice get openPrice failed");
         }
         return 0D;
     }

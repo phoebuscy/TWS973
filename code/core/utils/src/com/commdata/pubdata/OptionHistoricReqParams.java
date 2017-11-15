@@ -27,5 +27,9 @@ public class OptionHistoricReqParams
         this.durationUnit = durationUnit;
         this.barSize = barSize;
     }
+    public String toString()
+    {
+        return "" + contract.strike() + " : " +contract.getRight() + " : " + endDateTime;
+    }
 
 }
