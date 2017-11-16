@@ -9,6 +9,7 @@ import com.dataModel.Symbol;
 import com.ib.client.ContractDetails;
 import com.ib.client.TickType;
 import com.ib.client.Types;
+import com.ib.controller.Bar;
 import com.table.SOptionLinkTable;
 import com.table.TCyTableModel;
 import com.utils.GBC;
@@ -20,11 +21,15 @@ import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.math.BigInteger;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -39,6 +44,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import static com.utils.SUtil.getCurrentDayUSAOpenDateTime;
 import static com.utils.SUtil.getDimension;
+import static com.utils.SUtil.getLastOpenTimeSeconds;
 import static com.utils.SUtil.getUSADateTimeByEpochSecond;
 import static com.utils.SUtil.ifNowIsOpenTime;
 import static com.utils.SUtil.usaChangeToLocalDateTime;
@@ -177,23 +183,6 @@ public class SOptionLinkTablePnl extends JPanel
         }
     }
 
-    // 取消历史数据的请求
-    private void cancelHistoricData()
-    {
-        if (symbol != null && historicReqID2ContactsMap != null)
-        {
-            for (Integer reqid : historicReqID2ContactsMap.keySet())
-            {
-                symbol.cancelReqHistoricalData(reqid);
-            }
-            historicReqID2ContactsMap.clear();
-            if (reqId2historicalDataListMap != null)
-            {
-                reqId2historicalDataListMap.clear();
-            }
-        }
-    }
-
     private void setOptionChainTable(Map<Double, List<ContractDetails>> optionChainMap)
     {
         if (optionChainMap != null)
@@ -264,14 +253,14 @@ public class SOptionLinkTablePnl extends JPanel
                 {
                     LocalDateTime openUsaDateTime = getCurrentDayUSAOpenDateTime();
                     LocalDateTime endDatetime = usaChangeToLocalDateTime(openUsaDateTime.plusSeconds(60));
-                    String endTimeStr = endDatetime.format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
-
-                    long duration = 60;//  getLastOpenTimeSeconds();// + 60; // 注意，此处要加60秒，是为了获取今天开盘时间的价格
+                    //   String endTimeStr = endDatetime.format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
+                    String endTimeStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
+                    long duration = getLastOpenTimeSeconds() + 60; // 注意，此处要加60秒，是为了获取今天开盘时间的价格
                     reqid = symbol.reqOptionHistoricDatas_pub(ctrDts.contract(),
                                                               endTimeStr,
                                                               duration,
                                                               Types.DurationUnit.SECOND,
-                                                              Types.BarSize._30_secs);
+                                                              Types.BarSize._10_secs);
 
                     if (-1 != reqid)
                     {
@@ -394,21 +383,10 @@ public class SOptionLinkTablePnl extends JPanel
         if (notNullAndEmptyCollection(historicalDataList))
         {
             LocalDateTime todayOpenDateTime = getCurrentDayUSAOpenDateTime();
-
-            LocalDateTime beginDataTime = todayOpenDateTime.plusSeconds(-1);
-            LocalDateTime endDateTime = todayOpenDateTime.plusSeconds(31);
-
-            for (MBAHistoricalData hisData : historicalDataList)
+            MBAHistoricalData nearOpenhisDate = getTheNearestHistoricalData(todayOpenDateTime,historicalDataList);
+            if(nearOpenhisDate != null)
             {
-                LocalDateTime usaDateTime = getUSADateTimeByEpochSecond(hisData.date);
-
-                LogMsg.info("REQ_historicID: " + hisData.reqId + "  Time: " + usaDateTime.toString() + " price: " +
-                            hisData.open);
-
-                if (usaDateTime.isAfter(beginDataTime) && usaDateTime.isBefore(endDateTime))
-                {
-                    return hisData.open;
-                }
+                return nearOpenhisDate.open;
             }
         }
         else
@@ -416,6 +394,30 @@ public class SOptionLinkTablePnl extends JPanel
             LogApp.error("SOptionLinkTablePnl getCurrentDayOpenPrice get openPrice failed");
         }
         return 0D;
+    }
+
+    // 获取与指定时间最近的历史数据
+    private MBAHistoricalData getTheNearestHistoricalData(LocalDateTime usaOpenTime,
+                                                          List<MBAHistoricalData> historicalDataList)
+    {
+        if(usaOpenTime != null && historicalDataList != null)
+        {
+            long nearestTime = Integer.MAX_VALUE;
+            MBAHistoricalData retMbaHisData = null;
+            for(MBAHistoricalData mbaHisData: historicalDataList)
+            {
+                LocalDateTime usaDateTime = getUSADateTimeByEpochSecond(mbaHisData.date);
+                Duration duration = Duration.between(usaOpenTime,usaDateTime);
+                long durationSecond = duration.getSeconds();
+                if(durationSecond < nearestTime)
+                {
+                    nearestTime = durationSecond;
+                    retMbaHisData = mbaHisData;
+                }
+            }
+            return retMbaHisData;
+        }
+        return null;
     }
 
 

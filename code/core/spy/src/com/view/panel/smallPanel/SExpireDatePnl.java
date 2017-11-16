@@ -11,6 +11,9 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ItemEvent;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JButton;
@@ -124,12 +127,18 @@ public class SExpireDatePnl extends JPanel
     @Handler(filters = {@Filter(optionExpireDayFilter.class)})
     private void proccessOptionExpireDays(MBAOptionExpireDayList msg)
     {
+        LocalDate localDate = LocalDate.now();
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyMMdd");
         expireDataComb.removeAllItems();
         if (msg != null && msg.optionExpireDayList != null)
         {
             for (String day : msg.optionExpireDayList)
             {
-                expireDataComb.addItem(day);
+                LocalDate tmpDate = LocalDate.parse(day, dateTimeFormatter);
+                if (!tmpDate.isBefore(localDate))
+                {
+                    expireDataComb.addItem(day);
+                }
             }
         }
     }

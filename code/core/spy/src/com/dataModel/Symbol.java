@@ -340,13 +340,13 @@ public class Symbol
             int count = 0;
             while (true)
             {
-                if (count >= 4)
+                if (count >= 5)
                 {
                     count = 0;
                     System.out.println(" begin sleep: " + LocalDateTime.now().toString());
                     try
                     {
-                        Thread.sleep(3000);
+                        Thread.sleep(2000);
                     }
                     catch (InterruptedException e)
                     {
