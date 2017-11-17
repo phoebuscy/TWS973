@@ -9,7 +9,6 @@ import com.dataModel.Symbol;
 import com.ib.client.ContractDetails;
 import com.ib.client.TickType;
 import com.ib.client.Types;
-import com.ib.controller.Bar;
 import com.table.SOptionLinkTable;
 import com.table.TCyTableModel;
 import com.utils.GBC;
@@ -19,21 +18,14 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.math.BigInteger;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import net.engio.mbassy.listener.Filter;
@@ -74,8 +66,6 @@ public class SOptionLinkTablePnl extends JPanel
     private Symbol symbol = SDataManager.getInstance().getSymbol();
 
 
-    public JButton testButton = new JButton(getConfigValue("option.table.test", TConst.CONFIG_I18N_FILE)); //"期权表格测试"
-
     public SOptionLinkTablePnl(Component parentWin)
     {
         setBackground(Color.gray);
@@ -83,8 +73,6 @@ public class SOptionLinkTablePnl extends JPanel
         parentDimension = parentWin.getSize();
         setDimension();
         buildGUI();
-        setTestButtonListener();
-
         // 订阅消息总线名称为 DATAMAAGER_BUS 的 消息
         TMbassadorSingleton.getInstance(SYMBOL_BUS).subscribe(this);
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
@@ -103,40 +91,7 @@ public class SOptionLinkTablePnl extends JPanel
 
         setLayout(new GridBagLayout());
         add(scrollPane, new GBC(0, 0).setWeight(10, 10).setFill(GBC.BOTH));
-        add(testButton, new GBC(0, 1).setIpad(15, 5).setAnchor(GBC.CENTER));
         setPreferredSize(getDimension(parentDimension, 0.7, 0.8));
-    }
-
-    private void setTestButtonListener()
-    {
-        if (testButton != null)
-        {
-            testButton.addActionListener(new ActionListener()
-            {
-                @Override
-                public void actionPerformed(ActionEvent e)
-                {
-                    // test 临时测试代码
-                    //    optionLinkTable.updateData(null);
-                    Random random = new Random();
-                    boolean b = random.nextBoolean();
-                    if (b)
-                    {
-                        TCyTableModel cyTableModel = (TCyTableModel) optionLinkTable.getModel();
-                        cyTableModel.removeAllData();
-                    }
-                    else
-                    {
-                        optionLinkTable.updateData(null);
-
-                        optionLinkTable.setValueAt(0, 2, b ? 552.8 : 23.3);
-                        optionLinkTable.setValueAt(0, 3, b ? 39.8 : 283.3);
-                        optionLinkTable.setValueAt(1, 2, b ? 952.8 : 13.3);
-                        optionLinkTable.setValueAt(2, 3, b ? 55.8 : 883.3);
-                    }
-                }
-            });
-        }
     }
 
 
@@ -386,7 +341,11 @@ public class SOptionLinkTablePnl extends JPanel
             MBAHistoricalData nearOpenhisDate = getTheNearestHistoricalData(todayOpenDateTime,historicalDataList);
             if(nearOpenhisDate != null)
             {
-                return nearOpenhisDate.open;
+                LocalDateTime usaDateTime = getUSADateTimeByEpochSecond(nearOpenhisDate.date);
+                if( Math.abs(Duration.between(usaDateTime, todayOpenDateTime).toMinutes()) < 10)
+                {
+                    return usaDateTime.isBefore(todayOpenDateTime) ? nearOpenhisDate.close : nearOpenhisDate.open;
+                }
             }
         }
         else
@@ -408,7 +367,7 @@ public class SOptionLinkTablePnl extends JPanel
             {
                 LocalDateTime usaDateTime = getUSADateTimeByEpochSecond(mbaHisData.date);
                 Duration duration = Duration.between(usaOpenTime,usaDateTime);
-                long durationSecond = duration.getSeconds();
+                long durationSecond = Math.abs(duration.getSeconds());
                 if(durationSecond < nearestTime)
                 {
                     nearestTime = durationSecond;

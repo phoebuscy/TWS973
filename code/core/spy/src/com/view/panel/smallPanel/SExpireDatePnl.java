@@ -1,8 +1,8 @@
 package com.view.panel.smallPanel;
 
-import com.dataModel.SDataManager;
 import com.commdata.mbassadorObj.MBAOptionChainMap;
 import com.commdata.mbassadorObj.MBAOptionExpireDayList;
+import com.dataModel.SDataManager;
 import com.ib.client.ContractDetails;
 import com.utils.TConst;
 import com.utils.TMbassadorSingleton;
@@ -12,7 +12,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ItemEvent;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +23,7 @@ import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
+import static com.utils.SUtil.getCurrentAmericalLocalDate;
 import static com.utils.SUtil.getDimension;
 import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TConst.SYMBOL_BUS;
@@ -127,7 +127,7 @@ public class SExpireDatePnl extends JPanel
     @Handler(filters = {@Filter(optionExpireDayFilter.class)})
     private void proccessOptionExpireDays(MBAOptionExpireDayList msg)
     {
-        LocalDate localDate = LocalDate.now();
+        LocalDate curUsaOpenDate = getCurrentAmericalLocalDate();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyMMdd");
         expireDataComb.removeAllItems();
         if (msg != null && msg.optionExpireDayList != null)
@@ -135,12 +135,13 @@ public class SExpireDatePnl extends JPanel
             for (String day : msg.optionExpireDayList)
             {
                 LocalDate tmpDate = LocalDate.parse(day, dateTimeFormatter);
-                if (!tmpDate.isBefore(localDate))
+                if (!tmpDate.isBefore(curUsaOpenDate))
                 {
                     expireDataComb.addItem(day);
                 }
             }
         }
+
     }
 
 }
