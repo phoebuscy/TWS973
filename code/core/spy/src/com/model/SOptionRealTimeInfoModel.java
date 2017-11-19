@@ -1,13 +1,13 @@
 package com.model;
 
-import com.commdata.enums.SCallOrPut;
+import com.ib.client.Types;
 
 /**
  * Created by caiyong on 2016/12/26.
  */
 public class SOptionRealTimeInfoModel
 {
-    private SCallOrPut callOrPut;  // put or call
+    private Types.Right right;  // put or call
 
     private String obj; // 标的
     private String expireDate;
@@ -27,7 +27,7 @@ public class SOptionRealTimeInfoModel
 
     public SOptionRealTimeInfoModel()
     {
-        this.callOrPut = SCallOrPut.NOTHING;
+        this.right = Types.Right.None;
         obj = ""; // 标的
         expireDate = "";
         operatePrice = "";
@@ -45,7 +45,7 @@ public class SOptionRealTimeInfoModel
         tradingVol = "";
     }
 
-    public void setRealTimeData(SCallOrPut callOrPut,
+    public void setRealTimeData(Types.Right right,
                                 String obj,
                                 String expireDate,
                                 String operatePrice,
@@ -61,7 +61,7 @@ public class SOptionRealTimeInfoModel
                                 String curBuyCount,
                                 String tradingVol)
     {
-        this.callOrPut = callOrPut;
+        this.right = right;
         this.obj = obj; // 标的
         this.expireDate = expireDate;
         this.operatePrice = operatePrice;
@@ -79,9 +79,9 @@ public class SOptionRealTimeInfoModel
         this.tradingVol = tradingVol;
     }
 
-    public void setCallOrPut(SCallOrPut callOrPut)
+    public void setRight(Types.Right right)
     {
-        this.callOrPut = callOrPut;
+        this.right = right;
     }
 
     public void setObj(String obj)
@@ -154,9 +154,9 @@ public class SOptionRealTimeInfoModel
         this.tradingVol = tradingVol;
     }
 
-    public SCallOrPut getCallOrPut()
+    public Types.Right getRight()
     {
-        return callOrPut;
+        return right;
     }
 
     public String getObj()

@@ -33,11 +33,6 @@ public class SOptionLinkTable extends JTable
     private String[] columnNames = {callOrput, strike, currentPrice, todayOpen, yesterdayClose, zde, zdf, sellOne,
                                     buyOne, cjl, wpc};
 
-    private Object[][] data = {{258.50, callRaise, 2.85, 3.2, 0.18, 2.89, 2.87, 5000, 23436},
-                               {245.50, putDown, 2.85, 4.2, 0.18, 2.89, 2.87, 5000, 23436},
-                               {256.00, callRaise, 2.85, 3.2, 0.18, 2.89, 2.87, 5000, 23436},
-                               {256.00, putDown, 2.85, 3.2, 0.18, 2.89, 2.87, 5000, 23436}};
-
 
     private TCyTableModel optionLinkTabelModel;
 
@@ -88,6 +83,11 @@ public class SOptionLinkTable extends JTable
             }
 
         }
+    }
+
+    public Object getRowUserObject(int rowIndex)
+    {
+        return optionLinkTabelModel != null?  optionLinkTabelModel.getRowUserObject(rowIndex): null;
     }
 
 

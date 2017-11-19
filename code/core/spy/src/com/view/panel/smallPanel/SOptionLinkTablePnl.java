@@ -3,6 +3,8 @@ package com.view.panel.smallPanel;
 import com.commdata.mbassadorObj.MBAHistoricalData;
 import com.commdata.mbassadorObj.MBAHistoricalDataEnd;
 import com.commdata.mbassadorObj.MBAOptionChainMap;
+import com.commdata.mbassadorObj.MBAOptionExpireDayList;
+import com.commdata.mbassadorObj.MBAReqIDContractDetails;
 import com.commdata.mbassadorObj.MBAtickPrice;
 import com.dataModel.SDataManager;
 import com.dataModel.Symbol;
@@ -18,6 +20,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -57,9 +61,9 @@ public class SOptionLinkTablePnl extends JPanel
     private Dimension parentDimension;
     private SOptionLinkTable optionLinkTable;
     // 查询买卖价的市场数据reqid和contract的map
-    private static Map<Integer, ContractDetails> topMktDataReqID2ContractsMap = new HashMap<>();  //
+    private static Map<Integer, ContractDetails> topMktDataReqID2ContractsMap = new HashMap<>();
     // 查询历史数据的reqid和Conracsd Map
-    private static Map<Integer, ContractDetails> historicReqID2ContactsMap = new HashMap<>(); //
+    private static Map<Integer, ContractDetails> historicReqID2ContactsMap = new HashMap<>();
     // 历史数据保存器
     private Map<Integer, List<MBAHistoricalData>> reqId2historicalDataListMap = new HashMap<>();
 
@@ -73,6 +77,7 @@ public class SOptionLinkTablePnl extends JPanel
         parentDimension = parentWin.getSize();
         setDimension();
         buildGUI();
+        setTableListener();
         // 订阅消息总线名称为 DATAMAAGER_BUS 的 消息
         TMbassadorSingleton.getInstance(SYMBOL_BUS).subscribe(this);
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
@@ -92,6 +97,54 @@ public class SOptionLinkTablePnl extends JPanel
         setLayout(new GridBagLayout());
         add(scrollPane, new GBC(0, 0).setWeight(10, 10).setFill(GBC.BOTH));
         setPreferredSize(getDimension(parentDimension, 0.7, 0.8));
+    }
+
+    // 设置双击事件处理器，发送选择的 call 和put 给操作面板
+    private void setTableListener()
+    {
+        if (optionLinkTable != null)
+        {
+            optionLinkTable.addMouseListener(new MouseAdapter()
+            {
+                @Override
+                public void mouseClicked(MouseEvent e)
+                {
+                    processDoubleClickOptionLinkTable(e);
+                }
+            });
+        }
+    }
+
+    private void processDoubleClickOptionLinkTable(MouseEvent event)
+    {
+        if (event != null && event.getClickCount() == 2)  // 如果是双击则处理
+        {
+            Object source = event.getSource();
+            if (source instanceof SOptionLinkTable)
+            {
+                SOptionLinkTable optLinkTable = (SOptionLinkTable) source;
+                Object selectObj = optLinkTable.getRowUserObject(optLinkTable.getSelectedRow());
+                if (selectObj instanceof ContractDetails)
+                {
+                    ContractDetails ctrDtls = (ContractDetails) selectObj;
+                    int conid = ctrDtls.contract() != null ? ctrDtls.conid() : -1;
+                    for (Map.Entry<Integer, ContractDetails> entry : topMktDataReqID2ContractsMap.entrySet())
+                    {
+                        ContractDetails contractDetails = entry.getValue();
+                        int conid_other = contractDetails.contract() != null ? contractDetails.conid() : -1;
+                        // 找到了contractDetail 和 reqid 之后 广播消息
+                        if (conid != -1 && conid == conid_other)
+                        {
+                            long reqid = entry.getKey();
+                            // Symbol发布数据
+                            TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBAReqIDContractDetails(reqid,
+                                                                                                            contractDetails));
+                        }
+                    }
+                }
+            }
+        }
+        int a = 1;
     }
 
 
@@ -338,11 +391,11 @@ public class SOptionLinkTablePnl extends JPanel
         if (notNullAndEmptyCollection(historicalDataList))
         {
             LocalDateTime todayOpenDateTime = getCurrentDayUSAOpenDateTime();
-            MBAHistoricalData nearOpenhisDate = getTheNearestHistoricalData(todayOpenDateTime,historicalDataList);
-            if(nearOpenhisDate != null)
+            MBAHistoricalData nearOpenhisDate = getTheNearestHistoricalData(todayOpenDateTime, historicalDataList);
+            if (nearOpenhisDate != null)
             {
                 LocalDateTime usaDateTime = getUSADateTimeByEpochSecond(nearOpenhisDate.date);
-                if( Math.abs(Duration.between(usaDateTime, todayOpenDateTime).toMinutes()) < 10)
+                if (Math.abs(Duration.between(usaDateTime, todayOpenDateTime).toMinutes()) < 10)
                 {
                     return usaDateTime.isBefore(todayOpenDateTime) ? nearOpenhisDate.close : nearOpenhisDate.open;
                 }
@@ -359,16 +412,16 @@ public class SOptionLinkTablePnl extends JPanel
     private MBAHistoricalData getTheNearestHistoricalData(LocalDateTime usaOpenTime,
                                                           List<MBAHistoricalData> historicalDataList)
     {
-        if(usaOpenTime != null && historicalDataList != null)
+        if (usaOpenTime != null && historicalDataList != null)
         {
             long nearestTime = Integer.MAX_VALUE;
             MBAHistoricalData retMbaHisData = null;
-            for(MBAHistoricalData mbaHisData: historicalDataList)
+            for (MBAHistoricalData mbaHisData : historicalDataList)
             {
                 LocalDateTime usaDateTime = getUSADateTimeByEpochSecond(mbaHisData.date);
-                Duration duration = Duration.between(usaOpenTime,usaDateTime);
+                Duration duration = Duration.between(usaOpenTime, usaDateTime);
                 long durationSecond = Math.abs(duration.getSeconds());
-                if(durationSecond < nearestTime)
+                if (durationSecond < nearestTime)
                 {
                     nearestTime = durationSecond;
                     retMbaHisData = mbaHisData;

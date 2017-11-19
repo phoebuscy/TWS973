@@ -1,14 +1,21 @@
 package com.view.panel.smallPanel;
 
+import com.ib.client.Types;
 import com.model.SOptionRealTimeInfoModel;
-import com.utils.ReturnObj;
 import com.utils.GBC;
-
+import com.utils.ReturnObj;
 import com.utils.TConst;
-import javax.swing.*;
-import java.awt.*;
-
-import static com.utils.SUtil.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridBagLayout;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import static com.utils.SUtil.getDiffDoubleNumber;
+import static com.utils.SUtil.getDimension;
+import static com.utils.SUtil.getPercentValStr;
+import static com.utils.SUtil.isIntOrDoubleNumber;
 import static com.utils.TFileUtil.getConfigValue;
 
 /**
@@ -18,7 +25,7 @@ public class SOptionRealTimeInfoPnl extends JPanel
 {
     private Component parentWin;
     private Dimension parentDimension;
-    private int putOrCall = -1;
+    private Types.Right right;
 
     private ObjPnl objPnl = new ObjPnl();
     private RealPricePnl realPricePnl = new RealPricePnl();
@@ -27,10 +34,10 @@ public class SOptionRealTimeInfoPnl extends JPanel
 
     private SOptionRealTimeInfoModel infoModel = new SOptionRealTimeInfoModel();
 
-    public SOptionRealTimeInfoPnl(Component parentWin, int putOrCall)
+    public SOptionRealTimeInfoPnl(Component parentWin, Types.Right right)
     {
         setBackground(Color.gray);
-        this.putOrCall = putOrCall;
+        this.right = right;
         this.parentWin = parentWin;
         parentDimension = parentWin.getSize();
         setDimension();
@@ -40,15 +47,15 @@ public class SOptionRealTimeInfoPnl extends JPanel
 
     private void setDimension()
     {
-       setSize(getDimension(parentDimension, 1.0, 0.1));
+        setSize(getDimension(parentDimension, 1.0, 0.1));
     }
 
     private void buildGUI()
     {
         setLayout(new GridBagLayout());
         String callUp = getConfigValue("call.up", TConst.CONFIG_I18N_FILE);  // "CALL涨"
-        String putDown = getConfigValue("put.down",TConst.CONFIG_I18N_FILE); // "PUT跌"
-        setBorder(BorderFactory.createTitledBorder(putOrCall == 1 ? callUp : putDown));
+        String putDown = getConfigValue("put.down", TConst.CONFIG_I18N_FILE); // "PUT跌"
+        setBorder(BorderFactory.createTitledBorder(Types.Right.Call.equals(right) ? callUp : putDown));
         /*
         objPnl.setBackground(Color.blue);
         realPricePnl.setBackground(Color.gray);
@@ -118,23 +125,24 @@ public class SOptionRealTimeInfoPnl extends JPanel
 
             int style = 0;
             int size = 14;
-            obj_Label.setFont(new java.awt.Font("Dialog",   style,   size));
-            expireDate_Label.setFont(new java.awt.Font("Dialog",   style,   size));
-            operatePrice_Label.setFont(new java.awt.Font("Dialog",   style,   size));
+            obj_Label.setFont(new java.awt.Font("Dialog", style, size));
+            expireDate_Label.setFont(new java.awt.Font("Dialog", style, size));
+            operatePrice_Label.setFont(new java.awt.Font("Dialog", style, size));
 
             // “dialog”代表字体，1代表样式(1是粗体，0是平常的）15是字号设置字体
             //price.setFont(new java.awt.Font("Dialog",   1,   15));
 
             setLayout(new GridBagLayout());
 
-           // add(new JLabel("标的:"),new GBC(0,0).setIpad(2,0).setAnchor(GBC.WEST).setWeight(0,50).setFill(GBC.BOTH));
-            add(obj_Label, new GBC(0, 0).setIpad(2,0).setAnchor(GBC.WEST).setWeight(0,50).setFill(GBC.BOTH)); // 标的
-          //  add(new JLabel("到期:"),new GBC(2,0).setAnchor(GBC.WEST));
-            add(expireDate_Label, new GBC(1, 0).setIpad(10, 0).setWeight(1,50).setInsets(0,15,0,0).setAnchor(GBC.WEST).setFill(GBC.BOTH));
-          //  add(new JLabel("行权价:"),new GBC(4,0).setAnchor(GBC.WEST));
+            // add(new JLabel("标的:"),new GBC(0,0).setIpad(2,0).setAnchor(GBC.WEST).setWeight(0,50).setFill(GBC.BOTH));
+            add(obj_Label, new GBC(0, 0).setIpad(2, 0).setAnchor(GBC.WEST).setWeight(0, 50).setFill(GBC.BOTH)); // 标的
+            //  add(new JLabel("到期:"),new GBC(2,0).setAnchor(GBC.WEST));
+            add(expireDate_Label, new GBC(1, 0).setIpad(10, 0).setWeight(1, 50).setInsets(0, 15, 0, 0)
+                                               .setAnchor(GBC.WEST).setFill(GBC.BOTH));
+            //  add(new JLabel("行权价:"),new GBC(4,0).setAnchor(GBC.WEST));
             add(operatePrice_Label, new GBC(2, 0).setIpad(10, 0).setInsets(0, 5, 0, 0));
 
-            setPreferredSize(new Dimension(100,20));
+            setPreferredSize(new Dimension(100, 20));
         }
 
         public void setData(String obj, String expireDate, String operatePrice)
@@ -169,9 +177,9 @@ public class SOptionRealTimeInfoPnl extends JPanel
 
             int style = 0;
             int size = 16;
-            realTimePrice_Label.setFont(new java.awt.Font("Dialog",   1,   20));
-            realAdd_Label.setFont(new java.awt.Font("Dialog",   style,   size));
-            addPercent_Label.setFont(new java.awt.Font("Dialog",   style,   size));
+            realTimePrice_Label.setFont(new java.awt.Font("Dialog", 1, 20));
+            realAdd_Label.setFont(new java.awt.Font("Dialog", style, size));
+            addPercent_Label.setFont(new java.awt.Font("Dialog", style, size));
 
             setLayout(new GridBagLayout());
             add(realTimePrice_Label, new GBC(0, 0, 2, 2));
@@ -184,7 +192,7 @@ public class SOptionRealTimeInfoPnl extends JPanel
             String realAddStr = "--";
             String addPercentStr = "--";
             ReturnObj realAdd = getDiffDoubleNumber(todayOpenPrice, realTimePrice);
-            realAddStr = realAdd.success ?  String.format("%.2f", realAdd.returnObj): realAddStr;
+            realAddStr = realAdd.success ? String.format("%.2f", realAdd.returnObj) : realAddStr;
             ReturnObj realAddPercent = getPercentValStr(todayOpenPrice, realAddStr);
             addPercentStr = realAddPercent.success ? realAddPercent.returnObj.toString() : addPercentStr;
 
@@ -192,29 +200,29 @@ public class SOptionRealTimeInfoPnl extends JPanel
             realAdd_Label.setText(realAddStr);
             addPercent_Label.setText(addPercentStr);
 
-            setPriceColor(realTimePrice,todayOpenPrice);
+            setPriceColor(realTimePrice, todayOpenPrice);
         }
 
         private void setPriceColor(String realTimePrice, String todayOpenPrice)
         {
             int eaqual = 0;
-            if(isIntOrDoubleNumber(realTimePrice) && isIntOrDoubleNumber(todayOpenPrice))
+            if (isIntOrDoubleNumber(realTimePrice) && isIntOrDoubleNumber(todayOpenPrice))
             {
-                if(Double.valueOf(realTimePrice).compareTo(Double.valueOf(todayOpenPrice)) >0)
+                if (Double.valueOf(realTimePrice).compareTo(Double.valueOf(todayOpenPrice)) > 0)
                 {
                     eaqual = 1;
                 }
-                else if(Double.valueOf(realTimePrice).compareTo(Double.valueOf(todayOpenPrice)) <0)
+                else if (Double.valueOf(realTimePrice).compareTo(Double.valueOf(todayOpenPrice)) < 0)
                 {
                     eaqual = -1;
                 }
             }
             Color color = Color.black;
-            if(eaqual == 1)
+            if (eaqual == 1)
             {
                 color = new Color(255, 80, 50);
             }
-            else if( eaqual == -1)
+            else if (eaqual == -1)
             {
                 color = Color.BLUE;
             }
@@ -251,15 +259,17 @@ public class SOptionRealTimeInfoPnl extends JPanel
             tradingVol_Label = new JLabel();
 
             setLayout(new GridBagLayout());
-            add(new JLabel(getConfigValue("sale.price",TConst.CONFIG_I18N_FILE)), new GBC(0, 0).setAnchor(GBC.WEST));  // 卖家
+            add(new JLabel(getConfigValue("sale.price", TConst.CONFIG_I18N_FILE)),
+                new GBC(0, 0).setAnchor(GBC.WEST));  // 卖家
             add(curSellPrice_Label, new GBC(1, 0).setIpad(5, 0).setAnchor(GBC.WEST));
             add(curSellCount_Label, new GBC(2, 0).setAnchor(GBC.EAST));
 
-            add(new JLabel(getConfigValue("buy.price",TConst.CONFIG_I18N_FILE)), new GBC(0, 1).setAnchor(GBC.WEST));   // 买价
+            add(new JLabel(getConfigValue("buy.price", TConst.CONFIG_I18N_FILE)),
+                new GBC(0, 1).setAnchor(GBC.WEST));   // 买价
             add(curBuyPrice_Label, new GBC(1, 1).setIpad(5, 0).setAnchor(GBC.WEST));
             add(curBuyCount_Label, new GBC(2, 1).setAnchor(GBC.EAST));
 
-            add(new JLabel(getConfigValue("cjl",TConst.CONFIG_I18N_FILE)), new GBC(0, 2).setAnchor(GBC.WEST)); // 成交量
+            add(new JLabel(getConfigValue("cjl", TConst.CONFIG_I18N_FILE)), new GBC(0, 2).setAnchor(GBC.WEST)); // 成交量
             add(tradingVol_Label, new GBC(1, 2).setIpad(5, 0).setAnchor(GBC.WEST));
         }
 
@@ -303,18 +313,33 @@ public class SOptionRealTimeInfoPnl extends JPanel
             notCloseCount_Label = new JLabel();
 
             setLayout(new GridBagLayout());
-            add(new JLabel(getConfigValue("today.open",TConst.CONFIG_I18N_FILE)), new GBC(0, 0).setAnchor(GBC.WEST).setInsets(0,3,0,3)); //  "今开:"
-            add(todayOpenPrice_Label, new GBC(1, 0).setAnchor(GBC.WEST).setInsets(0,3,0,3));
-            add(new JLabel(getConfigValue("yesterday.close", TConst.CONFIG_I18N_FILE)), new GBC(2, 0).setAnchor(GBC.WEST).setInsets(0,3,0,3));  // 昨收
-            add(yestadayClosePrice_Label, new GBC(3, 0).setAnchor(GBC.WEST).setInsets(0,3,0,3));
-            add(new JLabel(getConfigValue("max.high",TConst.CONFIG_I18N_FILE)), new GBC(4, 0).setAnchor(GBC.WEST).setInsets(0,3,0,3)); // 最高
-            add(todayMaxPrice_Label, new GBC(5, 0).setAnchor(GBC.WEST).setInsets(0,3,0,3));
-            add(new JLabel(getConfigValue("min.low",TConst.CONFIG_I18N_FILE)), new GBC(6, 0).setAnchor(GBC.WEST).setInsets(0,3,0,3)); // 最低
-            add(todayMinPrice_Label, new GBC(7, 0).setAnchor(GBC.WEST).setInsets(0,3,0,3));
-            add(new JLabel(getConfigValue("wpc",TConst.CONFIG_I18N_FILE)), new GBC(8, 0).setAnchor(GBC.WEST).setInsets(0,3,0,3)); // 未平仓
-            add(notCloseCount_Label, new GBC(9, 0).setAnchor(GBC.WEST).setInsets(0,3,0,3));
+            add(new JLabel(getConfigValue("today.open", TConst.CONFIG_I18N_FILE)), new GBC(0, 0).setAnchor(GBC.WEST)
+                                                                                                .setInsets(0,
+                                                                                                           3,
+                                                                                                           0,
+                                                                                                           3)); //
+            // "今开:"
+            add(todayOpenPrice_Label, new GBC(1, 0).setAnchor(GBC.WEST).setInsets(0, 3, 0, 3));
+            add(new JLabel(getConfigValue("yesterday.close", TConst.CONFIG_I18N_FILE)), new GBC(2, 0)
+                    .setAnchor(GBC.WEST).setInsets(0, 3, 0, 3));  // 昨收
+            add(yestadayClosePrice_Label, new GBC(3, 0).setAnchor(GBC.WEST).setInsets(0, 3, 0, 3));
+            add(new JLabel(getConfigValue("max.high", TConst.CONFIG_I18N_FILE)), new GBC(4, 0).setAnchor(GBC.WEST)
+                                                                                              .setInsets(0,
+                                                                                                         3,
+                                                                                                         0,
+                                                                                                         3)); // 最高
+            add(todayMaxPrice_Label, new GBC(5, 0).setAnchor(GBC.WEST).setInsets(0, 3, 0, 3));
+            add(new JLabel(getConfigValue("min.low", TConst.CONFIG_I18N_FILE)), new GBC(6, 0).setAnchor(GBC.WEST)
+                                                                                             .setInsets(0,
+                                                                                                        3,
+                                                                                                        0,
+                                                                                                        3)); // 最低
+            add(todayMinPrice_Label, new GBC(7, 0).setAnchor(GBC.WEST).setInsets(0, 3, 0, 3));
+            add(new JLabel(getConfigValue("wpc", TConst.CONFIG_I18N_FILE)), new GBC(8, 0).setAnchor(GBC.WEST)
+                                                                                         .setInsets(0, 3, 0, 3)); // 未平仓
+            add(notCloseCount_Label, new GBC(9, 0).setAnchor(GBC.WEST).setInsets(0, 3, 0, 3));
 
-            setPreferredSize(new Dimension(100,20));
+            setPreferredSize(new Dimension(100, 20));
 
         }
 
