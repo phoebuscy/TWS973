@@ -17,6 +17,7 @@ import static com.utils.SUtil.getDimension;
 import static com.utils.SUtil.getPercentValStr;
 import static com.utils.SUtil.isIntOrDoubleNumber;
 import static com.utils.TFileUtil.getConfigValue;
+import static com.utils.TStringUtil.notNullAndEmptyStr;
 
 /**
  * Created by caiyong on 2016/12/25.
@@ -42,7 +43,6 @@ public class SOptionRealTimeInfoPnl extends JPanel
         parentDimension = parentWin.getSize();
         setDimension();
         buildGUI();
-        test_SetData();
     }
 
     private void setDimension()
@@ -68,29 +68,6 @@ public class SOptionRealTimeInfoPnl extends JPanel
         add(todayOpenPnl, new GBC(0, 2, 2, 1).setWeight(100, 20).setFill(GBC.BOTH));
     }
 
-    /**
-     * 测试代码，添加实时数据
-     */
-    public void test_SetData()
-    {
-        SOptionRealTimeInfoModel infoModel = new SOptionRealTimeInfoModel();
-        infoModel.setObj("SPY");
-        infoModel.setExpireDate("2016-03-07");
-        infoModel.setOperatePrice("223.5");
-        infoModel.setRealTimePrice("1.57");
-        infoModel.setCurSellPrice("25.3");
-        infoModel.setCurSellCount("532");
-        infoModel.setCurBuyPrice("25.7");
-        infoModel.setCurBuyCount("23");
-        infoModel.setTradingVol("32423");
-        infoModel.setTodayOpenPrice("1.2");
-        infoModel.setYestadayClosePrice("2.3");
-        infoModel.setTodayMaxPrice("2.7");
-        infoModel.setTodayMinPrice("1.2");
-        infoModel.setNotCloseCount("234");
-
-        setData(infoModel);
-    }
 
     public void setData(SOptionRealTimeInfoModel infoModel)
     {
@@ -147,9 +124,18 @@ public class SOptionRealTimeInfoPnl extends JPanel
 
         public void setData(String obj, String expireDate, String operatePrice)
         {
-            obj_Label.setText(obj);
-            expireDate_Label.setText(expireDate);
-            operatePrice_Label.setText(operatePrice);
+            if (notNullAndEmptyStr(obj))
+            {
+                obj_Label.setText(obj);
+            }
+            if (notNullAndEmptyStr(expireDate))
+            {
+                expireDate_Label.setText(expireDate);
+            }
+            if (notNullAndEmptyStr(operatePrice))
+            {
+                operatePrice_Label.setText(operatePrice);
+            }
         }
 
         public void initData()
@@ -163,7 +149,7 @@ public class SOptionRealTimeInfoPnl extends JPanel
     // 实时价格面板，位置在中部的左边
     private class RealPricePnl extends JPanel
     {
-        private String todayOpenPrice; //
+        private String todayOpenPrice;
         private String realTimePrice;
         private JLabel realTimePrice_Label; // 当前实时价格
         private JLabel realAdd_Label; // 实际增减价格
@@ -187,20 +173,34 @@ public class SOptionRealTimeInfoPnl extends JPanel
             add(addPercent_Label, new GBC(1, 2).setIpad(10, 0));
         }
 
-        public void setData(String realTimePrice, String todayOpenPrice)
+        public void setData(String realPrice, String todayOpen)
         {
-            String realAddStr = "--";
-            String addPercentStr = "--";
-            ReturnObj realAdd = getDiffDoubleNumber(todayOpenPrice, realTimePrice);
-            realAddStr = realAdd.success ? String.format("%.2f", realAdd.returnObj) : realAddStr;
-            ReturnObj realAddPercent = getPercentValStr(todayOpenPrice, realAddStr);
-            addPercentStr = realAddPercent.success ? realAddPercent.returnObj.toString() : addPercentStr;
+            if (isIntOrDoubleNumber(realPrice))
+            {
+                realTimePrice = realPrice;
+            }
+            if (isIntOrDoubleNumber(todayOpen))
+            {
+                todayOpenPrice = todayOpen;
+            }
 
-            realTimePrice_Label.setText(realTimePrice);
-            realAdd_Label.setText(realAddStr);
-            addPercent_Label.setText(addPercentStr);
+            if (isIntOrDoubleNumber(realTimePrice))
+            {
+                realTimePrice_Label.setText(realTimePrice);
+            }
 
-            setPriceColor(realTimePrice, todayOpenPrice);
+            if (isIntOrDoubleNumber(realTimePrice) && isIntOrDoubleNumber(todayOpenPrice))
+            {
+                String realAddStr = "--";
+                String addPercentStr = "--";
+                ReturnObj realAdd = getDiffDoubleNumber(todayOpenPrice, realTimePrice);
+                realAddStr = realAdd.success ? String.format("%.2f", realAdd.returnObj) : realAddStr;
+                ReturnObj realAddPercent = getPercentValStr(todayOpenPrice, realAddStr);
+                addPercentStr = realAddPercent.success ? realAddPercent.returnObj.toString() : addPercentStr;
+                realAdd_Label.setText(realAddStr);
+                addPercent_Label.setText(addPercentStr);
+                setPriceColor(realTimePrice, todayOpenPrice);
+            }
         }
 
         private void setPriceColor(String realTimePrice, String todayOpenPrice)
@@ -288,11 +288,26 @@ public class SOptionRealTimeInfoPnl extends JPanel
                             String curBuyCount,
                             String tradingVol)
         {
-            curSellPrice_Label.setText(curSellPrice);
-            curSellCount_Label.setText(curSellCount);
-            curBuyPrice_Label.setText(curBuyPrice);
-            curBuyCount_Label.setText(curBuyCount);
-            tradingVol_Label.setText(tradingVol);
+            if (notNullAndEmptyStr(curSellPrice))
+            {
+                curSellPrice_Label.setText(curSellPrice);
+            }
+            if (notNullAndEmptyStr(curSellCount))
+            {
+                curSellCount_Label.setText(curSellCount);
+            }
+            if (notNullAndEmptyStr(curBuyPrice))
+            {
+                curBuyPrice_Label.setText(curBuyPrice);
+            }
+            if (notNullAndEmptyStr(curBuyCount))
+            {
+                curBuyCount_Label.setText(curBuyCount);
+            }
+            if (notNullAndEmptyStr(tradingVol))
+            {
+                tradingVol_Label.setText(tradingVol);
+            }
         }
     }
 
@@ -358,11 +373,26 @@ public class SOptionRealTimeInfoPnl extends JPanel
                             String todayMinPrice,
                             String notCloseCount)
         {
-            todayOpenPrice_Label.setText(todayOpenPrice);
-            yestadayClosePrice_Label.setText(yestadayClosePrice);
-            todayMaxPrice_Label.setText(todayMaxPrice);
-            todayMinPrice_Label.setText(todayMinPrice);
-            notCloseCount_Label.setText(notCloseCount);
+            if (notNullAndEmptyStr(todayOpenPrice))
+            {
+                todayOpenPrice_Label.setText(todayOpenPrice);
+            }
+            if (notNullAndEmptyStr(yestadayClosePrice))
+            {
+                yestadayClosePrice_Label.setText(yestadayClosePrice);
+            }
+            if (notNullAndEmptyStr(todayMaxPrice))
+            {
+                todayMaxPrice_Label.setText(todayMaxPrice);
+            }
+            if (notNullAndEmptyStr(todayMaxPrice))
+            {
+                todayMinPrice_Label.setText(todayMinPrice);
+            }
+            if (notNullAndEmptyStr(notCloseCount))
+            {
+                notCloseCount_Label.setText(notCloseCount);
+            }
         }
     }
 

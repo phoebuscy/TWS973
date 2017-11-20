@@ -43,6 +43,7 @@ import static com.utils.SUtil.getDimension;
 import static com.utils.SUtil.getLastOpenTimeSeconds;
 import static com.utils.SUtil.getUSADateTimeByEpochSecond;
 import static com.utils.SUtil.ifNowIsOpenTime;
+import static com.utils.SUtil.isIntOrDoubleNumber;
 import static com.utils.SUtil.usaChangeToLocalDateTime;
 import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TConst.SYMBOL_BUS;
@@ -122,8 +123,21 @@ public class SOptionLinkTablePnl extends JPanel
             Object source = event.getSource();
             if (source instanceof SOptionLinkTable)
             {
+                int rowIndex = optionLinkTable.getSelectedRow();
                 SOptionLinkTable optLinkTable = (SOptionLinkTable) source;
-                Object selectObj = optLinkTable.getRowUserObject(optLinkTable.getSelectedRow());
+                TCyTableModel tableModel = (TCyTableModel) optLinkTable.getModel();
+                Object currentPriceObj = tableModel.getValueAt(rowIndex, 2);
+                double currentPrice = isIntOrDoubleNumber(currentPriceObj) ? Double.valueOf(currentPriceObj
+                                                                                                    .toString()) : 0D;
+                Object todayOpenPriceObj = tableModel.getValueAt(rowIndex, 3);
+                double todayOpenPrice = isIntOrDoubleNumber(todayOpenPriceObj) ? Double.valueOf(todayOpenPriceObj
+                                                                                                        .toString()) :
+                                        0D;
+                Object yesterdayClosePriceObj = tableModel.getValueAt(rowIndex, 4);
+                double yesterdayClosePrice = isIntOrDoubleNumber(yesterdayClosePriceObj) ? Double.valueOf(
+                        yesterdayClosePriceObj.toString()) : 0D;
+
+                Object selectObj = optLinkTable.getRowUserObject(rowIndex);
                 if (selectObj instanceof ContractDetails)
                 {
                     ContractDetails ctrDtls = (ContractDetails) selectObj;
@@ -138,7 +152,10 @@ public class SOptionLinkTablePnl extends JPanel
                             long reqid = entry.getKey();
                             // Symbol发布数据
                             TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBAReqIDContractDetails(reqid,
-                                                                                                            contractDetails));
+                                                                                                            contractDetails,
+                                                                                                            currentPrice,
+                                                                                                            yesterdayClosePrice,
+                                                                                                            todayOpenPrice));
                         }
                     }
                 }

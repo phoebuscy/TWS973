@@ -3,7 +3,6 @@ package com.view.panel.smallPanel;
 import com.commdata.mbassadorObj.MBAReqIDContractDetails;
 import com.commdata.mbassadorObj.MBAtickPrice;
 import com.ib.client.Contract;
-import com.ib.client.ContractDetails;
 import com.ib.client.TickType;
 import com.ib.client.Types;
 import com.model.SOptionRealTimeInfoModel;
@@ -37,7 +36,7 @@ public class SOptionDetailPnl extends JPanel
     private SOptionRealTimeInfoPnl putInfoPnl = new SOptionRealTimeInfoPnl(this, Types.Right.Put);
 
     // 查询买卖价的市场数据reqid和contract的map
-    private static Map<Integer, ContractDetails> topMktDataReqID2ContractsMap = new HashMap<>();
+    private static Map<Integer, MBAReqIDContractDetails> topMktDataReqID2ContractsMap = new HashMap<>();
 
     public SOptionDetailPnl(Component parentWin)
     {
@@ -80,7 +79,16 @@ public class SOptionDetailPnl extends JPanel
     private void processDoubleClickOptTableInfo(MBAReqIDContractDetails msg)
     {
         BigInteger reqid = BigInteger.valueOf(msg.reqid);
-        topMktDataReqID2ContractsMap.put(reqid.intValue(), msg.contractDetails);
+        topMktDataReqID2ContractsMap.put(reqid.intValue(), msg);
+        SOptionRealTimeInfoModel infoModel = getOptRealTimeInfoModel(msg);
+        if (Types.Right.Call.equals(infoModel.getRight()))
+        {
+            callInfoPnl.setData(infoModel);
+        }
+        else
+        {
+            putInfoPnl.setData(infoModel);
+        }
     }
 
 
@@ -98,8 +106,8 @@ public class SOptionDetailPnl extends JPanel
     @Handler(filters = {@Filter(recvOptionMktDataFilter.class)})
     private void processOptionMktData(MBAtickPrice msg)
     {
-        ContractDetails contractDetails = topMktDataReqID2ContractsMap.get(msg.tickerId);
-        Contract contract = contractDetails.contract();
+        MBAReqIDContractDetails reqIDContractDetails = topMktDataReqID2ContractsMap.get(msg.tickerId);
+        Contract contract = reqIDContractDetails.contractDetails.contract();
         if (contract != null)
         {
             Types.Right right = contract.right();
@@ -113,6 +121,23 @@ public class SOptionDetailPnl extends JPanel
                 putInfoPnl.setData(infoModel);
             }
         }
+    }
+
+    private SOptionRealTimeInfoModel getOptRealTimeInfoModel(MBAReqIDContractDetails msg)
+    {
+        SOptionRealTimeInfoModel infoModel = new SOptionRealTimeInfoModel();
+        if (msg != null && msg.contractDetails != null)
+        {
+            Contract contract = msg.contractDetails.contract();
+            infoModel.setRight(contract.right());
+            infoModel.setObj(contract.symbol());
+            infoModel.setRealTimePrice(Double.toString(msg.currentPrice));
+            infoModel.setYestadayClosePrice(Double.toString(msg.yesterdayClose));
+            infoModel.setTodayOpenPrice(Double.toString(msg.todayOpen));
+            infoModel.setOperatePrice(Double.toString(contract.strike()));
+            infoModel.setExpireDate(contract.lastTradeDateOrContractMonth());
+        }
+        return infoModel;
     }
 
     private SOptionRealTimeInfoModel getOptRealTimeInfoModel(Types.Right right, MBAtickPrice msg)
