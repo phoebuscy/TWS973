@@ -61,6 +61,11 @@ public class Symbol
     private reqOptHisDataThread reqOptHisDataThread = new reqOptHisDataThread(optHisDataReqParamStorage);
     private boolean reqOptHisDataThreadStartFlg = false;  // reqOptHisDataThread 线程已启动标志
 
+    private Contract prepareOrderCallContract;  // 选中的准备交易的Call
+    private Contract prepareOrderPutContract;   // 选中的准备交易的put
+    private Contract orderedCallContract; // 正在交易的Call contract
+    private Contract orderedPutContract;  // 正在交易的put Contract
+
     public Symbol(SDataManager dataManager)
     {
         this.dataManager = dataManager;
@@ -483,6 +488,77 @@ public class Symbol
         }
     }
 
+    public void setPrepareOrderContract(Contract contract)
+    {
+        if(contract != null)
+        {
+            if(Types.Right.Call.equals(contract.right()))
+            {
+                setPrepareOrderCallContract(contract);
+            }
+            else if(Types.Right.Put.equals(contract.right()))
+            {
+                setPrepareOrderPutContract(contract);
+            }
+        }
+    }
+
+    public void setPrepareOrderCallContract(Contract contract)
+    {
+        prepareOrderCallContract = contract;
+    }
+
+    public void setPrepareOrderPutContract(Contract contract)
+    {
+        prepareOrderPutContract = contract;
+    }
+
+    public void clearPrepareOrderCallContract()
+    {
+        prepareOrderCallContract = null;
+    }
+    public void clearPrepareOrderPutContract()
+    {
+        prepareOrderPutContract = null;
+    }
+
+    public Contract getOrderedCallContract()
+    {
+        return orderedCallContract;
+    }
+
+    public Contract getOrderedPutContract()
+    {
+        return orderedPutContract;
+    }
+
+    public void setOrderedCallContract(Contract contract)
+    {
+        orderedCallContract = contract;
+    }
+
+    public void setOrderedPutContract(Contract contract)
+    {
+        orderedPutContract = contract;
+    }
+
+    public void clearOrderedCallContract()
+    {
+        orderedCallContract = null;
+    }
+    public void clearOrderedPutContract()
+    {
+        orderedPutContract = null;
+    }
+
+    public boolean isOrderedCallContract()
+    {
+        return orderedCallContract != null;
+    }
+    public boolean isOrderedPutContract()
+    {
+        return orderedPutContract != null;
+    }
 
     //------------------------------ 以下是处理动态返回的数据-------------------------------
 

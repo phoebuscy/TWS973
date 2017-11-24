@@ -123,7 +123,7 @@ public class SRealTimePicturePnl extends JPanel
             LocalDateTime curUsaOpenDateTime = getCurrentDayUSAOpenDateTime();
             LocalDateTime curUsaLocalDateTime = getCurrentAmericaLocalDateTime();
             // 如果现在是开盘时间，则取当前时间
-            if (ifNowIsOpenTime() || curUsaLocalDateTime.plusMinutes(10).isAfter(curUsaOpenDateTime))
+            if (ifNowIsOpenTime() ||  (curUsaOpenDateTime != null && curUsaLocalDateTime.plusMinutes(10).isAfter(curUsaOpenDateTime)))
             {
                 openUsaDateTime = getCurrentDayUSAOpenDateTime();
                 closeUsaDateTime = getCurrentDayUSACloseDateTime();

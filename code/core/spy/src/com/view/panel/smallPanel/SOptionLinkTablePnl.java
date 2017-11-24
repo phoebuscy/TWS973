@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import net.engio.mbassy.listener.Filter;
@@ -149,6 +150,16 @@ public class SOptionLinkTablePnl extends JPanel
                         // 找到了contractDetail 和 reqid 之后 广播消息
                         if (conid != -1 && conid == conid_other)
                         {
+                            // 校验是否有正在下单的对应的 call或put
+                            Types.Right right = contractDetails.contract().right();
+                            if ((Types.Right.Call.equals(right) && symbol.getOrderedCallContract() != null) ||
+                                (Types.Right.Put.equals(right) && symbol.getOrderedPutContract() != null))
+                            {
+                                JOptionPane.showMessageDialog(this,
+                                                              getConfigValue("tip.have.order",
+                                                                             TConst.CONFIG_I18N_FILE));
+                            }
+
                             long reqid = entry.getKey();
                             // Symbol发布数据
                             TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBAReqIDContractDetails(reqid,
@@ -156,6 +167,8 @@ public class SOptionLinkTablePnl extends JPanel
                                                                                                             currentPrice,
                                                                                                             yesterdayClosePrice,
                                                                                                             todayOpenPrice));
+                            //  symbol 设置准备进行开仓的contract
+                            symbol.setPrepareOrderContract(contractDetails.contract());
                         }
                     }
                 }

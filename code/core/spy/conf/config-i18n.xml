@@ -57,6 +57,7 @@
         <pair label-key="yin.or.kui" label-value="盈亏" />
         <pair label-key="time" label-value="时间" />
 
+        <pair label-key="tip.have.order" label-value="如要选择备选开仓obj，请先平仓。"/>
 
 
 

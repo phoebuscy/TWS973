@@ -132,7 +132,8 @@ public class SOperateButtonPnl extends JPanel
                 @Override
                 public void actionPerformed(ActionEvent e)
                 {
-                    initIcon();
+                 //   initIcon();
+                    placeOrder(e); // 下订单
                 }
             });
         }
@@ -213,6 +214,11 @@ public class SOperateButtonPnl extends JPanel
             }
             setIcon(icon);
         }
+    }
+
+    private void placeOrder(ActionEvent e)
+    {
+
     }
 
 

@@ -49,12 +49,12 @@ public class SUtil
         String src = "10";
         String des = "1";
 
-        String dateStr = "1509629405";
 
+        LocalDate localDate = getUsaThisYearGanEnJie();
 
-        Instant instant = Instant.ofEpochSecond(1509629405);
+        localDate = getUsaGanEnJie(2019);
 
-        LocalDateTime lt = LocalDateTime.ofInstant(instant, ZoneId.of("America/New_York"));
+        LocalDateTime localDateTime = getCurrentDayUSACloseDateTime();
 
         //  ZoneOffset zoneOffset =  ZoneOffset.of("Asia/Shanghai"); //  ZoneOffset.SHORT_IDS.get()
         // LocalDateTime lt = LocalDateTime.ofEpochSecond(Long.parseLong(dateStr),0,zoneOffset);
@@ -460,14 +460,36 @@ public class SUtil
     }
 
 
-    // 是否是感恩节:注意 2017年11月24日 ： 感恩节次日，休市三小时（即提前三小时收盘）。
-    public static boolean isGanEnJie()
+    // 是否是感恩节: 感恩节是11月的第4个星期4，注意，不是固定的哪一日。 注意 2017年11月23日是感恩节，感恩节次日，休市三小时（即提前三小时收盘）。
+    // 获取美国当前年的感恩节日
+    public static LocalDate getUsaGanEnJie(int year)
     {
-        LocalDateTime nowDateTime = getCurrentAmericaLocalDateTime();
-        int m = nowDateTime.getMonthValue();
-        int d = nowDateTime.getDayOfMonth();
-        return m == 11 && d == 24;
+        LocalDate usaLocalDate = LocalDate.of(year, 11,1);
+        boolean is4th4d = false;
+        int sundayCount = 0;
+        while (!is4th4d)
+        {
+            DayOfWeek dayOfWeek = usaLocalDate.getDayOfWeek();
+            sundayCount = (dayOfWeek == DayOfWeek.SUNDAY)? ++sundayCount: sundayCount;
+            is4th4d = (sundayCount == 3 && dayOfWeek == DayOfWeek.THURSDAY);
+            if(!is4th4d)
+            {
+                usaLocalDate = usaLocalDate.plusDays(1);
+            }
+        }
+        return usaLocalDate;
+    }
+    public static LocalDate getUsaThisYearGanEnJie()
+    {
+        int year = LocalDate.now().getYear();
+        return getUsaGanEnJie(year);
+    }
 
+    public static boolean isGanEnJieNextDay()
+    {
+        LocalDate ganenjie = getUsaThisYearGanEnJie();
+        LocalDate ganEnJieNextDay = ganenjie.plusDays(1);
+        return getCurrentAmericalLocalDate().equals(ganEnJieNextDay);
     }
 
     // 判断当前是否是开盘时间: 注意 2017年11月24日 ： 感恩节次日，休市三小时（即提前三小时收盘）。
@@ -479,11 +501,11 @@ public class SUtil
             int year = curUSADateTime.getYear();
             int month = curUSADateTime.getMonthValue();
             int day = curUSADateTime.getDayOfMonth();
-            boolean isGanEnJie = isGanEnJie();
+            boolean isGanEnJieNext = (month == 11 && day == 24);  // 是否是感恩节次日
 
             int beginHour = 9;
             int endHour = 16;
-            endHour = isGanEnJie ? 13 : endHour;
+            endHour = isGanEnJieNext ? 13 : endHour;
             return curUSADateTime.isAfter(LocalDateTime
                                                   .of(LocalDate.of(year, month, day), LocalTime.of(beginHour, 30))) &&
                    curUSADateTime.isBefore(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(endHour, 0)));
@@ -515,8 +537,8 @@ public class SUtil
             int year = currentAmericaLocalDateTime.getYear();
             int month = currentAmericaLocalDateTime.getMonthValue();
             int day = currentAmericaLocalDateTime.getDayOfMonth();
-            boolean isGanEnJie = isGanEnJie();
-            int endHour = isGanEnJie ? 13 : 16;
+            boolean isGanEnJieNextDay = isGanEnJieNextDay();
+            int endHour = isGanEnJieNextDay ? 13 : 16;
             return LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(endHour, 0));
         }
         return null;
@@ -691,9 +713,9 @@ public class SUtil
             int beginHour = isAmericanDaylightSavingTime ? 9 : 10;
 
             // 获取收盘时间
-            boolean isGanEnJie = isGanEnJie();
+            boolean isGanEnJieNextDay = isGanEnJieNextDay();
             int endHour = isAmericanDaylightSavingTime ? 16 : 17;
-            endHour = isGanEnJie ? 13 : endHour;
+            endHour = isGanEnJieNextDay ? 13 : endHour;
 
             LocalDate usaLocalDate = LocalDate.of(curUSADateTime.getYear(),
                                                   curUSADateTime.getMonthValue(),
