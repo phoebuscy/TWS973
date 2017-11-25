@@ -14,6 +14,7 @@ import com.view.panel.smallPanel.SRealTimePnl;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import static com.utils.SUtil.getBarSizebyDurationSeconds;
 import static com.utils.SUtil.getCurrentAmericaLocalDateTime;
 import static com.utils.SUtil.getCurrentDayUSACloseDateTime;
 import static com.utils.SUtil.getCurrentDayUSAOpenDateTime;
+import static com.utils.SUtil.getLastDayUSAOpenDateTime;
 import static com.utils.SUtil.getLastOpenTimeSeconds;
 import static com.utils.SUtil.getLowHighPair;
 import static com.utils.SUtil.getOpenCloseDate;
@@ -123,7 +125,8 @@ public class SRealTimePicturePnl extends JPanel
             LocalDateTime curUsaOpenDateTime = getCurrentDayUSAOpenDateTime();
             LocalDateTime curUsaLocalDateTime = getCurrentAmericaLocalDateTime();
             // 如果现在是开盘时间，则取当前时间
-            if (ifNowIsOpenTime() ||  (curUsaOpenDateTime != null && curUsaLocalDateTime.plusMinutes(10).isAfter(curUsaOpenDateTime)))
+            if (ifNowIsOpenTime() || (curUsaOpenDateTime != null && curUsaLocalDateTime.isBefore(curUsaOpenDateTime) &&
+                                      curUsaLocalDateTime.plusMinutes(10).isAfter(curUsaOpenDateTime)))
             {
                 openUsaDateTime = getCurrentDayUSAOpenDateTime();
                 closeUsaDateTime = getCurrentDayUSACloseDateTime();
@@ -135,7 +138,7 @@ public class SRealTimePicturePnl extends JPanel
             else // 如果不是开盘时间，则取上一天的开盘时间/
             {
                 // 获取指定天数之前的开盘的本地时间, 参数 lastDay 是表示之前多少天
-                Pair<LocalDateTime, LocalDateTime> lastUsaOpenCloseTime = getUSAOpenDateTimeByLastDay(1);
+                Pair<LocalDateTime, LocalDateTime> lastUsaOpenCloseTime = getLastDayUSAOpenDateTime();
                 LocalDateTime localCloseDateTime = usaChangeToLocalDateTime(lastUsaOpenCloseTime.getValue());
                 openUsaDateTime = lastUsaOpenCloseTime.getKey();
                 closeUsaDateTime = lastUsaOpenCloseTime.getValue();
@@ -217,7 +220,7 @@ public class SRealTimePicturePnl extends JPanel
                 sSpyRealTimePnl.addValue(date, val[i]);
             }
         }
-        hasDarwHistory = ifNowIsOpenTime()? false:true;
+        hasDarwHistory = ifNowIsOpenTime() ? false : true;
     }
 
 

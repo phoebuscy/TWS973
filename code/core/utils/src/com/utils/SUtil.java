@@ -689,12 +689,28 @@ public class SUtil
         return null;
     }
 
+    // 获取上一个开盘收盘时间段
+    public static Pair<LocalDateTime,LocalDateTime> getLastDayUSAOpenDateTime()
+    {
+        // 获取当前美国日期
+        LocalDateTime curUSADateTime = getCurrentAmericaLocalDateTime();
+        if(isOpenDayOfUSADateTime(curUSADateTime))
+        {
+            LocalDateTime openDateTime = getCurrentDayUSAOpenDateTime();
+            LocalDateTime closeDateTime = getCurrentDayUSACloseDateTime();
+            return new Pair<>(openDateTime, closeDateTime);
+        }
+        else
+        {
+            return getUSAOpenDateTimeByLastDay(1);
+        }
+    }
+
     // 获取指定天数之前的开盘的本地时间, 参数 lastDay 是表示之前多少天
     public static Pair<LocalDateTime, LocalDateTime> getUSAOpenDateTimeByLastDay(int lastDay)
     {
         if (lastDay > 0)
         {
-
             // 获取当前美国日期
             LocalDateTime curUSADateTime = getCurrentAmericaLocalDateTime();
             int tmpDay = 0;
@@ -707,15 +723,11 @@ public class SUtil
                 }
             } while (tmpDay < lastDay);
 
-
             // 获取开盘时间
-            boolean isAmericanDaylightSavingTime = isAmericanDaylightSavingTime(curUSADateTime); // 是否是夏令时
-            int beginHour = isAmericanDaylightSavingTime ? 9 : 10;
-
+            int beginHour = 9;
             // 获取收盘时间
             boolean isGanEnJieNextDay = isGanEnJieNextDay();
-            int endHour = isAmericanDaylightSavingTime ? 16 : 17;
-            endHour = isGanEnJieNextDay ? 13 : endHour;
+            int endHour = isGanEnJieNextDay ? 13 : 16;
 
             LocalDate usaLocalDate = LocalDate.of(curUSADateTime.getYear(),
                                                   curUSADateTime.getMonthValue(),
@@ -723,9 +735,6 @@ public class SUtil
 
             LocalDateTime openUsaDateTime = LocalDateTime.of(usaLocalDate, LocalTime.of(beginHour, 30));
             LocalDateTime closeUsaDateTime = LocalDateTime.of(usaLocalDate, LocalTime.of(endHour, 0));
-
-            //  LocalDateTime localOpenDateTime = usaChangeToLocalDateTime(openUsaDateTime);
-            // LocalDateTime localCloseDateTime = usaChangeToLocalDateTime(closeUsaDateTime);
             return new Pair<>(openUsaDateTime, closeUsaDateTime);
         }
         return null;
