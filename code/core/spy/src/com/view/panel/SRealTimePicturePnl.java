@@ -139,6 +139,11 @@ public class SRealTimePicturePnl extends JPanel
             {
                 // 获取指定天数之前的开盘的本地时间, 参数 lastDay 是表示之前多少天
                 Pair<LocalDateTime, LocalDateTime> lastUsaOpenCloseTime = getLastDayUSAOpenDateTime();
+                LocalDateTime usaCurDateTime = getCurrentAmericaLocalDateTime();
+                if(usaCurDateTime.isBefore(lastUsaOpenCloseTime.getKey()))
+                {
+                    lastUsaOpenCloseTime = getUSAOpenDateTimeByLastDay(1);
+                }
                 LocalDateTime localCloseDateTime = usaChangeToLocalDateTime(lastUsaOpenCloseTime.getValue());
                 openUsaDateTime = lastUsaOpenCloseTime.getKey();
                 closeUsaDateTime = lastUsaOpenCloseTime.getValue();
@@ -184,7 +189,7 @@ public class SRealTimePicturePnl extends JPanel
         }
     }
 
-    // 处理历史数据消息介绍
+    // 处理历史数据消息
     @Handler(filters = {@Filter(historicDataEndFilter.class)})
     private void processHistoricDataEnd(MBAHistoricalDataEnd msg)
     {

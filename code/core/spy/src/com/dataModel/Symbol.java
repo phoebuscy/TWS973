@@ -9,6 +9,8 @@ import com.commdata.pubdata.OptionHistoricReqParams;
 import com.ib.client.Contract;
 import com.ib.client.ContractDetails;
 import com.ib.client.EClientSocket;
+import com.ib.client.Order;
+import com.ib.client.OrderType;
 import com.ib.client.TagValue;
 import com.ib.client.TickType;
 import com.ib.client.Types;
@@ -94,15 +96,28 @@ public class Symbol
     {
         return symbolRealPrice;
     }
+    public void setSymbolRealPrice(Double realPrice)
+    {
+        symbolRealPrice = realPrice;
+    }
 
     public Double getSymbolYesterdayClosePrice()
     {
         return symbolYesterdayClosePrice;
     }
 
+    public void setSymbolYesterdayClosePrice(Double yesterdayClosePrice)
+    {
+        symbolYesterdayClosePrice = yesterdayClosePrice;
+    }
+
     public Double getSymbolTodayOpenPrice()
     {
         return symbolTodayOpenPrice;
+    }
+    public void setSymbolTodayOpenPrice(Double todayOpenPrice)
+    {
+        symbolTodayOpenPrice = todayOpenPrice;
     }
 
     public int reqOptionMktData(Contract contract)
@@ -188,8 +203,15 @@ public class Symbol
     private List<ContractDetails> getNearestPriceCtrDetails(List<ContractDetails> crtdLst, double curPrice)
     {
         List<ContractDetails> retCrtLst = new ArrayList<>();
-        if (notNullAndEmptyCollection(crtdLst) && Double.compare(curPrice, 0D) == 1)
+
+        if (notNullAndEmptyCollection(crtdLst) && Double.compare(curPrice, 0D) >= 0)
         {
+            if(Double.compare(curPrice,0D) == 0)  // 如果当前价格为0，则返回crtdLst中间一个ContractDetails
+            {
+                retCrtLst.add(crtdLst.get(crtdLst.size()/2));
+                return retCrtLst;
+            }
+
             // 获取call最接近的strike
             double minAbs = 10000000D;
             ContractDetails retStrick = null;
@@ -490,13 +512,13 @@ public class Symbol
 
     public void setPrepareOrderContract(Contract contract)
     {
-        if(contract != null)
+        if (contract != null)
         {
-            if(Types.Right.Call.equals(contract.right()))
+            if (Types.Right.Call.equals(contract.right()))
             {
                 setPrepareOrderCallContract(contract);
             }
-            else if(Types.Right.Put.equals(contract.right()))
+            else if (Types.Right.Put.equals(contract.right()))
             {
                 setPrepareOrderPutContract(contract);
             }
@@ -517,9 +539,20 @@ public class Symbol
     {
         prepareOrderCallContract = null;
     }
+
     public void clearPrepareOrderPutContract()
     {
         prepareOrderPutContract = null;
+    }
+
+    public Contract getPrepareOrderCallContract()
+    {
+        return prepareOrderCallContract;
+    }
+
+    public Contract getPrepareOrderPutContract()
+    {
+        return prepareOrderPutContract;
     }
 
     public Contract getOrderedCallContract()
@@ -546,6 +579,7 @@ public class Symbol
     {
         orderedCallContract = null;
     }
+
     public void clearOrderedPutContract()
     {
         orderedPutContract = null;
@@ -555,9 +589,37 @@ public class Symbol
     {
         return orderedCallContract != null;
     }
+
     public boolean isOrderedPutContract()
     {
         return orderedPutContract != null;
+    }
+
+
+    public int placeOrder(Contract contract, Types.Action action, int count)
+    {
+        EClientSocket m_client = dataManager.getM_client();
+        int reqid = dataManager.getReqId();
+        int clientid = dataManager.getM_clientid();
+        if (m_client != null && clientid > 0 && reqid > 0 && contract != null && action != null && count > 0)
+        {
+            Order order = new Order();
+            order.action(action);
+            order.totalQuantity(count);
+            order.orderType(OrderType.MKT);
+            m_client.placeOrder(reqid, contract, order);
+
+            if (Types.Right.Call.equals(contract.right()))
+            {
+                setOrderedCallContract(contract);
+            }
+            else
+            {
+                setOrderedPutContract(contract);
+            }
+            return reqid;
+        }
+        return -1;
     }
 
     //------------------------------ 以下是处理动态返回的数据-------------------------------

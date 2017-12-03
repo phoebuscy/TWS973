@@ -1,20 +1,27 @@
 package com.view.panel.smallPanel;
 
+import com.commdata.enums.SCallOrPut;
+import com.dataModel.SDataManager;
+import com.dataModel.Symbol;
+import com.ib.client.Contract;
+import com.ib.client.Types;
 import com.utils.Cst;
+import com.utils.GBC;
 import com.utils.TConst;
 import com.utils.TMbassadorSingleton;
-import com.commdata.enums.SCallOrPut;
-import com.utils.GBC;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JPanel;
 import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 import static com.utils.SUtil.getDimension;
 import static com.utils.SUtil.isIntOrDoubleNumber;
 import static com.utils.TFileUtil.getConfigValue;
@@ -29,9 +36,11 @@ public class SOperateButtonPnl extends JPanel
     private Component parentWin;
     private Dimension parentDimension;
 
-    private OpenCloseButton callBtn = new OpenCloseButton(SCallOrPut.CALL); //  JButton("CALL 开");
+    private OpenCloseButton callBtn = new OpenCloseButton(Types.Right.Call); //  JButton("CALL 开");
     private ChangeOperateButton callPutChangeBtn = new ChangeOperateButton();
-    private OpenCloseButton putBtn = new OpenCloseButton(SCallOrPut.PUT); //JButton("PUT 开");
+    private OpenCloseButton putBtn = new OpenCloseButton(Types.Right.Put); //JButton("PUT 开");
+
+    private Symbol symbol = SDataManager.getInstance().getSymbol();
 
     public SOperateButtonPnl(Component parentWin)
     {
@@ -108,7 +117,7 @@ public class SOperateButtonPnl extends JPanel
 
     private class OpenCloseButton extends JButton
     {
-        private SCallOrPut callOrPut;
+        private Types.Right right;
         private double realAdd = 0.0;  // 实际收益
         private double percent = 0.0;   //收益百分比
 
@@ -119,9 +128,9 @@ public class SOperateButtonPnl extends JPanel
         private Icon lossLittle;  // 亏损一点
         private Icon lossMore;    // 亏损较多
 
-        public OpenCloseButton(SCallOrPut callOrPut)
+        public OpenCloseButton(Types.Right right)
         {
-            this.callOrPut = callOrPut;
+            this.right = right;
             init();
         }
 
@@ -151,14 +160,14 @@ public class SOperateButtonPnl extends JPanel
             setPreferredSize(new Dimension(100,15));
             setFont(new java.awt.Font("Dialog", 1, 15));
             setIcon(waitIco);
-            setText(callOrPut.toString() + getConfigValue("begin.buy",TConst.CONFIG_I18N_FILE));
+            setText(right.toString() + getConfigValue("begin.buy", TConst.CONFIG_I18N_FILE));
             setActionListerner();
         }
 
         private void initIcon()
         {
             setIcon(waitIco);
-            setText(callOrPut.toString() + getConfigValue("begin.buy", TConst.CONFIG_I18N_FILE));
+            setText(right.toString() + getConfigValue("begin.buy", TConst.CONFIG_I18N_FILE));
         }
 
         public void setProfit(String realAddStr, String percentStr)
@@ -218,6 +227,32 @@ public class SOperateButtonPnl extends JPanel
 
     private void placeOrder(ActionEvent e)
     {
+        Object source = e.getSource();
+        OpenCloseButton openCloseButton = (OpenCloseButton)source;
+        if(Types.Right.Call.equals(openCloseButton.right))
+        {
+            Types.Action action = null;
+            Contract contract = symbol.getOrderedCallContract();
+            if(contract != null)
+            {
+                action = Types.Action.SELL;
+            }
+            else
+            {
+                contract = symbol.getPrepareOrderCallContract();
+                action = Types.Action.BUY;
+            }
+            action = Types.Action.BUY;
+            symbol.placeOrder(contract, action, 100);
+        }
+        else if(Types.Right.Put.equals(openCloseButton.right))
+        {
+            Contract putContract = symbol.getPrepareOrderPutContract();
+            symbol.placeOrder(putContract, Types.Action.BUY, 100);
+        }
+
+        int a = 1;
+
 
     }
 

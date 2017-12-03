@@ -485,11 +485,10 @@ public class SUtil
         return getUsaGanEnJie(year);
     }
 
-    public static boolean isGanEnJieNextDay()
+    public static boolean isGanEnJieNextDay(LocalDate localDate)
     {
         LocalDate ganenjie = getUsaThisYearGanEnJie();
-        LocalDate ganEnJieNextDay = ganenjie.plusDays(1);
-        return getCurrentAmericalLocalDate().equals(ganEnJieNextDay);
+        return localDate != null && ganenjie.plusDays(1).equals(localDate);
     }
 
     // 判断当前是否是开盘时间: 注意 2017年11月24日 ： 感恩节次日，休市三小时（即提前三小时收盘）。
@@ -537,7 +536,7 @@ public class SUtil
             int year = currentAmericaLocalDateTime.getYear();
             int month = currentAmericaLocalDateTime.getMonthValue();
             int day = currentAmericaLocalDateTime.getDayOfMonth();
-            boolean isGanEnJieNextDay = isGanEnJieNextDay();
+            boolean isGanEnJieNextDay = isGanEnJieNextDay(LocalDate.of(year,month,day));
             int endHour = isGanEnJieNextDay ? 13 : 16;
             return LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(endHour, 0));
         }
@@ -726,7 +725,7 @@ public class SUtil
             // 获取开盘时间
             int beginHour = 9;
             // 获取收盘时间
-            boolean isGanEnJieNextDay = isGanEnJieNextDay();
+            boolean isGanEnJieNextDay = isGanEnJieNextDay(curUSADateTime.toLocalDate());
             int endHour = isGanEnJieNextDay ? 13 : 16;
 
             LocalDate usaLocalDate = LocalDate.of(curUSADateTime.getYear(),

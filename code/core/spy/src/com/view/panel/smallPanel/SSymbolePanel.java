@@ -1,9 +1,12 @@
 package com.view.panel.smallPanel;
 
+import com.commdata.mbassadorObj.MBABeginQuerySymbol;
+import com.commdata.mbassadorObj.MBAHistoricalData;
+import com.commdata.mbassadorObj.MBAHistoricalDataEnd;
+import com.commdata.mbassadorObj.MBASymbolRealPrice;
 import com.dataModel.SDataManager;
 import com.dataModel.Symbol;
-import com.commdata.mbassadorObj.MBABeginQuerySymbol;
-import com.commdata.mbassadorObj.MBASymbolRealPrice;
+import com.ib.client.Types;
 import com.utils.TConst;
 import com.utils.TMbassadorSingleton;
 import java.awt.Color;
@@ -11,6 +14,11 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import javafx.util.Pair;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -20,9 +28,17 @@ import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
+import static com.utils.SUtil.getCurrentAmericaLocalDateTime;
 import static com.utils.SUtil.getDimension;
+import static com.utils.SUtil.getLastDayUSAOpenDateTime;
+import static com.utils.SUtil.getUSADateTimeByEpochSecond;
+import static com.utils.SUtil.getUSAOpenDateTimeByLastDay;
+import static com.utils.SUtil.ifNowIsOpenTime;
+import static com.utils.SUtil.usaChangeToLocalDateTime;
+import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TConst.SYMBOL_BUS;
 import static com.utils.TFileUtil.getConfigValue;
+import static com.utils.TPubUtil.notNullAndEmptyCollection;
 
 /**
  * Created by 123 on 2016/12/24.
@@ -35,6 +51,9 @@ public class SSymbolePanel extends JPanel
     private JTextField symbolText = new JTextField("spy", 10);
     private JButton btnQuery = crtQueryBtn();                  // 查询实时价格按钮
     private JLabel price = new JLabel("225.71    +0.33    +0.15%:");
+
+    private static int reqidOfHistoricData = -1; // 查询历史数据的reqid
+    private List<MBAHistoricalData> historicalDataList = new ArrayList<>();
 
     private double realTimePrice = 0.0; // 当前实时价格
     private double todayOpenPrice = 258.2; // 今开价格
@@ -60,6 +79,7 @@ public class SSymbolePanel extends JPanel
 
         // 订阅消息总线名称为 SYMBOL_BUS 的 消息
         TMbassadorSingleton.getInstance(SYMBOL_BUS).subscribe(this);
+        TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
     }
 
     private void setDimension()
@@ -125,16 +145,45 @@ public class SSymbolePanel extends JPanel
                     symbol.setSymbolVal(symbolVal);
                     symbol.querySymbolRealPrice();
 
+                    if (!ifNowIsOpenTime()) // 如果现在不是开盘时间，则需要查询上一次开盘时间的历史数据来显示
+                    {
+                        reqidOfHistoricData = reqLastOneDayHistoricData();
+                    }
                     // 发送开始查询symbol消息
                     TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBABeginQuerySymbol(symbolVal));
                 }
-
-
             }
         });
         return btnQuery;
     }
 
+    private int reqLastOneDayHistoricData()
+    {
+        historicalDataList.clear();
+        
+        // 获取指定天数之前的开盘的本地时间, 参数 lastDay 是表示之前多少天
+        Pair<LocalDateTime, LocalDateTime> lastUsaOpenCloseTime = getLastDayUSAOpenDateTime();
+        LocalDateTime usaCurDateTime = getCurrentAmericaLocalDateTime();
+        if (usaCurDateTime.isBefore(lastUsaOpenCloseTime.getKey()))
+        {
+            lastUsaOpenCloseTime = getUSAOpenDateTimeByLastDay(1);
+        }
+        LocalDateTime localCloseDateTime = usaChangeToLocalDateTime(lastUsaOpenCloseTime.getValue());
+        localCloseDateTime = localCloseDateTime.plusMinutes(60);
+
+
+        long duration = 1;
+        Types.BarSize barSize = Types.BarSize._30_mins;
+        String localCloseTimeStr = localCloseDateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
+
+        int reqHistoritDataReqid = symbol.reqHistoricDatas(symbol.getSymbolVal(),
+                                                           localCloseTimeStr,
+                                                           duration,
+                                                           Types.DurationUnit.DAY,
+                                                           barSize);
+
+        return reqHistoritDataReqid;
+    }
 
     // 接收实时价格的消息过滤器
     static public class realPriceStatusFilter implements IMessageFilter<MBASymbolRealPrice>
@@ -146,13 +195,73 @@ public class SSymbolePanel extends JPanel
         }
     }
 
-    // 连接消息处理器
+    // 实时价格消息处理器
     @Handler(filters = {@Filter(realPriceStatusFilter.class)})
     private void getRealPrice(MBASymbolRealPrice msg)
     {
         todayOpenPrice = symbol.getSymbolTodayOpenPrice();
         yesterdayClosePrice = symbol.getSymbolYesterdayClosePrice();
         setPrice(msg.symbolRealPrice, todayOpenPrice, yesterdayClosePrice);
+    }
+
+    // 接收历史数据消息过滤器
+    static public class historicDataFilter implements IMessageFilter<MBAHistoricalData>
+    {
+        @Override
+        public boolean accepts(MBAHistoricalData msg, SubscriptionContext subscriptionContext)
+        {
+            return msg.reqId == reqidOfHistoricData;
+        }
+    }
+
+    @Handler(filters = {@Filter(historicDataFilter.class)})
+    private void getHistoricalData(MBAHistoricalData msg)
+    {
+        historicalDataList.add(msg);
+    }
+
+    // 接收历史数据消息结束
+    static public class historicDataEndFilter implements IMessageFilter<MBAHistoricalDataEnd>
+    {
+        @Override
+        public boolean accepts(MBAHistoricalDataEnd msg, SubscriptionContext subscriptionContext)
+        {
+            return msg.reqId == reqidOfHistoricData;
+        }
+    }
+
+    // 处理历史数据消息
+    @Handler(filters = {@Filter(historicDataEndFilter.class)})
+    private void processHistoricDataEnd(MBAHistoricalDataEnd msg)
+    {
+        // 取消获取历史数据申请
+        symbol.cancelReqHistoricalData(reqidOfHistoricData);
+        historicalDataList.size();
+
+        Pair<LocalDateTime, LocalDateTime> lastUsaOpenCloseTime = getLastDayUSAOpenDateTime();
+        LocalDateTime openDateTime = lastUsaOpenCloseTime.getKey();
+        LocalDateTime closeDateTime = lastUsaOpenCloseTime.getValue();
+
+        if(notNullAndEmptyCollection(historicalDataList))
+        {
+            for(MBAHistoricalData historicalData : historicalDataList)
+            {
+                LocalDateTime usaDateTime = getUSADateTimeByEpochSecond(historicalData.date);
+                if(openDateTime.equals(usaDateTime))
+                {
+                    todayOpenPrice = historicalData.open;
+                }
+                if(closeDateTime.equals(usaDateTime))
+                {
+                    realTimePrice = historicalData.open;
+                }
+            }
+        }
+        symbol.setSymbolRealPrice(realTimePrice);
+        symbol.setSymbolTodayOpenPrice(todayOpenPrice);
+        symbol.setSymbolYesterdayClosePrice(todayOpenPrice);  // 此处把昨天收盘价用今天的开盘价代替
+        yesterdayClosePrice = todayOpenPrice;
+        setPrice(realTimePrice, todayOpenPrice, yesterdayClosePrice);
     }
 
 }
