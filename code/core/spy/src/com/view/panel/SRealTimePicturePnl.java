@@ -4,8 +4,10 @@ import com.commdata.mbassadorObj.MBABeginQuerySymbol;
 import com.commdata.mbassadorObj.MBAHistoricalData;
 import com.commdata.mbassadorObj.MBAHistoricalDataEnd;
 import com.commdata.mbassadorObj.MBASymbolRealPrice;
+import com.commdata.pubdata.ProcessInAWT;
 import com.dataModel.SDataManager;
 import com.dataModel.Symbol;
+import com.ib.client.Contract;
 import com.ib.client.Types;
 import com.utils.GBC;
 import com.utils.SUtil;
@@ -14,7 +16,6 @@ import com.view.panel.smallPanel.SRealTimePnl;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -140,7 +141,7 @@ public class SRealTimePicturePnl extends JPanel
                 // 获取指定天数之前的开盘的本地时间, 参数 lastDay 是表示之前多少天
                 Pair<LocalDateTime, LocalDateTime> lastUsaOpenCloseTime = getLastDayUSAOpenDateTime();
                 LocalDateTime usaCurDateTime = getCurrentAmericaLocalDateTime();
-                if(usaCurDateTime.isBefore(lastUsaOpenCloseTime.getKey()))
+                if (usaCurDateTime.isBefore(lastUsaOpenCloseTime.getKey()))
                 {
                     lastUsaOpenCloseTime = getUSAOpenDateTimeByLastDay(1);
                 }
@@ -154,14 +155,85 @@ public class SRealTimePicturePnl extends JPanel
             }
             // 注意：设置X轴需要用美国时间
             setXRange(openUsaDateTime, closeUsaDateTime);
+
             // 注意：查询历史数据需要用本地时间
+
+            /*
             reqHistoritDataReqid = symbol.reqHistoricDatas(msg.getSymbol(),
                                                            locatime,
                                                            duration,
                                                            Types.DurationUnit.SECOND,
                                                            barSize);
+                                                           */
+
+            Contract contract = new Contract();
+            contract.conid(0);
+            contract.symbol(msg.getSymbol());
+            contract.secType("STK");
+            contract.exchange("SMART");
+            contract.primaryExch("ISLAND");
+            contract.currency("USD");
+
+            symbol.getHistoricDatas(contract,
+                                    locatime,
+                                    duration,
+                                    Types.DurationUnit.SECOND,
+                                    barSize,
+                                    getGetDataFinishProcess());
+
+
         }
     }
+
+    private ProcessInAWT getGetDataFinishProcess()
+    {
+        ProcessInAWT processInAWT = new ProcessInAWT()
+        {
+            @Override
+            public void successInAWT(Object param)
+            {
+                historicalDataList = (List)param;
+                // 根据BarSize来获取 “ 开价，最高价，最低价，收价’的时间间隔
+                int stepSec = getStepSecond(barSize);
+
+                // 获取历史数据中最低和最高值
+                Pair lowHighPair = getLowHighPair(historicalDataList);
+                if (lowHighPair != null)
+                {
+                    price_low = (Double) lowHighPair.getKey();
+                    price_high = (Double) lowHighPair.getValue();
+                    Double meg = (price_high - price_low) * 0.1;
+                    sSpyRealTimePnl.setYRange(price_low - meg, price_high + meg);
+                }
+
+                for (MBAHistoricalData historicalData : historicalDataList)
+                {
+                    LocalDateTime usaDateTime = getUSADateTimeByEpochSecond(historicalData.date);
+                    Double[] val = new Double[4];
+                    val[0] = historicalData.open;
+                    val[1] = historicalData.high;
+                    val[2] = historicalData.low;
+                    val[3] = historicalData.close;
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        usaDateTime.plusSeconds(i * stepSec);
+                        Date date = changeToDate(usaDateTime);
+                        sSpyRealTimePnl.addValue(date, val[i]);
+                    }
+                }
+                hasDarwHistory = ifNowIsOpenTime() ? false : true;
+            }
+
+            @Override
+            public void failedInAWT(Object param)
+            {
+                super.failedInAWT(param);
+            }
+        };
+        return processInAWT;
+    }
+
 
     // 接收历史数据消息过滤器
     static public class historicDataFilter implements IMessageFilter<MBAHistoricalData>

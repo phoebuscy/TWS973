@@ -2,9 +2,11 @@ package com.dataModel;
 
 import com.answermodel.AnswerObj;
 import com.commdata.mbassadorObj.MBAHistoricalData;
+import com.commdata.mbassadorObj.MBAHistoricalDataEnd;
 import com.commdata.mbassadorObj.MBAOptionExpireDayList;
 import com.commdata.mbassadorObj.MBASymbolRealPrice;
 import com.commdata.mbassadorObj.MBAtickPrice;
+import com.commdata.pubdata.HistoricDataStorage;
 import com.commdata.pubdata.OptHisDataReqParamStorage;
 import com.commdata.pubdata.OptionHistoricReqParams;
 import com.commdata.pubdata.ProcessInAWT;
@@ -25,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.util.concurrent.ConcurrentHashMap;
 import javafx.util.Pair;
 import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
@@ -72,6 +75,10 @@ public class Symbol
     private Contract prepareOrderPutContract;   // 选中的准备交易的put
     private Contract orderedCallContract; // 正在交易的Call contract
     private Contract orderedPutContract;  // 正在交易的put Contract
+
+    //查询历史数据相关变量
+    private static Map<Integer, HistoricDataStorage> reqid2HistoricDataStorageMap = new ConcurrentHashMap<>();
+
 
     public Symbol(SDataManager dataManager)
     {
@@ -137,11 +144,11 @@ public class Symbol
             boolean snapshot = false;
             boolean regulatorySnaphsot = false;
             m_client.reqMktData(reqId,
-                    contract,
-                    genericTickList,
-                    snapshot,
-                    regulatorySnaphsot,
-                    Collections.emptyList());
+                                contract,
+                                genericTickList,
+                                snapshot,
+                                regulatorySnaphsot,
+                                Collections.emptyList());
             return reqId;
         }
         return -1;
@@ -270,7 +277,8 @@ public class Symbol
         {
             ContractDetails crtDt = nearestCrtLst.get(0);
             strike2ContractDtalsLst.put(crtDt.contract().strike(), nearestCrtLst);
-        } else
+        }
+        else
         {
             LogApp.error("Symbol getStrike2ContractDtalsLst get contractdetails faile");
         }
@@ -316,7 +324,7 @@ public class Symbol
 
         EClientSocket m_client = dataManager.getM_client();
         if (m_client != null && contract != null && notNullAndEmptyStr(endDateTime) && duration > 0 &&
-                durationUnit != null && barSize != null)
+            durationUnit != null && barSize != null)
         {
             String t_endDataTime = endDateTime;
             String t_durationStr = duration + " " + durationUnit.toString().charAt(0);
@@ -327,14 +335,14 @@ public class Symbol
             List<TagValue> tagValueList = Collections.emptyList();
 
             m_client.reqHistoricalData(reqId,
-                    contract,
-                    t_endDataTime,
-                    t_durationStr,
-                    t_barSize,
-                    whatToShow,
-                    useRTH,
-                    formatData,
-                    tagValueList);
+                                       contract,
+                                       t_endDataTime,
+                                       t_durationStr,
+                                       t_barSize,
+                                       whatToShow,
+                                       useRTH,
+                                       formatData,
+                                       tagValueList);
             return reqId;
         }
         return -1;
@@ -350,10 +358,10 @@ public class Symbol
 
         int reqId = dataManager.getReqId();
         OptionHistoricReqParams optionHistoricReqParams = new OptionHistoricReqParams(contract,
-                endDateTime,
-                duration,
-                durationUnit,
-                barSize);
+                                                                                      endDateTime,
+                                                                                      duration,
+                                                                                      durationUnit,
+                                                                                      barSize);
         optHisDataReqParamStorage.produce(new Pair<>(reqId, optionHistoricReqParams));
         return reqId;
     }
@@ -380,7 +388,8 @@ public class Symbol
                     try
                     {
                         Thread.sleep(2000);
-                    } catch (InterruptedException e)
+                    }
+                    catch (InterruptedException e)
                     {
                         e.printStackTrace();
                     }
@@ -405,8 +414,8 @@ public class Symbol
                     OptionHistoricReqParams optReqParam = reqidAndReqParam.getValue();
 
                     if (optReqParam != null && optReqParam.contract != null &&
-                            notNullAndEmptyStr(optReqParam.endDateTime) && optReqParam.duration > 0 &&
-                            optReqParam.durationUnit != null && optReqParam.barSize != null)
+                        notNullAndEmptyStr(optReqParam.endDateTime) && optReqParam.duration > 0 &&
+                        optReqParam.durationUnit != null && optReqParam.barSize != null)
                     {
                         String t_endDataTime = optReqParam.endDateTime;
                         String t_durationStr =
@@ -418,14 +427,14 @@ public class Symbol
                         List<TagValue> tagValueList = Collections.emptyList();
 
                         m_client.reqHistoricalData(reqId,
-                                optReqParam.contract,
-                                t_endDataTime,
-                                t_durationStr,
-                                t_barSize,
-                                whatToShow,
-                                useRTH,
-                                formatData,
-                                tagValueList);
+                                                   optReqParam.contract,
+                                                   t_endDataTime,
+                                                   t_durationStr,
+                                                   t_barSize,
+                                                   whatToShow,
+                                                   useRTH,
+                                                   formatData,
+                                                   tagValueList);
                     }
                 }
             }
@@ -493,14 +502,14 @@ public class Symbol
             int reqid = dataManager.getReqId();
 
             m_client.reqHistoricalData(reqid,
-                    contract,
-                    t_endDataTime,
-                    t_durationStr,
-                    t_barSize,
-                    whatToShow,
-                    useRTH,
-                    formatData,
-                    tagValueList);
+                                       contract,
+                                       t_endDataTime,
+                                       t_durationStr,
+                                       t_barSize,
+                                       whatToShow,
+                                       useRTH,
+                                       formatData,
+                                       tagValueList);
             return reqid;
         }
         return -1;
@@ -522,7 +531,8 @@ public class Symbol
             if (Types.Right.Call.equals(contract.right()))
             {
                 setPrepareOrderCallContract(contract);
-            } else if (Types.Right.Put.equals(contract.right()))
+            }
+            else if (Types.Right.Put.equals(contract.right()))
             {
                 setPrepareOrderPutContract(contract);
             }
@@ -616,7 +626,8 @@ public class Symbol
             if (Types.Right.Call.equals(contract.right()))
             {
                 setOrderedCallContract(contract);
-            } else
+            }
+            else
             {
                 setOrderedPutContract(contract);
             }
@@ -625,16 +636,114 @@ public class Symbol
         return -1;
     }
 
-    public List<MBAHistoricalData> getHistoricDatas(Contract contract, Types.BarSize barSize, LocalDateTime beginTime,
-                                                    LocalDateTime endTime, ProcessInAWT process)
-    {
-        List<MBAHistoricalData> historicalDataLst = new ArrayList<>();
 
-        return historicalDataLst;
+    // 查询历史数据
+    public void getHistoricDatas(Contract contract,
+                                 String endDateTime,
+                                 long duration,
+                                 Types.DurationUnit durationUnit,
+                                 Types.BarSize barSize,
+                                 ProcessInAWT process)
+    {
+        EClientSocket m_client = dataManager != null ? dataManager.getM_client() : null;
+        if (m_client != null)
+        {
+            int reqId = dataManager.getReqId();
+            OptionHistoricReqParams optReqParam = new OptionHistoricReqParams(contract,
+                                                                              endDateTime,
+                                                                              duration,
+                                                                              durationUnit,
+                                                                              barSize);
+
+            if (optReqParam.contract != null && notNullAndEmptyStr(optReqParam.endDateTime) &&
+                optReqParam.duration > 0 && optReqParam.durationUnit != null && optReqParam.barSize != null)
+            {
+                String t_endDataTime = optReqParam.endDateTime;
+                String t_durationStr = optReqParam.duration + " " + optReqParam.durationUnit.toString().charAt(0);
+                String t_barSize = optReqParam.barSize.toString();
+                String whatToShow = "TRADES";
+                int useRTH = 0;
+                int formatData = 2;
+                List<TagValue> tagValueList = Collections.emptyList();
+                m_client.reqHistoricalData(reqId,
+                                           optReqParam.contract,
+                                           t_endDataTime,
+                                           t_durationStr,
+                                           t_barSize,
+                                           whatToShow,
+                                           useRTH,
+                                           formatData,
+                                           tagValueList);
+
+                HistoricDataStorage historicDataStorage = new HistoricDataStorage(reqId);
+                reqid2HistoricDataStorageMap.put(reqId, historicDataStorage);
+                List<MBAHistoricalData> historicalDataList = new ArrayList<>();
+                historicDataStorage.consume(historicalDataList);
+                reqid2HistoricDataStorageMap.remove(reqId);
+
+                if (notNullAndEmptyCollection(historicalDataList))
+                {
+                    process.successInAWT(historicalDataList);
+                }
+                else
+                {
+                    process.failedInAWT(null);
+                }
+            }
+        }
     }
 
 
     //------------------------------ 以下是处理动态返回的数据-------------------------------
+
+
+    // 接收历史数据消息过滤器
+    static public class historicDataFilter implements IMessageFilter<MBAHistoricalData>
+    {
+        @Override
+        public boolean accepts(MBAHistoricalData msg, SubscriptionContext subscriptionContext)
+        {
+            return reqid2HistoricDataStorageMap.containsKey(msg.reqId);
+        }
+    }
+
+    @Handler(filters = {@Filter(historicDataFilter.class)})
+    private void getHistoricalData(MBAHistoricalData msg)
+    {
+        HistoricDataStorage historicDataStorage = reqid2HistoricDataStorageMap.get(msg.reqId);
+        if (historicDataStorage == null)
+        {
+            historicDataStorage = new HistoricDataStorage(msg.reqId);
+            reqid2HistoricDataStorageMap.put(msg.reqId, historicDataStorage);
+        }
+        historicDataStorage.produce(msg);
+    }
+
+    // 接收历史数据消息结束
+    static public class historicDataEndFilter implements IMessageFilter<MBAHistoricalDataEnd>
+    {
+        @Override
+        public boolean accepts(MBAHistoricalDataEnd msg, SubscriptionContext subscriptionContext)
+        {
+            return reqid2HistoricDataStorageMap.containsKey(msg.reqId);
+        }
+    }
+
+    // 接收历史数据结束后的处理：取出开盘时间的开盘价格,填入到表格中
+    @Handler(filters = {@Filter(historicDataEndFilter.class)})
+    private void processHistoricDataEnd(MBAHistoricalDataEnd msg)
+    {
+        // 取消获取历史数据申请
+        cancelReqHistoricalData(msg.reqId);
+        HistoricDataStorage historicDataStorage = reqid2HistoricDataStorageMap.get(msg.reqId);
+        if (historicDataStorage != null)
+        {
+            historicDataStorage.setGetDatafinished();
+        }
+
+    }
+
+    //--------------
 
 
     // 接收查询symbol的实时价格的消息过滤器
@@ -657,10 +766,12 @@ public class Symbol
             symbolRealPrice = msg.price;
             // Symbol发布数据
             TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBASymbolRealPrice(symbolRealPrice));
-        } else if (msg.field == TickType.OPEN.index())
+        }
+        else if (msg.field == TickType.OPEN.index())
         {
             symbolTodayOpenPrice = msg.price;
-        } else if (msg.field == TickType.CLOSE.index())
+        }
+        else if (msg.field == TickType.CLOSE.index())
         {
             symbolYesterdayClosePrice = msg.price;
         }
@@ -716,7 +827,8 @@ public class Symbol
         if (day2CtrdMap == null)
         {
             day2CtrdMap = new HashMap<>();
-        } else
+        }
+        else
         {
             day2CtrdMap.clear();
         }
@@ -729,7 +841,8 @@ public class Symbol
                 if (day2CtrdMap.containsKey(lastDay))
                 {
                     day2CtrdMap.get(lastDay).add(ctrd);
-                } else
+                }
+                else
                 {
                     List<ContractDetails> ctrLst = new ArrayList<>();
                     ctrLst.add(ctrd);
