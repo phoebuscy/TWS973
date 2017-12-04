@@ -391,43 +391,6 @@ public class SDataManager implements EWrapper
                                                                     hasGaps);
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(mbaHistoricalData);
 
-        /*
-        StringBuilder strBuilder = new StringBuilder(100);
-
-        strBuilder.append("reqId:");
-        strBuilder.append(reqId);
-        strBuilder.append("/");
-        strBuilder.append("date:");
-        String d_date = getDate(date);
-        strBuilder.append(d_date);
-        strBuilder.append("/");
-        strBuilder.append("open:");
-        strBuilder.append(open);
-        strBuilder.append("/");
-        strBuilder.append("high:");
-        strBuilder.append(high);
-        strBuilder.append("/");
-        strBuilder.append("low:");
-        strBuilder.append(low);
-        strBuilder.append("/");
-        strBuilder.append("close:");
-        strBuilder.append(close);
-        strBuilder.append("/");
-        strBuilder.append("volume:");
-        strBuilder.append(volume);
-        strBuilder.append("/");
-        strBuilder.append("count:");
-        strBuilder.append(count);
-        strBuilder.append("/");
-        strBuilder.append("WAP:");
-        strBuilder.append(WAP);
-        strBuilder.append("/");
-        strBuilder.append("hasGaps:");
-        strBuilder.append(hasGaps);
-
-        LogMsg.info(strBuilder.toString());
-        */
-
     }
 
     @Override

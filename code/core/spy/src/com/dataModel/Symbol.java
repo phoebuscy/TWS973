@@ -1,11 +1,13 @@
 package com.dataModel;
 
 import com.answermodel.AnswerObj;
+import com.commdata.mbassadorObj.MBAHistoricalData;
 import com.commdata.mbassadorObj.MBAOptionExpireDayList;
 import com.commdata.mbassadorObj.MBASymbolRealPrice;
 import com.commdata.mbassadorObj.MBAtickPrice;
 import com.commdata.pubdata.OptHisDataReqParamStorage;
 import com.commdata.pubdata.OptionHistoricReqParams;
+import com.commdata.pubdata.ProcessInAWT;
 import com.ib.client.Contract;
 import com.ib.client.ContractDetails;
 import com.ib.client.EClientSocket;
@@ -15,12 +17,14 @@ import com.ib.client.TagValue;
 import com.ib.client.TickType;
 import com.ib.client.Types;
 import com.utils.TMbassadorSingleton;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javafx.util.Pair;
 import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
@@ -28,6 +32,7 @@ import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import static com.utils.SUtil.getSysYear;
 import static com.utils.TConst.AK_CONTRACT_DETAIL_END;
 import static com.utils.TConst.DATAMAAGER_BUS;
@@ -96,6 +101,7 @@ public class Symbol
     {
         return symbolRealPrice;
     }
+
     public void setSymbolRealPrice(Double realPrice)
     {
         symbolRealPrice = realPrice;
@@ -115,6 +121,7 @@ public class Symbol
     {
         return symbolTodayOpenPrice;
     }
+
     public void setSymbolTodayOpenPrice(Double todayOpenPrice)
     {
         symbolTodayOpenPrice = todayOpenPrice;
@@ -130,11 +137,11 @@ public class Symbol
             boolean snapshot = false;
             boolean regulatorySnaphsot = false;
             m_client.reqMktData(reqId,
-                                contract,
-                                genericTickList,
-                                snapshot,
-                                regulatorySnaphsot,
-                                Collections.emptyList());
+                    contract,
+                    genericTickList,
+                    snapshot,
+                    regulatorySnaphsot,
+                    Collections.emptyList());
             return reqId;
         }
         return -1;
@@ -206,9 +213,9 @@ public class Symbol
 
         if (notNullAndEmptyCollection(crtdLst) && Double.compare(curPrice, 0D) >= 0)
         {
-            if(Double.compare(curPrice,0D) == 0)  // 如果当前价格为0，则返回crtdLst中间一个ContractDetails
+            if (Double.compare(curPrice, 0D) == 0)  // 如果当前价格为0，则返回crtdLst中间一个ContractDetails
             {
-                retCrtLst.add(crtdLst.get(crtdLst.size()/2));
+                retCrtLst.add(crtdLst.get(crtdLst.size() / 2));
                 return retCrtLst;
             }
 
@@ -263,8 +270,7 @@ public class Symbol
         {
             ContractDetails crtDt = nearestCrtLst.get(0);
             strike2ContractDtalsLst.put(crtDt.contract().strike(), nearestCrtLst);
-        }
-        else
+        } else
         {
             LogApp.error("Symbol getStrike2ContractDtalsLst get contractdetails faile");
         }
@@ -310,7 +316,7 @@ public class Symbol
 
         EClientSocket m_client = dataManager.getM_client();
         if (m_client != null && contract != null && notNullAndEmptyStr(endDateTime) && duration > 0 &&
-            durationUnit != null && barSize != null)
+                durationUnit != null && barSize != null)
         {
             String t_endDataTime = endDateTime;
             String t_durationStr = duration + " " + durationUnit.toString().charAt(0);
@@ -321,14 +327,14 @@ public class Symbol
             List<TagValue> tagValueList = Collections.emptyList();
 
             m_client.reqHistoricalData(reqId,
-                                       contract,
-                                       t_endDataTime,
-                                       t_durationStr,
-                                       t_barSize,
-                                       whatToShow,
-                                       useRTH,
-                                       formatData,
-                                       tagValueList);
+                    contract,
+                    t_endDataTime,
+                    t_durationStr,
+                    t_barSize,
+                    whatToShow,
+                    useRTH,
+                    formatData,
+                    tagValueList);
             return reqId;
         }
         return -1;
@@ -344,10 +350,10 @@ public class Symbol
 
         int reqId = dataManager.getReqId();
         OptionHistoricReqParams optionHistoricReqParams = new OptionHistoricReqParams(contract,
-                                                                                      endDateTime,
-                                                                                      duration,
-                                                                                      durationUnit,
-                                                                                      barSize);
+                endDateTime,
+                duration,
+                durationUnit,
+                barSize);
         optHisDataReqParamStorage.produce(new Pair<>(reqId, optionHistoricReqParams));
         return reqId;
     }
@@ -374,8 +380,7 @@ public class Symbol
                     try
                     {
                         Thread.sleep(2000);
-                    }
-                    catch (InterruptedException e)
+                    } catch (InterruptedException e)
                     {
                         e.printStackTrace();
                     }
@@ -400,8 +405,8 @@ public class Symbol
                     OptionHistoricReqParams optReqParam = reqidAndReqParam.getValue();
 
                     if (optReqParam != null && optReqParam.contract != null &&
-                        notNullAndEmptyStr(optReqParam.endDateTime) && optReqParam.duration > 0 &&
-                        optReqParam.durationUnit != null && optReqParam.barSize != null)
+                            notNullAndEmptyStr(optReqParam.endDateTime) && optReqParam.duration > 0 &&
+                            optReqParam.durationUnit != null && optReqParam.barSize != null)
                     {
                         String t_endDataTime = optReqParam.endDateTime;
                         String t_durationStr =
@@ -413,14 +418,14 @@ public class Symbol
                         List<TagValue> tagValueList = Collections.emptyList();
 
                         m_client.reqHistoricalData(reqId,
-                                                   optReqParam.contract,
-                                                   t_endDataTime,
-                                                   t_durationStr,
-                                                   t_barSize,
-                                                   whatToShow,
-                                                   useRTH,
-                                                   formatData,
-                                                   tagValueList);
+                                optReqParam.contract,
+                                t_endDataTime,
+                                t_durationStr,
+                                t_barSize,
+                                whatToShow,
+                                useRTH,
+                                formatData,
+                                tagValueList);
                     }
                 }
             }
@@ -488,14 +493,14 @@ public class Symbol
             int reqid = dataManager.getReqId();
 
             m_client.reqHistoricalData(reqid,
-                                       contract,
-                                       t_endDataTime,
-                                       t_durationStr,
-                                       t_barSize,
-                                       whatToShow,
-                                       useRTH,
-                                       formatData,
-                                       tagValueList);
+                    contract,
+                    t_endDataTime,
+                    t_durationStr,
+                    t_barSize,
+                    whatToShow,
+                    useRTH,
+                    formatData,
+                    tagValueList);
             return reqid;
         }
         return -1;
@@ -517,8 +522,7 @@ public class Symbol
             if (Types.Right.Call.equals(contract.right()))
             {
                 setPrepareOrderCallContract(contract);
-            }
-            else if (Types.Right.Put.equals(contract.right()))
+            } else if (Types.Right.Put.equals(contract.right()))
             {
                 setPrepareOrderPutContract(contract);
             }
@@ -612,8 +616,7 @@ public class Symbol
             if (Types.Right.Call.equals(contract.right()))
             {
                 setOrderedCallContract(contract);
-            }
-            else
+            } else
             {
                 setOrderedPutContract(contract);
             }
@@ -621,6 +624,15 @@ public class Symbol
         }
         return -1;
     }
+
+    public List<MBAHistoricalData> getHistoricDatas(Contract contract, Types.BarSize barSize, LocalDateTime beginTime,
+                                                    LocalDateTime endTime, ProcessInAWT process)
+    {
+        List<MBAHistoricalData> historicalDataLst = new ArrayList<>();
+
+        return historicalDataLst;
+    }
+
 
     //------------------------------ 以下是处理动态返回的数据-------------------------------
 
@@ -645,12 +657,10 @@ public class Symbol
             symbolRealPrice = msg.price;
             // Symbol发布数据
             TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBASymbolRealPrice(symbolRealPrice));
-        }
-        else if (msg.field == TickType.OPEN.index())
+        } else if (msg.field == TickType.OPEN.index())
         {
             symbolTodayOpenPrice = msg.price;
-        }
-        else if (msg.field == TickType.CLOSE.index())
+        } else if (msg.field == TickType.CLOSE.index())
         {
             symbolYesterdayClosePrice = msg.price;
         }
@@ -706,8 +716,7 @@ public class Symbol
         if (day2CtrdMap == null)
         {
             day2CtrdMap = new HashMap<>();
-        }
-        else
+        } else
         {
             day2CtrdMap.clear();
         }
@@ -720,8 +729,7 @@ public class Symbol
                 if (day2CtrdMap.containsKey(lastDay))
                 {
                     day2CtrdMap.get(lastDay).add(ctrd);
-                }
-                else
+                } else
                 {
                     List<ContractDetails> ctrLst = new ArrayList<>();
                     ctrLst.add(ctrd);
