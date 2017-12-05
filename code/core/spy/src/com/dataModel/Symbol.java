@@ -28,7 +28,9 @@ import java.util.List;
 import java.util.Map;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import javafx.util.Pair;
+import javax.swing.SwingWorker;
 import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.IMessageFilter;
@@ -637,18 +639,18 @@ public class Symbol
     }
 
 
-    // 查询历史数据
-    public void getHistoricDatas(Contract contract,
-                                 String endDateTime,
-                                 long duration,
-                                 Types.DurationUnit durationUnit,
-                                 Types.BarSize barSize,
-                                 ProcessInAWT process)
+    // 查询历史数据并处理
+    public void getHistoricDatasAndProcess(Contract contract,
+                                           String endDateTime,
+                                           long duration,
+                                           Types.DurationUnit durationUnit,
+                                           Types.BarSize barSize,
+                                           ProcessInAWT process)
     {
         EClientSocket m_client = dataManager != null ? dataManager.getM_client() : null;
         if (m_client != null)
         {
-            int reqId = dataManager.getReqId();
+            final int reqId = dataManager.getReqId();
             OptionHistoricReqParams optReqParam = new OptionHistoricReqParams(contract,
                                                                               endDateTime,
                                                                               duration,
@@ -677,18 +679,48 @@ public class Symbol
 
                 HistoricDataStorage historicDataStorage = new HistoricDataStorage(reqId);
                 reqid2HistoricDataStorageMap.put(reqId, historicDataStorage);
-                List<MBAHistoricalData> historicalDataList = new ArrayList<>();
-                historicDataStorage.consume(historicalDataList);
-                reqid2HistoricDataStorageMap.remove(reqId);
 
-                if (notNullAndEmptyCollection(historicalDataList))
+                SwingWorker worker = new SwingWorker()
                 {
-                    process.successInAWT(historicalDataList);
-                }
-                else
-                {
-                    process.failedInAWT(null);
-                }
+                    @Override
+                    protected Object doInBackground() throws Exception
+                    {
+                        List<MBAHistoricalData> historicalDataList = historicDataStorage.consume();
+                        return historicalDataList;
+                    }
+
+                    @Override
+                    protected void done()
+                    {
+                        Object retObj = null;
+                        try
+                        {
+                            retObj = get();
+                        }
+                        catch (InterruptedException | ExecutionException e)
+                        {
+                            e.printStackTrace();
+                        }
+                        finally
+                        {
+                            cancelReqHistoricalData(reqId);
+                        }
+                        reqid2HistoricDataStorageMap.remove(reqId);
+                        if(retObj != null)
+                        {
+                            List<MBAHistoricalData> historicalDataList = (List<MBAHistoricalData>)retObj;
+                            if (notNullAndEmptyCollection(historicalDataList))
+                            {
+                                process.successInAWT(historicalDataList);
+                            }
+                            else
+                            {
+                                process.failedInAWT(null);
+                            }
+                        }
+                    }
+                };
+                worker.execute();
             }
         }
     }

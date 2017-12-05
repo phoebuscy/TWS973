@@ -3,7 +3,6 @@ package com.view.panel.smallPanel;
 import com.commdata.mbassadorObj.MBAHistoricalData;
 import com.commdata.mbassadorObj.MBAHistoricalDataEnd;
 import com.commdata.mbassadorObj.MBAOptionChainMap;
-import com.commdata.mbassadorObj.MBAOptionExpireDayList;
 import com.commdata.mbassadorObj.MBAReqIDContractDetails;
 import com.commdata.mbassadorObj.MBAtickPrice;
 import com.dataModel.SDataManager;
@@ -291,7 +290,6 @@ public class SOptionLinkTablePnl extends JPanel
                 {
                     LocalDateTime openUsaDateTime = getCurrentDayUSAOpenDateTime();
                     LocalDateTime endDatetime = usaChangeToLocalDateTime(openUsaDateTime.plusSeconds(60));
-                    //   String endTimeStr = endDatetime.format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
                     String endTimeStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
                     long duration = getLastOpenTimeSeconds() + 60; // 注意，此处要加60秒，是为了获取今天开盘时间的价格
                     reqid = symbol.reqOptionHistoricDatas_pub(ctrDts.contract(),

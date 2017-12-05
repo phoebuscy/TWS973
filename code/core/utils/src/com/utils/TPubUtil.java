@@ -1,6 +1,7 @@
 package com.utils;
 
 import com.answermodel.AnswerObj;
+import com.ib.client.Contract;
 import java.util.Collection;
 import java.util.Map;
 import static com.utils.TStringUtil.notNullAndEmptyStr;
@@ -112,6 +113,22 @@ public class TPubUtil
         if (notNullAndEmptyStr(attr) && attr.startsWith(akflag + STR_SEPARATOR))
         {
             return attr.substring(akflag.length() + 1, attr.length());
+        }
+        return null;
+    }
+
+    public static Contract crtContract(String symbolName)
+    {
+        if (notNullAndEmptyStr(symbolName))
+        {
+            Contract contract = new Contract();
+            contract.conid(0);
+            contract.symbol(symbolName);
+            contract.secType("STK");
+            contract.exchange("SMART");
+            contract.primaryExch("ISLAND");
+            contract.currency("USD");
+            return contract;
         }
         return null;
     }

@@ -2,7 +2,6 @@ package com.view.panel;
 
 import com.commdata.mbassadorObj.MBABeginQuerySymbol;
 import com.commdata.mbassadorObj.MBAHistoricalData;
-import com.commdata.mbassadorObj.MBAHistoricalDataEnd;
 import com.commdata.mbassadorObj.MBASymbolRealPrice;
 import com.commdata.pubdata.ProcessInAWT;
 import com.dataModel.SDataManager;
@@ -43,6 +42,7 @@ import static com.utils.SUtil.ifNowIsOpenTime;
 import static com.utils.SUtil.usaChangeToLocalDateTime;
 import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TConst.SYMBOL_BUS;
+import static com.utils.TPubUtil.crtContract;
 import static com.utils.TStringUtil.notNullAndEmptyStr;
 
 /**
@@ -55,7 +55,6 @@ public class SRealTimePicturePnl extends JPanel
     private LocalDateTime openUsaDateTime = null;
     private LocalDateTime closeUsaDateTime = null;
     private boolean hasDarwHistory = false;
-    private static int reqHistoritDataReqid = -1;
     private Types.BarSize barSize = Types.BarSize._10_secs;
     private List<MBAHistoricalData> historicalDataList = new ArrayList<>();
     private Symbol symbol = SDataManager.getInstance().getSymbol();
@@ -157,35 +156,20 @@ public class SRealTimePicturePnl extends JPanel
             setXRange(openUsaDateTime, closeUsaDateTime);
 
             // 注意：查询历史数据需要用本地时间
-
-            /*
-            reqHistoritDataReqid = symbol.reqHistoricDatas(msg.getSymbol(),
-                                                           locatime,
-                                                           duration,
-                                                           Types.DurationUnit.SECOND,
-                                                           barSize);
-                                                           */
-
-            Contract contract = new Contract();
-            contract.conid(0);
-            contract.symbol(msg.getSymbol());
-            contract.secType("STK");
-            contract.exchange("SMART");
-            contract.primaryExch("ISLAND");
-            contract.currency("USD");
-
-            symbol.getHistoricDatas(contract,
-                                    locatime,
-                                    duration,
-                                    Types.DurationUnit.SECOND,
-                                    barSize,
-                                    getGetDataFinishProcess());
+            Contract contract = crtContract(msg.getSymbol());
+            symbol.getHistoricDatasAndProcess(contract,
+                                              locatime,
+                                              duration,
+                                              Types.DurationUnit.SECOND,
+                                              barSize,
+                                              getDataFinishProcess());
 
 
         }
     }
 
-    private ProcessInAWT getGetDataFinishProcess()
+
+    private ProcessInAWT getDataFinishProcess()
     {
         ProcessInAWT processInAWT = new ProcessInAWT()
         {
@@ -234,71 +218,6 @@ public class SRealTimePicturePnl extends JPanel
         return processInAWT;
     }
 
-
-    // 接收历史数据消息过滤器
-    static public class historicDataFilter implements IMessageFilter<MBAHistoricalData>
-    {
-        @Override
-        public boolean accepts(MBAHistoricalData msg, SubscriptionContext subscriptionContext)
-        {
-            return msg.reqId == reqHistoritDataReqid;
-        }
-    }
-
-    @Handler(filters = {@Filter(historicDataFilter.class)})
-    private void getHistoricalData(MBAHistoricalData msg)
-    {
-        historicalDataList.add(msg);
-    }
-
-    // 接收历史数据消息结束
-    static public class historicDataEndFilter implements IMessageFilter<MBAHistoricalDataEnd>
-    {
-        @Override
-        public boolean accepts(MBAHistoricalDataEnd msg, SubscriptionContext subscriptionContext)
-        {
-            return msg.reqId == reqHistoritDataReqid;
-        }
-    }
-
-    // 处理历史数据消息
-    @Handler(filters = {@Filter(historicDataEndFilter.class)})
-    private void processHistoricDataEnd(MBAHistoricalDataEnd msg)
-    {
-        // 取消获取历史数据申请
-        symbol.cancelReqHistoricalData(reqHistoritDataReqid);
-
-        // 根据BarSize来获取 “ 开价，最高价，最低价，收价’的时间间隔
-        int stepSec = getStepSecond(barSize);
-
-        // 获取历史数据中最低和最高值
-        Pair lowHighPair = getLowHighPair(historicalDataList);
-        if (lowHighPair != null)
-        {
-            price_low = (Double) lowHighPair.getKey();
-            price_high = (Double) lowHighPair.getValue();
-            Double meg = (price_high - price_low) * 0.1;
-            sSpyRealTimePnl.setYRange(price_low - meg, price_high + meg);
-        }
-
-        for (MBAHistoricalData historicalData : historicalDataList)
-        {
-            LocalDateTime usaDateTime = getUSADateTimeByEpochSecond(historicalData.date);
-            Double[] val = new Double[4];
-            val[0] = historicalData.open;
-            val[1] = historicalData.high;
-            val[2] = historicalData.low;
-            val[3] = historicalData.close;
-
-            for (int i = 0; i < 4; i++)
-            {
-                usaDateTime.plusSeconds(i * stepSec);
-                Date date = changeToDate(usaDateTime);
-                sSpyRealTimePnl.addValue(date, val[i]);
-            }
-        }
-        hasDarwHistory = ifNowIsOpenTime() ? false : true;
-    }
 
 
     // 接收实时价格的消息过滤器

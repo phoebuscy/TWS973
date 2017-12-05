@@ -36,45 +36,36 @@ public class HistoricDataStorage
 
     public void setGetDatafinished()
     {
-        if(getDatafinished != null)
-        {
-            getDatafinished.signal();
-        }
+        lock.lock();
+        getDatafinished.signalAll();
+        lock.unlock();
     }
 
     // 生产num个产品
     public void produce(MBAHistoricalData historicalData)
     {
-        // 获得锁
-        lock.lock();
         if (historicalData != null)
         {
             historicalDataList.add(historicalData);
         }
-        lock.unlock();
     }
 
     // 消费1个产品
-    public void consume(List<MBAHistoricalData> historicalDataList)
+    public List<MBAHistoricalData> consume()
     {
         // 获得锁
         lock.lock();
         try
         {
             // 由于条件不满足，消费阻塞
-            getDatafinished.await(30, TimeUnit.SECONDS);
+            getDatafinished.await(1,TimeUnit.MINUTES);
         }
         catch (InterruptedException e)
         {
             e.printStackTrace();
         }
-        if(historicalDataList != null)
-        {
-            historicalDataList.clear();
-            historicalDataList.addAll(this.historicalDataList);
-        }
-        // 释放锁
         lock.unlock();
+        return this.historicalDataList;
     }
 
 
