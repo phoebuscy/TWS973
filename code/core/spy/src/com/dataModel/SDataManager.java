@@ -1,7 +1,9 @@
 package com.dataModel;
 
+import com.commdata.mbassadorObj.MBAAccountValue;
 import com.commdata.mbassadorObj.MBAHistoricalData;
 import com.commdata.mbassadorObj.MBAHistoricalDataEnd;
+import com.commdata.mbassadorObj.MBAPortFolio;
 import com.commdata.mbassadorObj.MBAtickPrice;
 import com.database.DbManager;
 import com.ib.client.CommissionReport;
@@ -57,6 +59,7 @@ public class SDataManager implements EWrapper
     private EClientSocket m_client;
     private EReader m_reader;
 
+    private String account;
     public Symbol symbol = null;
 
 
@@ -126,6 +129,12 @@ public class SDataManager implements EWrapper
             m_reader = new EReader(m_client, m_signal);
             m_reader.start();
         }
+    }
+
+    // 获取账户
+    public String getAccount()
+    {
+        return account;
     }
 
     public Symbol getSymbol()
@@ -260,12 +269,44 @@ public class SDataManager implements EWrapper
 
     }
 
+
+
+    /**
+     * 这个方法仅在已经调用EClientSocket对象的reqAccountUpdates()方法时调用
+     参数	描述
+     * @param key
+                 表示一种账户值类型的字符串。 有很多可被发送的可用的标签，这里仅列出几个样本：
+
+                 CashBalance - 账户现金余额
+                 DayTradesRemaining - 剩余交易日
+                 EquityWithLoanValue - 含借贷值股权
+                 InitMarginReq - 当前初始保证金要求
+                 MaintMarginReq - 当前维持保证金
+                 NetLiquidation - 净清算值
+     * @param value	与标签相关的值。
+     * @param currency	在值为货币类型的情况下，定义货币类型。
+     * @param accountName	说明信息应用的账户。适用于金融顾问子账户信息。
+     */
     @Override
     public void updateAccountValue(String key, String value, String currency, String accountName)
     {
-
+        MBAAccountValue mbaAccountValue = new MBAAccountValue(key, value, currency, accountName);
+        TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(mbaAccountValue);
     }
 
+
+    /**
+     *  这个方法仅在已经调用EClientSocket对象的reqAccountUpdates()方法时调用。
+     参数	描述
+     * @param contract	该结构包括交易合约的描述。 合约的交易所区域没有为投资组合更新而设置。
+     * @param position	该整数表示合约头寸。 如果头寸为0，表示头寸刚被平仓。
+     * @param marketPrice	产品的单位价格。
+     * @param marketValue	产品的总市值。
+     * @param averageCost	每股的平均成本的计算是用你头寸的数量除以你的成本（执行价格＋佣金）。
+     * @param unrealizedPNL	你未平仓头寸的当前市值和平均成本或平均成本值的差。
+     * @param realizedPNL	显示平仓头寸的利润，为你的建仓执行成本（执行价格＋建仓佣金）和平仓执行成本（执行价格＋平仓头寸佣金）的差。
+     * @param accountName	信息应用于的账户名称。适用于金融顾问子账户信息。
+     */
     @Override
     public void updatePortfolio(Contract contract,
                                 double position,
@@ -276,9 +317,24 @@ public class SDataManager implements EWrapper
                                 double realizedPNL,
                                 String accountName)
     {
+        MBAPortFolio mbaPortFolio = new MBAPortFolio(contract,
+                                                     position,
+                                                     marketPrice,
+                                                     marketValue,
+                                                     averageCost,
+                                                     unrealizedPNL,
+                                                     realizedPNL,
+                                                     accountName);
 
+        TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(mbaPortFolio);
     }
 
+
+
+    /** 这个方法仅在已经调用EClientSocket对象的reqAccountUpdates()方法时调用。
+     * 参数	描述
+     * @param timeStamp 表示账户信息的最后更新时间。
+     */
     @Override
     public void updateAccountTime(String timeStamp)
     {
@@ -358,7 +414,11 @@ public class SDataManager implements EWrapper
     @Override
     public void managedAccounts(String accountsList)
     {
+        account = accountsList;
 
+        // 调用这个功能开始获得账户值、投资组合、和最后更新时间信息。
+        // 账户数据将通过updateAccountTime()，updateAccountValue()和 updatePortfolio() EWrapper methods反馈。
+        m_client.reqAccountUpdates(true, account);
     }
 
     @Override
@@ -569,6 +629,7 @@ public class SDataManager implements EWrapper
         {
             m_client.startAPI();
             TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(makeAKmsg(AK_CONNECTED, "true"));
+            m_client.reqManagedAccts(); // 查询账户
         }
     }
 
