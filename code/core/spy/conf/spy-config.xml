@@ -8,5 +8,8 @@
     <name>phoebuscy</name>
     <password>1234567</password>
   </user>
+  <symbol>
+    <oncemoney>1000</oncemoney>
+  </symbol>
 </resources>
 

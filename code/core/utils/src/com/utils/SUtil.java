@@ -174,7 +174,22 @@ public class SUtil
         return btn;
     }
 
-    public static void setColumWidth(JTable table, int width, int height)
+    public static void setTableColumWidth(JTable table, int colindex, int width)
+    {
+        if (table != null)
+        {
+            TableColumnModel tableColumnModel = table.getColumnModel();
+            int clumCount = tableColumnModel.getColumnCount();
+            if(colindex < clumCount)
+            {
+                tableColumnModel.getColumn(colindex).setPreferredWidth(width);
+            }
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        }
+    }
+
+
+    public static void setTableColumWidth(JTable table, int width)
     {
         if (table != null)
         {
@@ -184,7 +199,6 @@ public class SUtil
             {
                 tableColumnModel.getColumn(i).setPreferredWidth(width);
             }
-            table.setRowHeight(height);
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         }
     }
@@ -308,7 +322,7 @@ public class SUtil
             if (isIntOrDoubleNumber(src) && isIntOrDoubleNumber(des))
             {
                 Double percent = Double.parseDouble(des) / Double.parseDouble(src);
-                String strPercent = String.format("%.2f%%", percent * 100);
+                String strPercent = String.format("%.3f%%", percent * 100);
                 returnObj.setReturnObj(strPercent);
                 returnObj.setSuccess(true);
             }
@@ -322,7 +336,7 @@ public class SUtil
         if (obj != null && isIntOrDoubleNumber(obj))
         {
             Double db = Double.valueOf(obj.toString());
-            percnetStr = String.format("%.2f%%", db * 100);
+            percnetStr = String.format("%.3f%%", db * 100);
         }
         return percnetStr;
     }
@@ -360,7 +374,7 @@ public class SUtil
             }
             else
             {
-                label.setText(String.format("%.2f", db));
+                label.setText(String.format("%.3f", db));
             }
         }
         Font font = label.getFont();

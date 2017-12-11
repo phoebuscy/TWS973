@@ -173,12 +173,6 @@ public class SDataManager implements EWrapper
         MBAtickPrice mbAtickPrice = new MBAtickPrice(tickerId, field, price, attrib);
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(mbAtickPrice);
 
-        TickType tickType = TickType.get(field);
-        if (tickType == TickType.OPEN)
-        {
-            int a = 1;
-        }
-
     }
 
     @Override

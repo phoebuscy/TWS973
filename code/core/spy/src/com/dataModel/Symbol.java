@@ -58,6 +58,7 @@ public class Symbol
     private static Logger LogMsg = LogManager.getLogger("datamsg");
 
     private String symbolVal = "";                 // 对象名称
+    private double onceOperateMoney = 1000D;       // 一次操作金额（美元）
     private static int querySymbolRealPriceTickid = -1;   // 查询symbol实时价格的tickid，用于接收实时数据和取消订阅之用
     private SDataManager dataManager;
     private double symbolRealPrice = 0D;          // symbol的实时价格
@@ -99,6 +100,16 @@ public class Symbol
     public String getSymbolVal()
     {
         return symbolVal;
+    }
+
+    public void setOnceOperateMoney(double money)
+    {
+        onceOperateMoney = money;
+    }
+
+    public double getOnceOperateMoney()
+    {
+        return onceOperateMoney;
     }
 
     public void setSymbolVal(String symbleVal)
@@ -581,14 +592,28 @@ public class Symbol
         return orderedPutContract;
     }
 
-    public void setOrderedCallContract(Contract contract)
+    public void setOrderedCallContract(Contract contract, Types.Action action)
     {
-        orderedCallContract = contract;
+        if (Types.Action.SELL.equals(action))
+        {
+            orderedCallContract = null;
+        }
+        else if (Types.Action.BUY.equals(action))
+        {
+            orderedCallContract = contract;
+        }
     }
 
-    public void setOrderedPutContract(Contract contract)
+    public void setOrderedPutContract(Contract contract, Types.Action action)
     {
-        orderedPutContract = contract;
+        if (Types.Action.SELL.equals(action))
+        {
+            orderedPutContract = null;
+        }
+        else if (Types.Action.BUY.equals(action))
+        {
+            orderedPutContract = contract;
+        }
     }
 
     public void clearOrderedCallContract()
@@ -623,16 +648,18 @@ public class Symbol
             order.action(action);
             order.totalQuantity(count);
             order.orderType(OrderType.MKT);
+
             m_client.placeOrder(reqid, contract, order);
 
             if (Types.Right.Call.equals(contract.right()))
             {
-                setOrderedCallContract(contract);
+                setOrderedCallContract(contract, action);
             }
             else
             {
-                setOrderedPutContract(contract);
+                setOrderedPutContract(contract, action);
             }
+
             return reqid;
         }
         return -1;
@@ -706,9 +733,9 @@ public class Symbol
                             cancelReqHistoricalData(reqId);
                         }
                         reqid2HistoricDataStorageMap.remove(reqId);
-                        if(retObj != null)
+                        if (retObj != null)
                         {
-                            List<MBAHistoricalData> historicalDataList = (List<MBAHistoricalData>)retObj;
+                            List<MBAHistoricalData> historicalDataList = (List<MBAHistoricalData>) retObj;
                             if (notNullAndEmptyCollection(historicalDataList))
                             {
                                 process.successInAWT(historicalDataList);

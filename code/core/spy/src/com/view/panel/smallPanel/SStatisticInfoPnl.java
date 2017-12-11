@@ -83,7 +83,7 @@ public class SStatisticInfoPnl extends JPanel
                 color = Cst.GreenColor;
             }
             profitLabel.setForeground(color);
-            String txt = String.format("%.2f", profit);
+            String txt = String.format("%.3f", profit);
             profitLabel.setText(txt);
         }
     }

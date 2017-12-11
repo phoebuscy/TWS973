@@ -83,12 +83,13 @@ public class SMainFram extends JFrame
         JMenuItem itemExit = new JMenuItem(getConfigValue("exit", TConst.CONFIG_I18N_FILE));
         menuFile.add(itemConfig);
         menuFile.add(itemExit);
-        itemExit.addActionListener(new ActionListener()
+        itemConfig.addActionListener(new ActionListener()
         {
             @Override
             public void actionPerformed(ActionEvent e)
             {
-
+                SSettingDlg settingDlg = new SSettingDlg();
+                settingDlg.setVisible(true);
             }
         });
         bar.add(menuFile);

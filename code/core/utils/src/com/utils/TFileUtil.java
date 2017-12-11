@@ -1,10 +1,16 @@
 package com.utils;
 
 
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import javafx.util.Pair;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 
 import java.io.File;
@@ -14,8 +20,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.dom4j.io.XMLWriter;
 
+import static com.utils.TPubUtil.getSysFileSeparator;
+import static com.utils.TPubUtil.notNullAndEmptyCollection;
 import static com.utils.TStringUtil.notNullAndEmptyStr;
+import static com.utils.TStringUtil.nullOrEmptyStr;
 
 /**
  * Created by caiyong on 2017/3/11.
@@ -29,9 +39,17 @@ public class TFileUtil
     public static void main(String[] args)
     {
 
-        String port = getConfigValue("port", TConst.CONFIG_I18N_FILE);
-        String ip = getConfigValue("ip", TConst.CONFIG_I18N_FILE);
+        //   String port = getConfigValue("port", TConst.CONFIG_I18N_FILE);
+        //    String ip = getConfigValue("ip", TConst.CONFIG_I18N_FILE);
 
+        String module = "symbol";
+        String id = "oncemoney";
+        String value = "2000";
+        setSpyConfigFile(module, id, value);
+
+
+
+        Map<String, String> cfgmap = getSPYCONFIGContents();
         List<String> logprop = getProjectFileByName("log4j.properties");
 
 
@@ -51,8 +69,8 @@ public class TFileUtil
             }
         }
         contentMap = i18nMap.get(fileName);
-        String retVal = TPubUtil.notNullAndEmptyMap(contentMap) ?contentMap.get(key):key;
-        return notNullAndEmptyStr(retVal)? retVal:key;
+        String retVal = TPubUtil.notNullAndEmptyMap(contentMap) ? contentMap.get(key) : key;
+        return notNullAndEmptyStr(retVal) ? retVal : key;
 
     }
 
@@ -367,6 +385,203 @@ public class TFileUtil
         return searchfilelst;
     }
 
+    public static boolean setSpyConfigFile(String module, String id, String value)
+    {
+        if (nullOrEmptyStr(module) || nullOrEmptyStr(id) || nullOrEmptyStr(value))
+        {
+            return false;
+        }
+
+        boolean writen = true;
+        OutputStream outputStream = null;
+        XMLWriter xmlWriter = null;
+        Document document;
+
+        final String fileNameInput = "spy.par\\conf\\" + TConst.SPY_CONFIG_FILE;
+
+        // 用系统路径分隔符号替换文件中的路径分隔符号
+        Pair<String, Document> file2Doc = getXMLDocument(fileNameInput);
+        if (file2Doc == null)
+        {
+            return false;
+        }
+
+        try
+        {
+            document = file2Doc.getValue();
+            if (document != null)
+            {
+                Element root = document.getRootElement();
+                List<Element> elementList = root.elements();
+
+                boolean findmodel = false;
+                for (Element ele : elementList)
+                {
+                    if (module.equals(ele.getName()))
+                    {
+                        findmodel = true;
+                        boolean findid = false;
+                        List<Element> elements = ele.elements();
+                        if (notNullAndEmptyCollection(elements))
+                        {
+                            for (Element item : elements)
+                            {
+                                String itemName = item.getName();
+                                if (id.equals(itemName))
+                                {
+                                    findid = true;
+                                    item.setText(value);
+                                    break;
+                                }
+                            }
+                        }
+                        if (!findid)
+                        {
+                            Element newElement = DocumentHelper.createElement(id);
+                            newElement.setText(value);
+                            ele.add(newElement);
+                        }
+                    }
+                }
+                if(!findmodel)
+                {
+                    Element newModel = DocumentHelper.createElement(module);
+                    Element newElement = DocumentHelper.createElement(id);
+                    newElement.setText(value);
+                    newModel.add(newElement);
+                    root.add(newModel);
+                }
+            }
+
+            if (writen)
+            {
+                OutputFormat outputFormat = new OutputFormat();
+                outputFormat.setEncoding("UTF-8");
+
+                //outputStream = new FileOutputStream(rootPath);
+                outputStream = new FileOutputStream(file2Doc.getKey());
+                xmlWriter = new XMLWriter(outputStream, outputFormat);
+                xmlWriter.write(document);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            xmlDocumentClose(xmlWriter, outputStream, null);
+        }
+
+        return writen;
+    }
+
+    private static void xmlDocumentClose(XMLWriter xmlWriter, OutputStream outputStream, InputStream inputStream)
+    {
+        if (xmlWriter != null)
+        {
+            try
+            {
+                xmlWriter.close();
+            }
+            catch (IOException e)
+            {
+            }
+            xmlWriter = null;
+        }
+
+        if (outputStream != null)
+        {
+            try
+            {
+                outputStream.close();
+            }
+            catch (IOException e)
+            {
+            }
+            outputStream = null;
+        }
+
+        if (inputStream != null)
+        {
+            try
+            {
+                inputStream.close();
+            }
+            catch (IOException e)
+            {
+            }
+            inputStream = null;
+        }
+    }
+
+
+    private static Pair<String, Document> getXMLDocument(final String fileNameInput)
+    {
+        String rp_fileName = TPubUtil.replaceToSysFileSeparator(fileNameInput);
+        String sysSep = getSysFileSeparator();
+        String filename = rp_fileName.contains(sysSep) ? rp_fileName : "conf" + sysSep + rp_fileName;
+
+        List<String> fileLst = getProjectFileByName(filename);
+        if (TPubUtil.notNullAndEmptyCollection(fileLst))
+        {
+            filename = fileLst.get(0);
+        }
+        else
+        {
+            return null;
+        }
+
+        //1.获取SAM接口：
+        SAXReader saxReader = new SAXReader();
+        //2.获取XML文件：
+        Document doc = null;
+        try
+        {
+            doc = saxReader.read(new File(filename));
+        }
+        catch (DocumentException e)
+        {
+            e.printStackTrace();
+        }
+        return (doc != null) ? new Pair<>(filename, doc) : null;
+    }
+
+    public static Map<String, String> getSPYCONFIGContents()
+    {
+        final String fileNameInput = "spy.par\\conf\\" + TConst.SPY_CONFIG_FILE;
+        Map<String, String> configMap = new HashMap<>();
+        // 用系统路径分隔符号替换文件中的路径分隔符号
+        Pair<String, Document> file2Doc = getXMLDocument(fileNameInput);
+        if (file2Doc == null)
+        {
+            return configMap;
+        }
+
+        //3.获取根节点：
+        Element root = file2Doc.getValue().getRootElement();
+
+        //获取子节点
+        Iterator<?> it = root.elementIterator();
+        while (it.hasNext())
+        {
+            Element elem = (Element) it.next();
+            //获取子节的子节点
+            Iterator<?> ite = elem.elementIterator();
+            while (ite.hasNext())
+            {
+                Element child = (Element) ite.next();
+                String name = child.getName();
+                String value = child.getStringValue();
+                if (notNullAndEmptyStr(name) && notNullAndEmptyStr(value))
+                {
+                    configMap.put(name, value);
+                }
+            }
+        }
+        return configMap;
+    }
+
 
     public static Map<String, String> getConfigI18n(final String i18nfile)
     {
@@ -405,7 +620,7 @@ public class TFileUtil
             Element elem = (Element) it.next();
             //获取属性名属性值
             Attribute attr = elem.attribute(0);
-            if("language-country".equals(attr.getName()) && "zh_CN".equals(attr.getValue()))
+            if ("language-country".equals(attr.getName()) && "zh_CN".equals(attr.getValue()))
             {
                 //获取子节的子节点
                 Iterator<?> ite = elem.elementIterator();
@@ -414,7 +629,7 @@ public class TFileUtil
                     Element child = (Element) ite.next();
                     String labelKey = child.attribute("label-key").getValue();
                     String labelVal = child.attribute("label-value").getValue();
-                    if(notNullAndEmptyStr(labelKey))
+                    if (notNullAndEmptyStr(labelKey))
                     {
                         i18nMap.put(labelKey, labelVal);
                     }

@@ -2,11 +2,11 @@ package com.table;
 
 import com.render.SRosePercentRender;
 import com.render.SRoserender;
+import com.utils.SUtil;
 import com.utils.TConst;
 import java.util.List;
 import javax.swing.JTable;
 import static com.utils.SUtil.isDoubleNumber;
-import static com.utils.SUtil.setColumWidth;
 import static com.utils.TFileUtil.getConfigValue;
 
 /**
@@ -43,7 +43,8 @@ public class SOptionLinkTable extends JTable
         setModel(optionLinkTabelModel);
         getColumnModel().getColumn(5).setCellRenderer(new SRoserender());
         getColumnModel().getColumn(6).setCellRenderer(new SRosePercentRender());
-        setColumWidth(this, 70, 22);
+        SUtil.setTableColumWidth(this, 70);
+        setRowHeight(22);
     }
 
 
@@ -87,7 +88,7 @@ public class SOptionLinkTable extends JTable
 
     public Object getRowUserObject(int rowIndex)
     {
-        return optionLinkTabelModel != null?  optionLinkTabelModel.getRowUserObject(rowIndex): null;
+        return optionLinkTabelModel != null ? optionLinkTabelModel.getRowUserObject(rowIndex) : null;
     }
 
 

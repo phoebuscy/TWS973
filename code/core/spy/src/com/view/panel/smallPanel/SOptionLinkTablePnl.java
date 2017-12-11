@@ -79,6 +79,7 @@ public class SOptionLinkTablePnl extends JPanel
         setDimension();
         buildGUI();
         setTableListener();
+
         // 订阅消息总线名称为 DATAMAAGER_BUS 的 消息
         TMbassadorSingleton.getInstance(SYMBOL_BUS).subscribe(this);
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);

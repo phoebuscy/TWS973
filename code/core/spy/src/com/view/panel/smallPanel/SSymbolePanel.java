@@ -102,7 +102,7 @@ public class SSymbolePanel extends JPanel
         double add = realTimePrice - yesterdayClosePrice;
         double addRate = (realTimePrice != 0.0) ? add / realTimePrice * 100 : 0.0;
 
-        String str = String.format("%s:  %.2f    %s:  %.2f   %s: %.2f%%    %s: %.2f   %s: %.2f",
+        String str = String.format("%s:  %.3f    %s:  %.3f   %s: %.3f%%    %s: %.3f   %s: %.3f",
                                    curPriceStr,
                                    realTimePrice,
                                    zdeStr,

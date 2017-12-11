@@ -46,5 +46,14 @@ public class MBAPortFolio
         this.accountName = accountName;
     }
 
-
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof MBAPortFolio)
+        {
+            MBAPortFolio other = (MBAPortFolio) obj;
+            return contract.conid() == other.contract.conid() && contract.symbol().equals(other.contract.symbol());
+        }
+        return false;
+    }
 }

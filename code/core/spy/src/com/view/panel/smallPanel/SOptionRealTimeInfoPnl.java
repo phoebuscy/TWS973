@@ -194,7 +194,7 @@ public class SOptionRealTimeInfoPnl extends JPanel
                 String realAddStr = "--";
                 String addPercentStr = "--";
                 ReturnObj realAdd = getDiffDoubleNumber(todayOpenPrice, realTimePrice);
-                realAddStr = realAdd.success ? String.format("%.2f", realAdd.returnObj) : realAddStr;
+                realAddStr = realAdd.success ? String.format("%.3f", realAdd.returnObj) : realAddStr;
                 ReturnObj realAddPercent = getPercentValStr(todayOpenPrice, realAddStr);
                 addPercentStr = realAddPercent.success ? realAddPercent.returnObj.toString() : addPercentStr;
                 realAdd_Label.setText(realAddStr);

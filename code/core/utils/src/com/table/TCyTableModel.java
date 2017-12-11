@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import static com.utils.TPubUtil.notNullAndEmptyCollection;
 
 public class TCyTableModel extends AbstractTableModel
 {
@@ -164,6 +165,36 @@ public class TCyTableModel extends AbstractTableModel
     public void addRowData(Object userObj, List<Object> rowdata)
     {
         addRowData(userObj, rowdata, Integer.MAX_VALUE);
+    }
+
+    public void updateRowData(Object userObj, List<Object> rowdata)
+    {
+        if (userObj != null && notNullAndEmptyCollection(rowdata))
+        {
+            int rowIndex = getRowIndexByUserObj(userObj);
+            int columCount = getColumnCount();
+            if(columCount == rowdata.size())
+            {
+                if(rowIndex < 0) // 表示没有找到，则添加到最后一行
+                {
+                    addRowData(userObj, rowdata);
+                }
+                else // 表示找到了userObject，则更新这一行数据
+                {
+                    List<Object> rowDataWithUserObj = getRowDataWithUserObj(rowIndex);
+                    // 注意：rowDataWithUserObj 是带userObject的
+                    if (notNullAndEmptyCollection(rowDataWithUserObj) &&
+                        rowDataWithUserObj.size() == rowdata.size() + 1)
+                    {
+                        for (int i = 0; i < rowdata.size(); i++)
+                        {
+                            rowDataWithUserObj.set(i+1, rowdata.get(i));
+                        }
+                        fireTableRowsUpdated(rowIndex, rowIndex);
+                    }
+                }
+            }
+        }
     }
 
     public void addRowData(Object userObj, List<Object> rowdata, int rowIndex)
