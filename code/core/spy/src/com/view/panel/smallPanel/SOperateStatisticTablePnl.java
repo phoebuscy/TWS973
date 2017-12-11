@@ -13,6 +13,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -76,19 +77,25 @@ public class SOperateStatisticTablePnl extends JPanel
     }
 
 
-    // 接收账户信息过滤器
+
+
+    // 接收账户信息过滤器 : 只显示SPY的OPT
     static public class portFolioDataFilter implements IMessageFilter<MBAPortFolio>
     {
         @Override
         public boolean accepts(MBAPortFolio msg, SubscriptionContext subscriptionContext)
         {
-            return msg != null;
+            return msg != null && isSpyOpt(msg);
         }
     }
 
     @Handler(filters = {@Filter(portFolioDataFilter.class)})
     private void processPortFolioData(MBAPortFolio msg)
     {
+        if(msg.isClose())
+        {
+            setMBAPortFolioClose(msg); // 设置msg平仓状态
+        }
         List<Object> rowDatas = makeRowData(msg);
         table.updateData(msg, rowDatas);
 
@@ -96,11 +103,44 @@ public class SOperateStatisticTablePnl extends JPanel
         queryRealTimePriceMktData(msg);
     }
 
+    private void setMBAPortFolioClose(MBAPortFolio msg)
+    {
+        if(topMktDataReqID2MBAPortFolioMap != null && msg != null)
+        {
+            for( Map.Entry<Integer, MBAPortFolio> entry: topMktDataReqID2MBAPortFolioMap.entrySet())
+            {
+                if(entry.getValue().equals(msg))
+                {
+                    msg.setifClose(true);
+                }
+            }
+        }
+    }
+
+    private Integer getReqIdOfMBAPortFolio(MBAPortFolio msg)
+    {
+        if(topMktDataReqID2MBAPortFolioMap != null && msg != null)
+        {
+            for( Map.Entry<Integer, MBAPortFolio> entry: topMktDataReqID2MBAPortFolioMap.entrySet())
+            {
+                if(entry.getValue().equals(msg))
+                {
+                    return entry.getKey();
+                }
+            }
+        }
+        return -1;
+    }
+
 
     // 查询期权实时价格
     private void queryRealTimePriceMktData(MBAPortFolio msg)
     {
-        if (msg != null && !topMktDataReqID2MBAPortFolioMap.containsValue(msg))
+        if(msg != null && msg.isClose())
+        {
+            symbol.cancelMktData(getReqIdOfMBAPortFolio(msg));
+        }
+        else if (msg != null && !topMktDataReqID2MBAPortFolioMap.containsValue(msg))
         {
             msg.contract.exchange("SMART");
             int reqid = symbol.reqOptionMktData(msg.contract);
@@ -239,9 +279,9 @@ public class SOperateStatisticTablePnl extends JPanel
     {
         if (msg != null)
         {
-            return Double.compare(msg.realizedPNL, 0D) == 0 ? String.format("%.3f", msg.unrealizedPNL) : String.format(
+            return Double.compare(msg.unrealizedPNL, 0D) == 0 ? String.format("%.3f", msg.realizedPNL) : String.format(
                     "%.3f",
-                    msg.realizedPNL);
+                    msg.unrealizedPNL);
         }
         return "";
     }
@@ -250,7 +290,10 @@ public class SOperateStatisticTablePnl extends JPanel
     {
         if (msg != null)
         {
-
+            if(Double.compare(msg.position,0D) == 0) // 表示平仓了
+            {
+               return LocalDateTime.now().toString();
+            }
         }
         return "";
     }
@@ -282,16 +325,25 @@ public class SOperateStatisticTablePnl extends JPanel
         if (msg != null)
         {
             MBAPortFolio mbaPortFolio = topMktDataReqID2MBAPortFolioMap.get(msg.tickerId);
+            if(mbaPortFolio.isClose())
+            {
+                return;
+            }
             mbaPortFolio.marketPrice = msg.price;
-            mbaPortFolio.marketValue = mbaPortFolio.position * mbaPortFolio.marketPrice;
+            mbaPortFolio.marketValue = mbaPortFolio.position * mbaPortFolio.marketPrice * 100;
             if (Double.compare(mbaPortFolio.position, 0D) == 1 && Double.compare(mbaPortFolio.marketValue, 0D) == 1)
             {
                 mbaPortFolio.unrealizedPNL =
-                        (mbaPortFolio.marketPrice - mbaPortFolio.averageCost) * mbaPortFolio.position;
+                        (mbaPortFolio.marketPrice - (mbaPortFolio.averageCost / 100)) * mbaPortFolio.position;
             }
             List<Object> rowDatas = makeRowData(mbaPortFolio);
             table.updateData(mbaPortFolio, rowDatas);
         }
+    }
+
+    private static boolean isSpyOpt(MBAPortFolio msg)
+    {
+        return msg != null && Types.SecType.OPT.equals(msg.contract.secType());
     }
 
 }

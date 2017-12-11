@@ -27,6 +27,8 @@ public class MBAPortFolio
     public double realizedPNL;
     public String accountName;
 
+    private boolean isClose = false;
+
     public MBAPortFolio(Contract contract,
                         double position,
                         double marketPrice,
@@ -44,6 +46,23 @@ public class MBAPortFolio
         this.unrealizedPNL = unrealizedPNL;
         this.realizedPNL = realizedPNL;
         this.accountName = accountName;
+
+        setifClose(); // 根据position 判断是否已平仓
+    }
+
+    public boolean isClose()
+    {
+        return isClose;
+    }
+
+    public void setifClose()
+    {
+        isClose = Double.compare(position, 0D) == 0;
+    }
+
+    public void setifClose(boolean isClose)
+    {
+        this.isClose = isClose;
     }
 
     @Override
@@ -52,7 +71,7 @@ public class MBAPortFolio
         if (obj instanceof MBAPortFolio)
         {
             MBAPortFolio other = (MBAPortFolio) obj;
-            return contract.conid() == other.contract.conid() && contract.symbol().equals(other.contract.symbol());
+            return contract.conid() == other.contract.conid();
         }
         return false;
     }
