@@ -77,8 +77,6 @@ public class SOperateStatisticTablePnl extends JPanel
     }
 
 
-
-
     // 接收账户信息过滤器 : 只显示SPY的OPT
     static public class portFolioDataFilter implements IMessageFilter<MBAPortFolio>
     {
@@ -92,10 +90,7 @@ public class SOperateStatisticTablePnl extends JPanel
     @Handler(filters = {@Filter(portFolioDataFilter.class)})
     private void processPortFolioData(MBAPortFolio msg)
     {
-        if(msg.isClose())
-        {
-            setMBAPortFolioClose(msg); // 设置msg平仓状态
-        }
+        updateMBAPortFolioInMap(msg);
         List<Object> rowDatas = makeRowData(msg);
         table.updateData(msg, rowDatas);
 
@@ -103,15 +98,33 @@ public class SOperateStatisticTablePnl extends JPanel
         queryRealTimePriceMktData(msg);
     }
 
-    private void setMBAPortFolioClose(MBAPortFolio msg)
+    // 查询期权实时价格
+    private void queryRealTimePriceMktData(MBAPortFolio msg)
     {
-        if(topMktDataReqID2MBAPortFolioMap != null && msg != null)
+        if (msg != null)
         {
-            for( Map.Entry<Integer, MBAPortFolio> entry: topMktDataReqID2MBAPortFolioMap.entrySet())
+            if (msg.isClose())
             {
-                if(entry.getValue().equals(msg))
+                symbol.cancelMktData(getReqIdOfMBAPortFolio(msg));
+            }
+            else if (!topMktDataReqID2MBAPortFolioMap.containsValue(msg))
+            {
+                msg.contract.exchange("SMART");
+                int reqid = symbol.reqOptionMktData(msg.contract);
+                topMktDataReqID2MBAPortFolioMap.put(reqid, msg);
+            }
+        }
+    }
+
+    private void updateMBAPortFolioInMap(MBAPortFolio msg)
+    {
+        if (topMktDataReqID2MBAPortFolioMap != null && msg != null)
+        {
+            for (Map.Entry<Integer, MBAPortFolio> entry : topMktDataReqID2MBAPortFolioMap.entrySet())
+            {
+                if (entry.getValue().equals(msg))
                 {
-                    msg.setifClose(true);
+                    entry.setValue(msg);
                 }
             }
         }
@@ -119,33 +132,17 @@ public class SOperateStatisticTablePnl extends JPanel
 
     private Integer getReqIdOfMBAPortFolio(MBAPortFolio msg)
     {
-        if(topMktDataReqID2MBAPortFolioMap != null && msg != null)
+        if (topMktDataReqID2MBAPortFolioMap != null && msg != null)
         {
-            for( Map.Entry<Integer, MBAPortFolio> entry: topMktDataReqID2MBAPortFolioMap.entrySet())
+            for (Map.Entry<Integer, MBAPortFolio> entry : topMktDataReqID2MBAPortFolioMap.entrySet())
             {
-                if(entry.getValue().equals(msg))
+                if (entry.getValue().equals(msg))
                 {
                     return entry.getKey();
                 }
             }
         }
         return -1;
-    }
-
-
-    // 查询期权实时价格
-    private void queryRealTimePriceMktData(MBAPortFolio msg)
-    {
-        if(msg != null && msg.isClose())
-        {
-            symbol.cancelMktData(getReqIdOfMBAPortFolio(msg));
-        }
-        else if (msg != null && !topMktDataReqID2MBAPortFolioMap.containsValue(msg))
-        {
-            msg.contract.exchange("SMART");
-            int reqid = symbol.reqOptionMktData(msg.contract);
-            topMktDataReqID2MBAPortFolioMap.put(reqid, msg);
-        }
     }
 
 
@@ -222,14 +219,7 @@ public class SOperateStatisticTablePnl extends JPanel
     {
         if (msg != null && Double.compare(msg.position, 0D) == 1)
         {
-            if (msg.contract.secType() == Types.SecType.OPT)
-            {
-                return String.format("%.3f", msg.averageCost / msg.position);
-            }
-            else
-            {
-                return String.format("%.3f", msg.averageCost);
-            }
+            return String.format("%.3f", msg.averageCost / 100D);
         }
         return "";
     }
@@ -247,20 +237,20 @@ public class SOperateStatisticTablePnl extends JPanel
     {
         if (msg != null)
         {
-            return String.format("%.3f", msg.marketValue);
+            return String.format("%.1f", msg.position * msg.marketPrice * 100D);// 市场价不用  msg.marketValue，用数量乘以均价;
         }
         return "";
     }
 
-    private String makeZdf(MBAPortFolio msg)
+    private String makeZdf(MBAPortFolio msg) // 涨跌幅
     {
         if (msg != null && Double.compare(msg.position, 0D) == 1)
         {
-            boolean isOpt = msg.contract.secType() == Types.SecType.OPT;
-            double averavePrice = msg.averageCost / (isOpt ? msg.position : 1);
+            double averavePrice = msg.averageCost / 100D;
             double diff = msg.marketPrice - averavePrice;
             Double percent = diff / averavePrice;
-            return String.valueOf(percent);
+           // return String.valueOf(percent);
+            return String.format("%.2f",percent);
         }
         return "";
     }
@@ -279,9 +269,14 @@ public class SOperateStatisticTablePnl extends JPanel
     {
         if (msg != null)
         {
-            return Double.compare(msg.unrealizedPNL, 0D) == 0 ? String.format("%.3f", msg.realizedPNL) : String.format(
-                    "%.3f",
-                    msg.unrealizedPNL);
+            if (msg.isClose())
+            {
+                return String.format("%.1f", msg.realizedPNL);
+            }
+            else
+            {
+                return String.format("%.1f", msg.unrealizedPNL);
+            }
         }
         return "";
     }
@@ -290,9 +285,9 @@ public class SOperateStatisticTablePnl extends JPanel
     {
         if (msg != null)
         {
-            if(Double.compare(msg.position,0D) == 0) // 表示平仓了
+            if (Double.compare(msg.position, 0D) == 0) // 表示平仓了
             {
-               return LocalDateTime.now().toString();
+                return LocalDateTime.now().toString();
             }
         }
         return "";
@@ -310,9 +305,7 @@ public class SOperateStatisticTablePnl extends JPanel
                 TickType tickType = TickType.get(msg.field);
                 // 最新买价要大于0时用买价
                 return (Double.compare(msg.price, 0D) == 1 &&
-                        (TickType.BID.equals(tickType) || TickType.DELAYED_BID.equals(tickType))) ||
-                       (TickType.LAST.equals(tickType) || TickType.DELAYED_LAST.equals(tickType));
-
+                        (TickType.BID.equals(tickType) || TickType.DELAYED_BID.equals(tickType)));
             }
             return false;
         }
@@ -325,19 +318,12 @@ public class SOperateStatisticTablePnl extends JPanel
         if (msg != null)
         {
             MBAPortFolio mbaPortFolio = topMktDataReqID2MBAPortFolioMap.get(msg.tickerId);
-            if(mbaPortFolio.isClose())
+            if (!mbaPortFolio.isClose()) // 已经平仓的则不处理
             {
-                return;
+                mbaPortFolio.marketPrice = msg.price;
+                List<Object> rowDatas = makeRowData(mbaPortFolio);
+                table.updateData(mbaPortFolio, rowDatas);
             }
-            mbaPortFolio.marketPrice = msg.price;
-            mbaPortFolio.marketValue = mbaPortFolio.position * mbaPortFolio.marketPrice * 100;
-            if (Double.compare(mbaPortFolio.position, 0D) == 1 && Double.compare(mbaPortFolio.marketValue, 0D) == 1)
-            {
-                mbaPortFolio.unrealizedPNL =
-                        (mbaPortFolio.marketPrice - (mbaPortFolio.averageCost / 100)) * mbaPortFolio.position;
-            }
-            List<Object> rowDatas = makeRowData(mbaPortFolio);
-            table.updateData(mbaPortFolio, rowDatas);
         }
     }
 
