@@ -249,8 +249,8 @@ public class SOperateStatisticTablePnl extends JPanel
             double averavePrice = msg.averageCost / 100D;
             double diff = msg.marketPrice - averavePrice;
             Double percent = diff / averavePrice;
-           // return String.valueOf(percent);
-            return String.format("%.2f",percent);
+            // return String.valueOf(percent);
+            return String.format("%.2f", percent);
         }
         return "";
     }
@@ -269,13 +269,13 @@ public class SOperateStatisticTablePnl extends JPanel
     {
         if (msg != null)
         {
-            if (msg.isClose())
+            if (msg.isClose()) // 平仓了的用 realizedPNL
             {
                 return String.format("%.1f", msg.realizedPNL);
             }
-            else
+            else // 未平仓的需要计算
             {
-                return String.format("%.1f", msg.unrealizedPNL);
+                return String.format("%.1f", (msg.marketPrice - (msg.averageCost / 100D)) * msg.position * 100);
             }
         }
         return "";
