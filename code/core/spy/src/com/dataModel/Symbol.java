@@ -58,9 +58,11 @@ public class Symbol
     private static Logger LogMsg = LogManager.getLogger("datamsg");
 
     private String symbolVal = "";                 // 对象名称
+    private Contract symbolContract;               // 对象的Contract ，与symbolVal指的是同一个对象
     private double onceOperateMoney = 1000D;       // 一次操作金额（美元）
     private static int querySymbolRealPriceTickid = -1;   // 查询symbol实时价格的tickid，用于接收实时数据和取消订阅之用
     private SDataManager dataManager;
+    private RealTimePriceMgr realTimePriceMgr;
     private double symbolRealPrice = 0D;          // symbol的实时价格
     private double symbolTodayOpenPrice = 0D;   // symbol 今开价格
     private double symbolYesterdayClosePrice = 0D;  // symbol 昨收价格
@@ -86,6 +88,7 @@ public class Symbol
     public Symbol(SDataManager dataManager)
     {
         this.dataManager = dataManager;
+        this.realTimePriceMgr = new RealTimePriceMgr(dataManager, this);
 
         // 订阅消息总线名称为 DATAMAAGER_BUS 的 消息
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
@@ -117,9 +120,21 @@ public class Symbol
         this.symbolVal = symbleVal;
     }
 
+    public void setSymbolContract(Contract contract)
+    {
+        symbolContract = contract;
+    }
+
+    public Contract getSymbolContract()
+    {
+        return symbolContract;
+    }
+
     public Double getSymbolRealPrice()
     {
-        return symbolRealPrice;
+        return realTimePriceMgr != null && symbolContract != null ? realTimePriceMgr.getRealTimePrice(symbolContract) :
+               0D;
+
     }
 
     public void setSymbolRealPrice(Double realPrice)
@@ -145,6 +160,34 @@ public class Symbol
     public void setSymbolTodayOpenPrice(Double todayOpenPrice)
     {
         symbolTodayOpenPrice = todayOpenPrice;
+    }
+
+    public void reqRealTimePrice(Contract contract)
+    {
+        if (contract != null)
+        {
+            realTimePriceMgr.reqRealTimePrice(contract);
+        }
+    }
+
+    public void reqRealTimePrice(Contract oldContract, Contract newContract)
+    {
+        if (newContract != null)
+        {
+            realTimePriceMgr.reqRealTimePrice(newContract);
+        }
+        if (oldContract != null)
+        {
+            realTimePriceMgr.cancelRealTimePrice(oldContract);
+        }
+    }
+
+    public void cancelRealTimePrice(Contract contract)
+    {
+        if (contract != null)
+        {
+            realTimePriceMgr.cancelRealTimePrice(contract);
+        }
     }
 
     public int reqOptionMktData(Contract contract)
@@ -189,15 +232,36 @@ public class Symbol
             contract.primaryExch("ISLAND");
             contract.currency("USD");
             int tickID = dataManager.getReqId();
+
+            //   m_client.reqContractDetails(tickID, contract);
             m_client.reqMktData(tickID, contract, "", false, false, null);
             querySymbolRealPriceTickid = tickID;
         }
     }
 
+    public int reqContractDetails(String symbolVal)
+    {
+        EClientSocket m_client = dataManager.getM_client();
+        if (m_client != null && notNullAndEmptyStr(symbolVal))
+        {
+            Contract contract = new Contract();
+            contract.conid(0);
+            contract.symbol(symbolVal);
+            contract.secType("STK");
+            contract.exchange("SMART");
+            contract.primaryExch("ISLAND");
+            contract.currency("USD");
+            int tickID = dataManager.getReqId();
+            m_client.reqContractDetails(tickID, contract);
+            return tickID;
+        }
+        return -1;
+    }
+
     public void cancelQuerySymbolRealPrice()
     {
         EClientSocket m_client = dataManager.getM_client();
-        if (m_client != null)
+        if (m_client != null && querySymbolRealPriceTickid > 0)
         {
             m_client.cancelMktData(querySymbolRealPriceTickid);
         }
@@ -283,7 +347,6 @@ public class Symbol
         Map<Double, List<ContractDetails>> strike2ContractDtalsLst = new HashMap<>();
         double curSymbolRealPrice = getSymbolRealPrice();  // 需要用一个方法获取当前symbol的价格
         List<ContractDetails> ctrdetailLst = day2CtrdMap.get(expireDay);
-
         // 获取离当前价格最近的 ContractDetails
         List<ContractDetails> nearestCrtLst = getNearestPriceCtrDetails(ctrdetailLst, curSymbolRealPrice);
         if (notNullAndEmptyCollection(nearestCrtLst) && nearestCrtLst.size() == 2)
@@ -815,7 +878,7 @@ public class Symbol
         }
     }
 
-    // 连接消息处理器
+    // 实时价格消息处理器
     @Handler(filters = {@Filter(recvSymbolRealPriceFilter.class)})
     private void getSymbolRealPrice(MBAtickPrice msg)
     {

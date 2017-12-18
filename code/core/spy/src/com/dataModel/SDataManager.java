@@ -359,6 +359,7 @@ public class SDataManager implements EWrapper
     @Override
     public void bondContractDetails(int reqId, ContractDetails contractDetails)
     {
+        int a = 1;
 
     }
 

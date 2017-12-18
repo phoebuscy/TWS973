@@ -270,6 +270,7 @@ public class SOptionLinkTablePnl extends JPanel
         topMktDataReqID2ContractsMap.clear();
         historicReqID2ContactsMap.clear();
         reqId2historicalDataListMap.clear();
+
         //发送订阅实时数据请求,注意需要保留 reqid 和 contrcontract的对应关系，便于获取后更新数据
 
         if (optionChainMap != null && symbol != null)

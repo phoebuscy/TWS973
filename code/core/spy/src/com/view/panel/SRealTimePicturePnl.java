@@ -2,11 +2,12 @@ package com.view.panel;
 
 import com.commdata.mbassadorObj.MBABeginQuerySymbol;
 import com.commdata.mbassadorObj.MBAHistoricalData;
-import com.commdata.mbassadorObj.MBASymbolRealPrice;
+import com.commdata.pubdata.ContractRealTimeInfo;
 import com.commdata.pubdata.ProcessInAWT;
 import com.dataModel.SDataManager;
 import com.dataModel.Symbol;
 import com.ib.client.Contract;
+import com.ib.client.TickType;
 import com.ib.client.Types;
 import com.utils.GBC;
 import com.utils.SUtil;
@@ -41,9 +42,8 @@ import static com.utils.SUtil.getUSAOpenDateTimeByLastDay;
 import static com.utils.SUtil.ifNowIsOpenTime;
 import static com.utils.SUtil.usaChangeToLocalDateTime;
 import static com.utils.TConst.DATAMAAGER_BUS;
+import static com.utils.TConst.REALTIMEPRICEMGR_BUS;
 import static com.utils.TConst.SYMBOL_BUS;
-import static com.utils.TPubUtil.crtContract;
-import static com.utils.TStringUtil.notNullAndEmptyStr;
 
 /**
  * Created by 123 on 2016/12/18.
@@ -61,6 +61,9 @@ public class SRealTimePicturePnl extends JPanel
     private SRealTimePnl sSpyRealTimePnl = new SRealTimePnl("spy", new Dimension(100, 200));
     private SRealTimePnl sCallRealTimePnl = new SRealTimePnl("Call", new Dimension(100, 150));
     private SRealTimePnl sPutRealTimePnl = new SRealTimePnl("Put", new Dimension(100, 150));
+
+    private static Contract oldContract;
+    private static Contract curContract;
 
     private Dimension parentDimension;
 
@@ -83,6 +86,7 @@ public class SRealTimePicturePnl extends JPanel
         // 订阅消息总线名称为 DATAMAAGER_BUS 的 消息
         TMbassadorSingleton.getInstance(SYMBOL_BUS).subscribe(this);
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
+        TMbassadorSingleton.getInstance(REALTIMEPRICEMGR_BUS).subscribe(this);
     }
 
     private void setDimension()
@@ -105,7 +109,7 @@ public class SRealTimePicturePnl extends JPanel
         @Override
         public boolean accepts(MBABeginQuerySymbol msg, SubscriptionContext subscriptionContext)
         {
-            return notNullAndEmptyStr(msg.getSymbol());
+            return msg != null;
         }
     }
 
@@ -114,8 +118,12 @@ public class SRealTimePicturePnl extends JPanel
     private void processBeginQuerySymbol(MBABeginQuerySymbol msg)
     {
         // 查询symbol的历史数据 （当前 或前一交易日的 5秒 历史数据）
-        if (symbol != null && notNullAndEmptyStr(msg.getSymbol()))
+        if (symbol != null && msg != null)
         {
+            oldContract = (curContract != null) ? curContract.clone() : null;
+            curContract = symbol.getSymbolContract();
+            symbol.reqRealTimePrice(oldContract, curContract);
+
             sSpyRealTimePnl.clearAllData();
 
             // 计算当前时间到开盘时间的时间间隔, 单位秒
@@ -156,8 +164,7 @@ public class SRealTimePicturePnl extends JPanel
             setXRange(openUsaDateTime, closeUsaDateTime);
 
             // 注意：查询历史数据需要用本地时间
-            Contract contract = crtContract(msg.getSymbol());
-            symbol.getHistoricDatasAndProcess(contract,
+            symbol.getHistoricDatasAndProcess(curContract,
                                               locatime,
                                               duration,
                                               Types.DurationUnit.SECOND,
@@ -176,7 +183,7 @@ public class SRealTimePicturePnl extends JPanel
             @Override
             public void successInAWT(Object param)
             {
-                historicalDataList = (List)param;
+                historicalDataList = (List) param;
                 // 根据BarSize来获取 “ 开价，最高价，最低价，收价’的时间间隔
                 int stepSec = getStepSecond(barSize);
 
@@ -219,7 +226,47 @@ public class SRealTimePicturePnl extends JPanel
     }
 
 
+    // symbolContract 实时价格过滤器
+    public static class rcvContractRealTimePriceFilter implements IMessageFilter<ContractRealTimeInfo>
+    {
+        @Override
+        public boolean accepts(ContractRealTimeInfo msg, SubscriptionContext subscriptionContext)
+        {
+            return msg != null && curContract != null && msg.contract.conid() == curContract.conid() &&
+                   msg.tickType == TickType.LAST && ifNowIsOpenTime();
+        }
+    }
 
+    @Handler(filters = {@Filter(rcvContractRealTimePriceFilter.class)})
+    private void processContractRealTimePrice(ContractRealTimeInfo msg)
+    {
+        if (msg != null)
+        {
+            if (hasDarwHistory)
+            {
+                openUsaDateTime = getCurrentDayUSAOpenDateTime();
+                closeUsaDateTime = getCurrentDayUSACloseDateTime();
+                setXRange(openUsaDateTime, closeUsaDateTime);
+                hasDarwHistory = false;
+            }
+
+            Range yRange = sSpyRealTimePnl.getYRange();
+            Double lower = yRange.getLowerBound();
+            Double upper = yRange.getUpperBound();
+
+            if (yRange == null || msg.lastPrice < lower || (msg.lastPrice - lower) > 0.6 || msg.lastPrice > upper ||
+                (upper - msg.lastPrice) > 0.6)
+            {
+                sSpyRealTimePnl.setYRange(msg.lastPrice - 0.5, msg.lastPrice + 0.5);
+            }
+            Date date = changeToDate(getCurrentAmericaLocalDateTime());
+            sSpyRealTimePnl.addValue(date, msg.lastPrice);
+
+        }
+    }
+
+
+    /*
     // 接收实时价格的消息过滤器
     static public class realPriceStatusFilter implements IMessageFilter<MBASymbolRealPrice>
     {
@@ -230,7 +277,7 @@ public class SRealTimePicturePnl extends JPanel
         }
     }
 
-    // 连接消息处理器
+    // 实时价格处理器
     @Handler(filters = {@Filter(realPriceStatusFilter.class)})
     private void getRealPrice(MBASymbolRealPrice msg)
     {
@@ -254,6 +301,7 @@ public class SRealTimePicturePnl extends JPanel
         Date date = changeToDate(getCurrentAmericaLocalDateTime());
         sSpyRealTimePnl.addValue(date, msg.symbolRealPrice);
     }
+    */
 
 
     // 根据BarSize来获取 “ 开价，最高价，最低价，收价’的时间间隔

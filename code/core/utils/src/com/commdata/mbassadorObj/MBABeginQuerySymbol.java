@@ -1,17 +1,20 @@
 package com.commdata.mbassadorObj;
 
+import com.ib.client.Contract;
+
 public class MBABeginQuerySymbol
 {
-    public String symbol;
+    public Contract contract;
 
-    public MBABeginQuerySymbol(String symbol)
+    public MBABeginQuerySymbol(Contract contract)
     {
-        this.symbol = symbol;
+        this.contract = contract;
     }
 
-    public String getSymbol()
+    public Contract getContract()
     {
-        return symbol;
+        return contract;
     }
+
 
 }

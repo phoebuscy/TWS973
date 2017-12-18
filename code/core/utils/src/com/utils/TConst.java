@@ -17,6 +17,7 @@ public class TConst
 
     public static final String DATAMAAGER_BUS = "SDataManager_bus";  // 用于DataManger 发布数据
     public static final String SYMBOL_BUS = "Symbol_bus";            // 用于Symbol对象发布数据
+    public static final String REALTIMEPRICEMGR_BUS = "RealTimePriceMgr_bus"; // 用于RealTimePriceMgr发布数据
 
 
     public static final String AK_CONNECTED = "ak_connected";  // 连接返回报文头

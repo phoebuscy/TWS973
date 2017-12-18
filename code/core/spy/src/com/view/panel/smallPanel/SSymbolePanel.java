@@ -1,11 +1,15 @@
 package com.view.panel.smallPanel;
 
+import com.answermodel.AnswerObj;
 import com.commdata.mbassadorObj.MBABeginQuerySymbol;
 import com.commdata.mbassadorObj.MBAHistoricalData;
 import com.commdata.mbassadorObj.MBASymbolRealPrice;
+import com.commdata.pubdata.ContractRealTimeInfo;
 import com.commdata.pubdata.ProcessInAWT;
 import com.dataModel.SDataManager;
 import com.dataModel.Symbol;
+import com.ib.client.Contract;
+import com.ib.client.ContractDetails;
 import com.ib.client.Types;
 import com.utils.TConst;
 import com.utils.TMbassadorSingleton;
@@ -33,9 +37,9 @@ import static com.utils.SUtil.getDimension;
 import static com.utils.SUtil.getLastDayUSAOpenDateTime;
 import static com.utils.SUtil.getUSADateTimeByEpochSecond;
 import static com.utils.SUtil.getUSAOpenDateTimeByLastDay;
-import static com.utils.SUtil.ifNowIsOpenTime;
 import static com.utils.SUtil.usaChangeToLocalDateTime;
 import static com.utils.TConst.DATAMAAGER_BUS;
+import static com.utils.TConst.REALTIMEPRICEMGR_BUS;
 import static com.utils.TConst.SYMBOL_BUS;
 import static com.utils.TFileUtil.getConfigValue;
 import static com.utils.TPubUtil.crtContract;
@@ -54,10 +58,15 @@ public class SSymbolePanel extends JPanel
     private JLabel price = new JLabel("225.71    +0.33    +0.15%:");
 
     private List<MBAHistoricalData> historicalDataList = new ArrayList<>();
+    private static int reqContractDetailsID = -1; // 查询symbol 的Contract的reqid
+    private static Contract curContract;  // 查询回来的当前contract
+    private Contract oldContract;  // 上一次的contract
 
     private double realTimePrice = 0.0; // 当前实时价格
-    private double todayOpenPrice = 258.2; // 今开价格
-    private double yesterdayClosePrice = 261.2;  // 昨收价格
+    private double todayOpenPrice = 0.0; // 今开价格
+    private double yesterdayClosePrice = 0.0;  // 昨收价格
+    private double high = 0.0;  // 最高
+    private double low = 0.0;    // 最低
 
 
     private final String curPriceStr = getConfigValue("current.price", TConst.CONFIG_I18N_FILE);  // 最新价
@@ -65,8 +74,11 @@ public class SSymbolePanel extends JPanel
     private final String todayOpenStr = getConfigValue("today.open", TConst.CONFIG_I18N_FILE); // 今开
     private final String zdeStr = getConfigValue("zde", TConst.CONFIG_I18N_FILE); // 涨跌额
     private final String zdfStr = getConfigValue("zdf", TConst.CONFIG_I18N_FILE);  // 涨跌幅
+    private final String highStr = getConfigValue("max.high", TConst.CONFIG_I18N_FILE); // 最高
+    private final String lowStr = getConfigValue("min.low", TConst.CONFIG_I18N_FILE); // 最低
 
     private Symbol symbol = SDataManager.getInstance().getSymbol();
+
 
     public SSymbolePanel(Component parentWin)
     {
@@ -75,11 +87,12 @@ public class SSymbolePanel extends JPanel
         parentDimension = parentWin.getSize();
         setDimension();
         buildGUI();
-        setPrice(realTimePrice, todayOpenPrice, yesterdayClosePrice);
+        setPrice(realTimePrice, todayOpenPrice, yesterdayClosePrice, high, low);
 
         // 订阅消息总线名称为 SYMBOL_BUS 的 消息
         TMbassadorSingleton.getInstance(SYMBOL_BUS).subscribe(this);
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
+        TMbassadorSingleton.getInstance(REALTIMEPRICEMGR_BUS).subscribe(this);
     }
 
     private void setDimension()
@@ -97,12 +110,16 @@ public class SSymbolePanel extends JPanel
         add(price);
     }
 
-    public void setPrice(double realTimePrice, double todayOpenPrice, double yesterdayClosePrice)
+    public void setPrice(double realTimePrice,
+                         double todayOpenPrice,
+                         double yesterdayClosePrice,
+                         double high,
+                         double low)
     {
         double add = realTimePrice - yesterdayClosePrice;
         double addRate = (realTimePrice != 0.0) ? add / realTimePrice * 100 : 0.0;
 
-        String str = String.format("%s:  %.3f    %s:  %.3f   %s: %.3f%%    %s: %.3f   %s: %.3f",
+        String str = String.format("%s %.2f  %s %.2f %s %.2f%% %s %.2f %s %.2f %s %.2f %s %.2f",
                                    curPriceStr,
                                    realTimePrice,
                                    zdeStr,
@@ -112,7 +129,11 @@ public class SSymbolePanel extends JPanel
                                    todayOpenStr,
                                    todayOpenPrice,
                                    yesterdayCloseStr,
-                                   yesterdayClosePrice);
+                                   yesterdayClosePrice,
+                                   highStr,
+                                   high,
+                                   lowStr,
+                                   low);
         // 当前价格 258.39   涨 1.23  涨幅 5.2%  今开 259.5  昨收 258.5
         price.setText(str);
         // “dialog”代表字体，1代表样式(1是粗体，0是平常的）15是字号设置字体
@@ -130,28 +151,8 @@ public class SSymbolePanel extends JPanel
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                realTimePrice = 0D;
-                todayOpenPrice = 0D;
-                yesterdayClosePrice = 0D;
-                setPrice(realTimePrice, todayOpenPrice, yesterdayClosePrice);
-
-                // 1: 查询当前symbol的实时价格
-                // 2: 查询期权链
-                // 3：默认查询最近期权链数据
-                if (symbol != null)
-                {
-                    String symbolVal = symbolText.getText().trim();
-                    symbol.cancelQuerySymbolRealPrice();
-                    symbol.setSymbolVal(symbolVal);
-                    symbol.querySymbolRealPrice();
-
-                    if (!ifNowIsOpenTime()) // 如果现在不是开盘时间，则需要查询上一次开盘时间的历史数据来显示
-                    {
-                        reqLastOneDayHistoricData();
-                    }
-                    // 发送开始查询symbol消息
-                    TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBABeginQuerySymbol(symbolVal));
-                }
+                String symbolVal = symbolText.getText().trim();
+                reqContractDetailsID = symbol.reqContractDetails(symbolVal);
             }
         });
         return btnQuery;
@@ -215,7 +216,7 @@ public class SSymbolePanel extends JPanel
                 symbol.setSymbolTodayOpenPrice(todayOpenPrice);
                 symbol.setSymbolYesterdayClosePrice(todayOpenPrice);  // 此处把昨天收盘价用今天的开盘价代替
                 yesterdayClosePrice = todayOpenPrice;
-                setPrice(realTimePrice, todayOpenPrice, yesterdayClosePrice);
+                setPrice(realTimePrice, todayOpenPrice, yesterdayClosePrice, high, low);
             }
 
             @Override
@@ -227,26 +228,72 @@ public class SSymbolePanel extends JPanel
         return processInAWT;
     }
 
-
-    // 接收实时价格的消息过滤器
-    static public class realPriceStatusFilter implements IMessageFilter<MBASymbolRealPrice>
+    // symbolContract过滤器
+    public static class rcvContractDetailsFilter implements IMessageFilter<AnswerObj>
     {
         @Override
-        public boolean accepts(MBASymbolRealPrice msg, SubscriptionContext subscriptionContext)
+        public boolean accepts(AnswerObj msg, SubscriptionContext subscriptionContext)
         {
-            return msg != null;
+            return msg != null && msg.reqid > 0 && msg.reqid == reqContractDetailsID;
         }
     }
 
-    // 实时价格消息处理器
-    @Handler(filters = {@Filter(realPriceStatusFilter.class)})
-    private void getRealPrice(MBASymbolRealPrice msg)
+    @Handler(filters = {@Filter(rcvContractDetailsFilter.class)})
+    private void processContractDetails(AnswerObj msg)
     {
-        todayOpenPrice = symbol.getSymbolTodayOpenPrice();
-        yesterdayClosePrice = symbol.getSymbolYesterdayClosePrice();
-        setPrice(msg.symbolRealPrice, todayOpenPrice, yesterdayClosePrice);
+        if (msg != null)
+        {
+            Object obj = msg.getAnswerObj();
+            if (obj instanceof ContractDetails)
+            {
+                oldContract = curContract;
+                curContract = ((ContractDetails) obj).contract().clone();
+                setPrice(realTimePrice, todayOpenPrice, yesterdayClosePrice, high, low);
+
+                // 1: 查询当前symbol的实时价格
+                // 2: 查询期权链
+                // 3：默认查询最近期权链数据
+                if (symbol != null)
+                {
+                    String symbolVal = symbolText.getText().trim();
+                    symbol.setSymbolVal(symbolVal);
+                    symbol.setSymbolContract(curContract);
+                    symbol.reqRealTimePrice(oldContract, curContract);
+
+                    //    if (!ifNowIsOpenTime()) // 如果现在不是开盘时间，则需要查询上一次开盘时间的历史数据来显示
+                    //    {
+                    //       reqLastOneDayHistoricData();
+                    //   }
+                    // 发送开始查询symbol消息
+                    TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBABeginQuerySymbol(curContract));
+                }
+            }
+        }
     }
 
+    // symbolContract 实时价格过滤器
+    public static class rcvContractRealTimePriceFilter implements IMessageFilter<ContractRealTimeInfo>
+    {
+        @Override
+        public boolean accepts(ContractRealTimeInfo msg, SubscriptionContext subscriptionContext)
+        {
+            return msg != null && msg.contract.conid() == curContract.conid();
+        }
+    }
+
+    @Handler(filters = {@Filter(rcvContractRealTimePriceFilter.class)})
+    private void processContractRealTimePrice(ContractRealTimeInfo msg)
+    {
+        if (msg != null)
+        {
+            realTimePrice = msg.lastPrice;
+            todayOpenPrice = msg.todayOpen;
+            yesterdayClosePrice = msg.yesterdayClose;
+            high = msg.maxHigh;
+            low = msg.minLow;
+            setPrice(realTimePrice, todayOpenPrice, yesterdayClosePrice, high, low);
+        }
+    }
 
 
 }
