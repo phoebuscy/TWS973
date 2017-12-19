@@ -21,7 +21,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
@@ -34,7 +33,6 @@ import net.engio.mbassy.subscription.SubscriptionContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import static com.utils.SUtil.getDimension;
-import static com.utils.SUtil.isIntOrDoubleNumber;
 import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TConst.REALTIMEPRICEMGR_BUS;
 import static com.utils.TConst.SYMBOL_BUS;
@@ -54,10 +52,6 @@ public class SOptionLinkTablePnl extends JPanel
     private SOptionLinkTable optionLinkTable;
 
     private static List<Contract> contractList = new ArrayList<>(); // 存放contract的链表
-
-    // 查询买卖价的市场数据reqid和contract的map
-    private static Map<Integer, ContractDetails> topMktDataReqID2ContractsMap = new HashMap<>();
-
 
     private Symbol symbol = SDataManager.getInstance().getSymbol();
 
@@ -117,54 +111,28 @@ public class SOptionLinkTablePnl extends JPanel
             if (source instanceof SOptionLinkTable)
             {
                 int rowIndex = optionLinkTable.getSelectedRow();
-                SOptionLinkTable optLinkTable = (SOptionLinkTable) source;
-                TCyTableModel tableModel = (TCyTableModel) optLinkTable.getModel();
-                Object currentPriceObj = tableModel.getValueAt(rowIndex, 2);
-                double currentPrice = isIntOrDoubleNumber(currentPriceObj) ? Double.valueOf(currentPriceObj
-                                                                                                    .toString()) : 0D;
-                Object todayOpenPriceObj = tableModel.getValueAt(rowIndex, 3);
-                double todayOpenPrice = isIntOrDoubleNumber(todayOpenPriceObj) ? Double.valueOf(todayOpenPriceObj
-                                                                                                        .toString()) :
-                                        0D;
-                Object yesterdayClosePriceObj = tableModel.getValueAt(rowIndex, 4);
-                double yesterdayClosePrice = isIntOrDoubleNumber(yesterdayClosePriceObj) ? Double.valueOf(
-                        yesterdayClosePriceObj.toString()) : 0D;
-
-                Object selectObj = optLinkTable.getRowUserObject(rowIndex);
-               // if (selectObj instanceof ContractDetails)
-                if(selectObj instanceof  Contract)
+                Object selectObj = optionLinkTable.getRowUserObject(rowIndex);
+                if (selectObj instanceof Contract)
                 {
-                    ContractDetails ctrDtls = (ContractDetails) selectObj;
-                    Contract contract = (Contract)selectObj;
-                    int conid = contract.conid();
-                    for (Map.Entry<Integer, ContractDetails> entry : topMktDataReqID2ContractsMap.entrySet())
+                    Contract contract = (Contract) selectObj;
+                    // 找到了contractDetail 和 reqid 之后 广播消息
+                    // 校验是否有正在下单的对应的 call或put
+                    Types.Right right = contract.right();
+                    if ((Types.Right.Call.equals(right) && symbol.getOrderedCallContract() != null) ||
+                        (Types.Right.Put.equals(right) && symbol.getOrderedPutContract() != null))
                     {
-                        ContractDetails contractDetails = entry.getValue();
-                        int conid_other = contractDetails.contract() != null ? contractDetails.conid() : -1;
-                        // 找到了contractDetail 和 reqid 之后 广播消息
-                        if (conid != -1 && conid == conid_other)
-                        {
-                            // 校验是否有正在下单的对应的 call或put
-                            Types.Right right = contractDetails.contract().right();
-                            if ((Types.Right.Call.equals(right) && symbol.getOrderedCallContract() != null) ||
-                                (Types.Right.Put.equals(right) && symbol.getOrderedPutContract() != null))
-                            {
-                                JOptionPane.showMessageDialog(this,
-                                                              getConfigValue("tip.have.order",
-                                                                             TConst.CONFIG_I18N_FILE));
-                            }
-
-                            long reqid = entry.getKey();
-                            // Symbol发布数据
-                            TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBAReqIDContractDetails(reqid,
-                                                                                                            contractDetails,
-                                                                                                            currentPrice,
-                                                                                                            yesterdayClosePrice,
-                                                                                                            todayOpenPrice));
-                            //  symbol 设置准备进行开仓的contract
-                            symbol.setPrepareOrderContract(contractDetails.contract());
-                        }
+                        JOptionPane.showMessageDialog(this, getConfigValue("tip.have.order", TConst.CONFIG_I18N_FILE));
                     }
+
+                    // Symbol发布数据
+                    TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBAReqIDContractDetails(-1,
+                                                                                                    contract,
+                                                                                                    null,
+                                                                                                    0D,
+                                                                                                    0D,
+                                                                                                    0D));
+                    //  symbol 设置准备进行开仓的contract
+                    symbol.setPrepareOrderContract(contract);
                 }
             }
         }

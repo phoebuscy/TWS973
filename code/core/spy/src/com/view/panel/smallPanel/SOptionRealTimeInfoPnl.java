@@ -33,7 +33,7 @@ public class SOptionRealTimeInfoPnl extends JPanel
     private SellBuyPnl sellBuyPnl = new SellBuyPnl();
     private TodayOpenPnl todayOpenPnl = new TodayOpenPnl();
 
-    private SOptionRealTimeInfoModel infoModel = new SOptionRealTimeInfoModel();
+
 
     public SOptionRealTimeInfoPnl(Component parentWin, Types.Right right)
     {
@@ -56,17 +56,13 @@ public class SOptionRealTimeInfoPnl extends JPanel
         String callUp = getConfigValue("call.up", TConst.CONFIG_I18N_FILE);  // "CALL涨"
         String putDown = getConfigValue("put.down", TConst.CONFIG_I18N_FILE); // "PUT跌"
         setBorder(BorderFactory.createTitledBorder(Types.Right.Call.equals(right) ? callUp : putDown));
-        /*
-        objPnl.setBackground(Color.blue);
-        realPricePnl.setBackground(Color.gray);
-        sellBuyPnl.setBackground(Color.green);
-        todayOpenPnl.setBackground(Color.blue);
-       */
+
         add(objPnl, new GBC(0, 0, 2, 1).setWeight(100, 10).setFill(GBC.BOTH));
         add(realPricePnl, new GBC(0, 1).setWeight(100, 50).setFill(GBC.BOTH));
         add(sellBuyPnl, new GBC(1, 1).setWeight(100, 50).setFill(GBC.BOTH));
         add(todayOpenPnl, new GBC(0, 2, 2, 1).setWeight(100, 20).setFill(GBC.BOTH));
     }
+
 
 
     public void setData(SOptionRealTimeInfoModel infoModel)
@@ -395,6 +391,9 @@ public class SOptionRealTimeInfoPnl extends JPanel
             }
         }
     }
+
+
+
 
 
 }

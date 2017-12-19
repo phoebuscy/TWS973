@@ -3,7 +3,6 @@ package com.view.panel.smallPanel;
 import com.answermodel.AnswerObj;
 import com.commdata.mbassadorObj.MBABeginQuerySymbol;
 import com.commdata.mbassadorObj.MBAHistoricalData;
-import com.commdata.mbassadorObj.MBASymbolRealPrice;
 import com.commdata.pubdata.ContractRealTimeInfo;
 import com.commdata.pubdata.ProcessInAWT;
 import com.dataModel.SDataManager;

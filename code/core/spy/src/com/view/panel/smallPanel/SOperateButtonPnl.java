@@ -1,7 +1,7 @@
 package com.view.panel.smallPanel;
 
 import com.commdata.mbassadorObj.MBAReqIDContractDetails;
-import com.commdata.mbassadorObj.MBAtickPrice;
+import com.commdata.pubdata.ContractRealTimeInfo;
 import com.dataModel.SDataManager;
 import com.dataModel.Symbol;
 import com.ib.client.Contract;
@@ -14,9 +14,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
-import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -27,6 +24,7 @@ import net.engio.mbassy.subscription.SubscriptionContext;
 import static com.utils.SUtil.getDimension;
 import static com.utils.SUtil.isIntOrDoubleNumber;
 import static com.utils.TConst.DATAMAAGER_BUS;
+import static com.utils.TConst.REALTIMEPRICEMGR_BUS;
 import static com.utils.TConst.SYMBOL_BUS;
 import static com.utils.TFileUtil.getConfigValue;
 import static com.utils.TIconUtil.getProjIcon;
@@ -40,12 +38,13 @@ public class SOperateButtonPnl extends JPanel
     private Component parentWin;
     private Dimension parentDimension;
 
+    private static Contract callContract;
+    private static Contract putContract;
+
     private OpenCloseButton callBtn = new OpenCloseButton(Types.Right.Call, null); //  JButton("CALL 开");
     private OpenCloseButton putBtn = new OpenCloseButton(Types.Right.Put, null); //JButton("PUT 开");
     private ChangeOperateButton callPutChangeBtn = new ChangeOperateButton(callBtn, putBtn);
 
-    // 查询买卖价的市场数据reqid和contract的map
-    private static Map<Integer, MBAReqIDContractDetails> topMktDataReqID2ContractsMap = new HashMap<>();
 
     private Symbol symbol = SDataManager.getInstance().getSymbol();
 
@@ -61,6 +60,7 @@ public class SOperateButtonPnl extends JPanel
         // 订阅消息总线名称为 DATAMAAGER_BUS 的 消息
         TMbassadorSingleton.getInstance(SYMBOL_BUS).subscribe(this);
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
+        TMbassadorSingleton.getInstance(REALTIMEPRICEMGR_BUS).subscribe(this);
     }
 
     private void setActtionListerner()
@@ -88,24 +88,6 @@ public class SOperateButtonPnl extends JPanel
     }
 
 
-    static public class priceStringFilter implements IMessageFilter<String>
-    {
-        public boolean accepts(String message, SubscriptionContext context)
-        {
-            return message.startsWith("price");
-            // return notNullAndEmptyStr(message);
-        }
-    }
-
-    @Handler(filters = {@Filter(priceStringFilter.class)})
-    public void processPriceHandler(String message)
-    {
-        callBtn.setProfit("111.2", "0.88");
-        putBtn.setProfit("33", "0.55");
-        int b = 1;
-    }
-
-
     /**
      * Call 和 Put 的开仓平仓按钮
      */
@@ -124,7 +106,6 @@ public class SOperateButtonPnl extends JPanel
         private Icon gainMore; // 更盈利
         private Icon lossLittle;  // 亏损一点
         private Icon lossMore;    // 亏损较多
-
 
         public OpenCloseButton(Types.Right right, Contract contract)
         {
@@ -160,7 +141,7 @@ public class SOperateButtonPnl extends JPanel
             {
                 isDo = doBuy();   // 买
             }
-            if(isDo)
+            if (isDo)
             {
                 isOpenState = !isOpenState;
             }
@@ -180,7 +161,8 @@ public class SOperateButtonPnl extends JPanel
 
         private boolean doBuy()
         {
-            Contract contract = isCallBtn() ? symbol.getPrepareOrderCallContract() : symbol.getPrepareOrderPutContract();
+            Contract contract =
+                    isCallBtn() ? symbol.getPrepareOrderCallContract() : symbol.getPrepareOrderPutContract();
             if (contract != null)
             {
                 symbol.placeOrder(contract, Types.Action.BUY, 100);
@@ -320,42 +302,49 @@ public class SOperateButtonPnl extends JPanel
     @Handler(filters = {@Filter(recvOptRealTimePriceTableDoubleClickInfo.class)})
     private void processDoubleClickOptTableInfo(MBAReqIDContractDetails msg)
     {
-        BigInteger reqid = BigInteger.valueOf(msg.reqid);
-        topMktDataReqID2ContractsMap.put(reqid.intValue(), msg);
-    }
-
-
-
-    // 接收查询symbol的实时价格的消息过滤器
-    static public class recvOptionMktDataFilter implements IMessageFilter<MBAtickPrice>
-    {
-        @Override
-        public boolean accepts(MBAtickPrice msg, SubscriptionContext subscriptionContext)
-        {
-            return topMktDataReqID2ContractsMap.containsKey(msg.tickerId);
-        }
-    }
-
-    // 实时消息处理器
-    @Handler(filters = {@Filter(recvOptionMktDataFilter.class)})
-    private void processOptionMktData(MBAtickPrice msg)
-    {
-        MBAReqIDContractDetails reqIDContractDetails = topMktDataReqID2ContractsMap.get(msg.tickerId);
-        Contract contract = reqIDContractDetails.contractDetails.contract();
+        Contract contract = msg.contract;
         if (contract != null)
         {
-            Types.Right right = contract.right();
-
-            // 获取到实时价格， 在获取当前 持仓标的，然后设置button
-            if (Types.Right.Call.equals(right))
+            if (Types.Right.Call.equals(contract.right()))
             {
-
+                callContract = contract.clone();
             }
             else
             {
-
+                putContract = contract.clone();
             }
         }
+    }
+
+    // symbolContract 实时价格过滤器
+    public static class rcvContractRealTimePriceFilter implements IMessageFilter<ContractRealTimeInfo>
+    {
+        @Override
+        public boolean accepts(ContractRealTimeInfo msg, SubscriptionContext subscriptionContext)
+        {
+            if (msg != null && msg.contract != null)
+            {
+                return (callContract != null && callContract.conid() == msg.contract.conid()) ||
+                       (putContract != null && putContract.conid() == msg.contract.conid());
+
+            }
+            return false;
+        }
+    }
+
+    @Handler(filters = {@Filter(rcvContractRealTimePriceFilter.class)})
+    private void processContractRealTimePrice(ContractRealTimeInfo msg)
+    {
+        // 获取到实时价格， 在获取当前 持仓标的，然后设置button
+        if (callContract != null && callContract.conid() == msg.contract.conid())
+        {
+
+        }
+        else if (putContract != null && putContract.conid() == msg.contract.conid())
+        {
+
+        }
+
     }
 
 
