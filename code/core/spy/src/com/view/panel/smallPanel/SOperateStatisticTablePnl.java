@@ -1,11 +1,10 @@
 package com.view.panel.smallPanel;
 
 import com.commdata.mbassadorObj.MBAPortFolio;
-import com.commdata.mbassadorObj.MBAtickPrice;
+import com.commdata.pubdata.ContractRealTimeInfo;
 import com.dataModel.SDataManager;
 import com.dataModel.Symbol;
 import com.ib.client.Contract;
-import com.ib.client.TickType;
 import com.ib.client.Types;
 import com.table.SOperateStatisticTable;
 import com.utils.TMbassadorSingleton;
@@ -27,7 +26,9 @@ import net.engio.mbassy.subscription.SubscriptionContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import static com.utils.SUtil.getDimension;
+import static com.utils.SUtil.isSpyOpt;
 import static com.utils.TConst.DATAMAAGER_BUS;
+import static com.utils.TConst.REALTIMEPRICEMGR_BUS;
 import static com.utils.TConst.SYMBOL_BUS;
 
 /**
@@ -43,8 +44,9 @@ public class SOperateStatisticTablePnl extends JPanel
     private Symbol symbol = SDataManager.getInstance().getSymbol();
 
     private SOperateStatisticTable table;
+
     // 查询实时价格的 reqid和 MBAPortFolio的map
-    private static Map<Integer, MBAPortFolio> topMktDataReqID2MBAPortFolioMap = new HashMap<>();
+    private static Map<Integer, MBAPortFolio> conid2MBAPortFolioMap = new HashMap<>();
 
 
     public SOperateStatisticTablePnl(Component parentWin)
@@ -59,6 +61,7 @@ public class SOperateStatisticTablePnl extends JPanel
         // 订阅消息总线名称为 DATAMAAGER_BUS 的 消息
         TMbassadorSingleton.getInstance(SYMBOL_BUS).subscribe(this);
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
+        TMbassadorSingleton.getInstance(REALTIMEPRICEMGR_BUS).subscribe(this);
     }
 
     private void setDimension()
@@ -95,54 +98,40 @@ public class SOperateStatisticTablePnl extends JPanel
         table.updateData(msg, rowDatas);
 
         // 查询期权实时价格
-        queryRealTimePriceMktData(msg);
+        queryRealTimePrice(msg);
     }
 
+
     // 查询期权实时价格
-    private void queryRealTimePriceMktData(MBAPortFolio msg)
+    private void queryRealTimePrice(MBAPortFolio msg)
     {
         if (msg != null)
         {
             if (msg.isClose())
             {
-                symbol.cancelMktData(getReqIdOfMBAPortFolio(msg));
+                symbol.cancelRealTimePrice(msg.contract);
             }
-            else if (!topMktDataReqID2MBAPortFolioMap.containsValue(msg))
+            else if (!conid2MBAPortFolioMap.containsKey(msg.contract.conid()))
             {
-                msg.contract.exchange("SMART");
-                int reqid = symbol.reqOptionMktData(msg.contract);
-                topMktDataReqID2MBAPortFolioMap.put(reqid, msg);
+                symbol.reqRealTimePrice(msg.contract);
+                conid2MBAPortFolioMap.put(msg.contract.conid(), msg);
             }
         }
     }
 
+
     private void updateMBAPortFolioInMap(MBAPortFolio msg)
     {
-        if (topMktDataReqID2MBAPortFolioMap != null && msg != null)
+        if (conid2MBAPortFolioMap != null && msg != null)
         {
-            for (Map.Entry<Integer, MBAPortFolio> entry : topMktDataReqID2MBAPortFolioMap.entrySet())
+            for (Map.Entry<Integer, MBAPortFolio> entry : conid2MBAPortFolioMap.entrySet())
             {
-                if (entry.getValue().equals(msg))
+                if (entry.getKey().equals(msg.contract.conid()))
                 {
                     entry.setValue(msg);
                 }
             }
         }
-    }
-
-    private Integer getReqIdOfMBAPortFolio(MBAPortFolio msg)
-    {
-        if (topMktDataReqID2MBAPortFolioMap != null && msg != null)
-        {
-            for (Map.Entry<Integer, MBAPortFolio> entry : topMktDataReqID2MBAPortFolioMap.entrySet())
-            {
-                if (entry.getValue().equals(msg))
-                {
-                    return entry.getKey();
-                }
-            }
-        }
-        return -1;
     }
 
 
@@ -210,7 +199,7 @@ public class SOperateStatisticTablePnl extends JPanel
     {
         if (msg != null)
         {
-            return String.format("%.3f", msg.marketPrice);
+            return String.format("%.2f", msg.marketPrice);
         }
         return "";
     }
@@ -219,7 +208,7 @@ public class SOperateStatisticTablePnl extends JPanel
     {
         if (msg != null && Double.compare(msg.position, 0D) == 1)
         {
-            return String.format("%.3f", msg.averageCost / 100D);
+            return String.format("%.2f", msg.averageCost / 100D);
         }
         return "";
     }
@@ -237,7 +226,8 @@ public class SOperateStatisticTablePnl extends JPanel
     {
         if (msg != null)
         {
-            return String.format("%.1f", msg.position * msg.marketPrice * 100D);// 市场价不用  msg.marketValue，用数量乘以均价;
+            // 市场价不用  msg.marketValue，用数量乘以均价;
+            return String.format("%.1f", msg.position * msg.marketPrice * 100D);
         }
         return "";
     }
@@ -293,43 +283,31 @@ public class SOperateStatisticTablePnl extends JPanel
         return "";
     }
 
-
-    // 接收查询symbol的实时价格的消息过滤器 （注意：此处用的是最新买价做实时价格）
-    static public class recvRealTimePriceFilter implements IMessageFilter<MBAtickPrice>
+    // 接收查询Contract的实时价格的消息过滤器 （注意：此处用的是最新买价做实时价格）
+    public static class rcvContractRealTimePriceFilter implements IMessageFilter<ContractRealTimeInfo>
     {
         @Override
-        public boolean accepts(MBAtickPrice msg, SubscriptionContext subscriptionContext)
+        public boolean accepts(ContractRealTimeInfo msg, SubscriptionContext subscriptionContext)
         {
-            if (msg != null && topMktDataReqID2MBAPortFolioMap.containsKey(msg.tickerId))
-            {
-                TickType tickType = TickType.get(msg.field);
-                // 最新买价要大于0时用买价
-                return (Double.compare(msg.price, 0D) == 1 &&
-                        (TickType.BID.equals(tickType) || TickType.DELAYED_BID.equals(tickType)));
-            }
-            return false;
+            return msg != null && conid2MBAPortFolioMap.containsKey(msg.contract.conid());
         }
     }
 
-    // 实时消息处理器
-    @Handler(filters = {@Filter(recvRealTimePriceFilter.class)})
-    private void processRealTimePrice(MBAtickPrice msg)
+    @Handler(filters = {@Filter(rcvContractRealTimePriceFilter.class)})
+    private void processContractRealTimePrice(ContractRealTimeInfo msg)
     {
         if (msg != null)
         {
-            MBAPortFolio mbaPortFolio = topMktDataReqID2MBAPortFolioMap.get(msg.tickerId);
+            MBAPortFolio mbaPortFolio = conid2MBAPortFolioMap.get(msg.contract.conid());
+
             if (!mbaPortFolio.isClose()) // 已经平仓的则不处理
             {
-                mbaPortFolio.marketPrice = msg.price;
+                mbaPortFolio.marketPrice = Double.compare(msg.buyPrice, 0D) == 1 ? msg.buyPrice : msg.lastPrice;
                 List<Object> rowDatas = makeRowData(mbaPortFolio);
                 table.updateData(mbaPortFolio, rowDatas);
             }
         }
     }
 
-    private static boolean isSpyOpt(MBAPortFolio msg)
-    {
-        return msg != null && Types.SecType.OPT.equals(msg.contract.secType());
-    }
 
 }

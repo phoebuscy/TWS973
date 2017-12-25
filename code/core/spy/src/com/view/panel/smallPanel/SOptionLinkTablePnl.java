@@ -21,6 +21,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
@@ -51,7 +52,7 @@ public class SOptionLinkTablePnl extends JPanel
     private Dimension parentDimension;
     private SOptionLinkTable optionLinkTable;
 
-    private static List<Contract> contractList = new ArrayList<>(); // 存放contract的链表
+    private static  Map<Integer,Contract> conid2ContractMap = new HashMap<>(); // 存放contract id 和contract 的Map
 
     private Symbol symbol = SDataManager.getInstance().getSymbol();
 
@@ -112,9 +113,9 @@ public class SOptionLinkTablePnl extends JPanel
             {
                 int rowIndex = optionLinkTable.getSelectedRow();
                 Object selectObj = optionLinkTable.getRowUserObject(rowIndex);
-                if (selectObj instanceof Contract)
+                if (selectObj instanceof Integer)
                 {
-                    Contract contract = (Contract) selectObj;
+                    Contract contract = conid2ContractMap.get(selectObj);
                     // 找到了contractDetail 和 reqid 之后 广播消息
                     // 校验是否有正在下单的对应的 call或put
                     Types.Right right = contract.right();
@@ -175,12 +176,11 @@ public class SOptionLinkTablePnl extends JPanel
     {
         if (symbol != null)
         {
-            for (Contract contract : contractList)
+            for (Contract contract : conid2ContractMap.values())
             {
                 symbol.cancelRealTimePrice(contract);
             }
         }
-
     }
 
     private void setOptionChainTable(Map<Double, List<ContractDetails>> optionChainMap)
@@ -205,9 +205,9 @@ public class SOptionLinkTablePnl extends JPanel
                         putDts = contractDetailsList.get(0);
                     }
                     List<Object> callRowData = makeRowData(callRaise, callDts.contract().strike());
-                    optionLinkTable.addRowData(callDts.contract(), callRowData);
+                    optionLinkTable.addRowData(callDts.contract().conid(), callRowData);
                     List<Object> putRowData = makeRowData(putDown, putDts.contract().strike());
-                    optionLinkTable.addRowData(putDts.contract(), putRowData);
+                    optionLinkTable.addRowData(putDts.contract().conid(), putRowData);
                 }
             }
         }
@@ -229,8 +229,8 @@ public class SOptionLinkTablePnl extends JPanel
 
     private void queryOptionMarketData(Map<Double, List<ContractDetails>> optionChainMap)
     {
-        contractList.clear();
-        if (symbol != null && notNullAndEmptyMap(optionChainMap))
+        conid2ContractMap.clear();
+        if (notNullAndEmptyMap(optionChainMap))
         {
             for (Map.Entry<Double, List<ContractDetails>> entry : optionChainMap.entrySet())
             {
@@ -239,7 +239,7 @@ public class SOptionLinkTablePnl extends JPanel
                 {
                     for (ContractDetails contractDetails : contractDetailsList)
                     {
-                        contractList.add(contractDetails.contract());
+                        conid2ContractMap.put(contractDetails.contract().conid(),contractDetails.contract());
                         symbol.reqRealTimePrice(contractDetails.contract());
                     }
                 }
@@ -254,7 +254,7 @@ public class SOptionLinkTablePnl extends JPanel
         @Override
         public boolean accepts(ContractRealTimeInfo msg, SubscriptionContext subscriptionContext)
         {
-            return msg != null && contractList.contains(msg.contract);
+            return msg != null && conid2ContractMap.containsKey(msg.contract.conid());
         }
     }
 
@@ -265,7 +265,7 @@ public class SOptionLinkTablePnl extends JPanel
         {
 
             TCyTableModel cyTableModel = (TCyTableModel) optionLinkTable.getModel();
-            int rowIndex = cyTableModel.getRowIndexByUserObj(msg.contract);
+            int rowIndex = cyTableModel.getRowIndexByUserObj(msg.contract.conid());
             if (rowIndex >= 0)
             {
                 optionLinkTable.setValueAt(rowIndex, 2, msg.lastPrice);

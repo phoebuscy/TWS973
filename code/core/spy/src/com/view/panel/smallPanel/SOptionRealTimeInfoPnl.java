@@ -67,18 +67,21 @@ public class SOptionRealTimeInfoPnl extends JPanel
 
     public void setData(SOptionRealTimeInfoModel infoModel)
     {
-        objPnl.setData(infoModel.getObj(), infoModel.getExpireDate(), infoModel.getOperatePrice());
-        realPricePnl.setData(infoModel.getRealTimePrice(), infoModel.getTodayOpenPrice());
-        sellBuyPnl.setData(infoModel.getCurSellPrice(),
-                           infoModel.getCurSellCount(),
-                           infoModel.getCurBuyPrice(),
-                           infoModel.getCurBuyCount(),
-                           infoModel.getTradingVol());
-        todayOpenPnl.setData(infoModel.getTodayOpenPrice(),
-                             infoModel.getYestadayClosePrice(),
-                             infoModel.getTodayMaxPrice(),
-                             infoModel.getTodayMinPrice(),
-                             infoModel.getNotCloseCount());
+        if(infoModel != null)
+        {
+            objPnl.setData(infoModel.getObj(), infoModel.getExpireDate(), infoModel.getOperatePrice());
+            realPricePnl.setData(infoModel.getRealTimePrice(), infoModel.getTodayOpenPrice());
+            sellBuyPnl.setData(infoModel.getCurSalePrice(),
+                               infoModel.getCurSaleCount(),
+                               infoModel.getCurBuyPrice(),
+                               infoModel.getCurBuyCount(),
+                               infoModel.getTradingVol());
+            todayOpenPnl.setData(infoModel.getTodayOpenPrice(),
+                                 infoModel.getYestadayClosePrice(),
+                                 infoModel.getTodayMaxPrice(),
+                                 infoModel.getTodayMinPrice(),
+                                 infoModel.getNotCloseCount());
+        }
     }
 
 
@@ -256,7 +259,7 @@ public class SOptionRealTimeInfoPnl extends JPanel
 
             setLayout(new GridBagLayout());
             add(new JLabel(getConfigValue("sale.price", TConst.CONFIG_I18N_FILE)),
-                new GBC(0, 0).setAnchor(GBC.WEST));  // 卖家
+                new GBC(0, 0).setAnchor(GBC.WEST));  // 卖价
             add(curSellPrice_Label, new GBC(1, 0).setIpad(5, 0).setAnchor(GBC.WEST));
             add(curSellCount_Label, new GBC(2, 0).setAnchor(GBC.EAST));
 

@@ -18,8 +18,8 @@ public class SOptionRealTimeInfoModel
     private String todayMaxPrice;  // 最高价
     private String todayMinPrice;  // 最低价
     private String notCloseCount;   // 未平仓数量
-    private String curSellPrice;   // 当前实时卖价
-    private String curSellCount;  // 当前实时卖量
+    private String curSalePrice;   // 当前实时卖价
+    private String curSaleCount;  // 当前实时卖量
     private String curBuyPrice;   // 当前实时买价
     private String curBuyCount;    // 当前实时买量
     private String tradingVol; // 成交量
@@ -38,8 +38,8 @@ public class SOptionRealTimeInfoModel
         todayMinPrice = "";
         notCloseCount = "";
 
-        curSellPrice = "";
-        curSellCount = "";
+        curSalePrice = "";
+        curSaleCount = "";
         curBuyPrice = "";
         curBuyCount = "";
         tradingVol = "";
@@ -72,8 +72,8 @@ public class SOptionRealTimeInfoModel
         this.todayMinPrice = todayMinPrice;
         this.notCloseCount = notCloseCount;
 
-        this.curSellPrice = curSellPrice;
-        this.curSellCount = curSellCount;
+        this.curSalePrice = curSellPrice;
+        this.curSaleCount = curSellCount;
         this.curBuyPrice = curBuyPrice;
         this.curBuyCount = curBuyCount;
         this.tradingVol = tradingVol;
@@ -129,14 +129,14 @@ public class SOptionRealTimeInfoModel
         this.notCloseCount = notCloseCount;
     }
 
-    public void setCurSellPrice(String curSellPrice)
+    public void setCurSalePrice(String curSalePrice)
     {
-        this.curSellPrice = curSellPrice;
+        this.curSalePrice = curSalePrice;
     }
 
-    public void setCurSellCount(String curSellCount)
+    public void setCurSaleCount(String curSaleCount)
     {
-        this.curSellCount = curSellCount;
+        this.curSaleCount = curSaleCount;
     }
 
     public void setCurBuyPrice(String curBuyPrice)
@@ -198,14 +198,14 @@ public class SOptionRealTimeInfoModel
         return notCloseCount;
     }
 
-    public String getCurSellPrice()
+    public String getCurSalePrice()
     {
-        return curSellPrice;
+        return curSalePrice;
     }
 
-    public String getCurSellCount()
+    public String getCurSaleCount()
     {
-        return curSellCount;
+        return curSaleCount;
     }
 
     public String getCurBuyPrice()

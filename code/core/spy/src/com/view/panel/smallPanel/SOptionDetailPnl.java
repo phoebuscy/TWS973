@@ -80,18 +80,21 @@ public class SOptionDetailPnl extends JPanel
     private void processDoubleClickOptTableInfo(MBAReqIDContractDetails msg)
     {
         Contract contract = msg.contract;
+        ContractRealTimeInfo ctrRealtimeInfo = symbol.getContractRealTimeInfo(contract);
+        SOptionRealTimeInfoModel infoModel = getOptRealTimeInfoModel(ctrRealtimeInfo);
         if (Types.Right.Call.equals(contract.right()))
         {
             symbol.cancelRealTimePrice(callContract);
             callContract = contract;
             symbol.reqRealTimePrice(contract);
-
+            callInfoPnl.setData(infoModel);
         }
         else
         {
             symbol.cancelRealTimePrice(putContract);
             putContract = contract;
             symbol.reqRealTimePrice(contract);
+            putInfoPnl.setData(infoModel);
         }
     }
 
@@ -140,6 +143,8 @@ public class SOptionDetailPnl extends JPanel
             infoModel.setRealTimePrice(String.valueOf(msg.lastPrice));
             infoModel.setYestadayClosePrice(String.valueOf(msg.yesterdayClose));
             infoModel.setTodayOpenPrice(String.valueOf(msg.todayOpen));
+            infoModel.setCurBuyPrice(String.valueOf(msg.buyPrice));
+            infoModel.setCurSalePrice(String.valueOf(msg.salePrice));
             infoModel.setTodayMaxPrice(String.valueOf(msg.maxHigh));
             infoModel.setTodayMinPrice(String.valueOf(msg.minLow));
             infoModel.setOperatePrice(Double.toString(contract.strike()));

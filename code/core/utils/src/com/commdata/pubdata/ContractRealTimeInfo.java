@@ -3,7 +3,7 @@ package com.commdata.pubdata;
 import com.ib.client.Contract;
 import com.ib.client.TickType;
 
-public class ContractRealTimeInfo
+public class ContractRealTimeInfo implements Cloneable
 {
     public Contract contract;
     public double lastPrice = 0D;
@@ -39,6 +39,54 @@ public class ContractRealTimeInfo
         }
     }
 
+
+    public void setPrice(TickType tickType, double price)
+    {
+        if (tickType != null)
+        {
+            switch (tickType)
+            {
+                case ASK:
+                    salePrice = price;
+                    break;
+                case BID:
+                    buyPrice = price;
+                    break;
+                case LAST:
+                    lastPrice = price;
+                    break;
+                case LOW:
+                    minLow = price;
+                    break;
+                case HIGH:
+                    maxHigh = price;
+                    break;
+                case OPEN:
+                    todayOpen = price;
+                    break;
+                case CLOSE:
+                    yesterdayClose = price;
+                    break;
+            }
+        }
+
+    }
+
+    @Override
+    public ContractRealTimeInfo clone()
+    {
+        try
+        {
+            ContractRealTimeInfo copy = (ContractRealTimeInfo) super.clone();
+            return copy;
+        }
+        catch (CloneNotSupportedException e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     @Override
     public boolean equals(Object obj)
     {
@@ -48,6 +96,12 @@ public class ContractRealTimeInfo
 
     public static void main(String[] args)
     {
+        Contract srcC = new Contract();
+        srcC.conid(110);
+
+        ContractRealTimeInfo ctr1 = new ContractRealTimeInfo(srcC);
+
+        ContractRealTimeInfo ctr2 = ctr1.clone();
 
 
         int a = 1;

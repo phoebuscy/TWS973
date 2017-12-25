@@ -1,5 +1,6 @@
 package com.view.panel.smallPanel;
 
+import com.commdata.mbassadorObj.MBAPortFolio;
 import com.commdata.mbassadorObj.MBAReqIDContractDetails;
 import com.commdata.pubdata.ContractRealTimeInfo;
 import com.dataModel.SDataManager;
@@ -23,6 +24,7 @@ import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
 import static com.utils.SUtil.getDimension;
 import static com.utils.SUtil.isIntOrDoubleNumber;
+import static com.utils.SUtil.isSpyOpt;
 import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TConst.REALTIMEPRICEMGR_BUS;
 import static com.utils.TConst.SYMBOL_BUS;
@@ -39,7 +41,9 @@ public class SOperateButtonPnl extends JPanel
     private Dimension parentDimension;
 
     private static Contract callContract;
+    private static MBAPortFolio callContractPortFolio;
     private static Contract putContract;
+    private static MBAPortFolio putContractPortFolio;
 
     private OpenCloseButton callBtn = new OpenCloseButton(Types.Right.Call, null); //  JButton("CALL 开");
     private OpenCloseButton putBtn = new OpenCloseButton(Types.Right.Put, null); //JButton("PUT 开");
@@ -96,6 +100,7 @@ public class SOperateButtonPnl extends JPanel
         private Types.Right right;
         private Contract contract;
         private boolean isOpenState = false; // 是否开仓状态
+        private int operateCount = 0;
 
         private double realAdd = 0.0;  // 实际收益
         private double percent = 0.0;   //收益百分比
@@ -114,9 +119,10 @@ public class SOperateButtonPnl extends JPanel
             init();
         }
 
-        public void SetContract(Contract contract)
+        public void setContract(Contract contract)
         {
             this.contract = contract;
+            this.right = contract != null? contract.right(): Types.Right.None;
         }
 
         // 初始化开仓状态, 在连接时候，根据profit信息初始化该状态
@@ -125,57 +131,47 @@ public class SOperateButtonPnl extends JPanel
             this.isOpenState = isOpenState;
         }
 
-        public boolean isOpenState()
+        public void initOperateCount(int operateCount)
         {
-            return isOpenState;
+            this.operateCount = operateCount;
         }
+
 
         public void placeOrder()
         {
-            boolean isDo = false;
             if (isOpenState)  // 开仓状态
             {
-                isDo = doSell();  // 卖
+                 doSell();  // 卖
             }
             else
             {
-                isDo = doBuy();   // 买
-            }
-            if (isDo)
-            {
-                isOpenState = !isOpenState;
+                 doBuy();   // 买
             }
         }
 
-        private boolean doSell()
+        private void doSell()
         {
-            Contract contract = isCallBtn() ? symbol.getOrderedCallContract() : symbol.getOrderedPutContract();
-            if (contract != null)
+            if (contract != null && operateCount > 0)
             {
-                symbol.placeOrder(contract, Types.Action.SELL, 100);
-                initIcon();
-                return true;
+                symbol.placeOrder(contract, Types.Action.SELL, operateCount);
+                isOpenState = false;
             }
-            return false;
         }
 
-        private boolean doBuy()
+        private int doBuy()
         {
-            Contract contract =
-                    isCallBtn() ? symbol.getPrepareOrderCallContract() : symbol.getPrepareOrderPutContract();
             if (contract != null)
             {
-                symbol.placeOrder(contract, Types.Action.BUY, 100);
+                operateCount = getOperateCount(contract);
+                symbol.placeOrder(contract, Types.Action.BUY, operateCount);
                 setButProfitTxt(0D, 0D);
-                return true;
+                isOpenState = true;
+                return operateCount;
             }
-            return false;
+            return 0;
         }
 
-        private boolean isCallBtn()
-        {
-            return Types.Right.Call.equals(right);
-        }
+
 
         private void init()
         {
@@ -205,7 +201,7 @@ public class SOperateButtonPnl extends JPanel
             {
                 double realAdd = Double.parseDouble(realAddStr);
                 double percent = Double.parseDouble(percentStr);
-                setButProfitTxt(realAdd, percent);
+                setButProfitTxt(realAdd, percent * 100D);
             }
             else
             {
@@ -227,7 +223,7 @@ public class SOperateButtonPnl extends JPanel
             setFaceIcon(percent);
             setForeground(color);
             String beginClose = getConfigValue("begin.close", TConst.CONFIG_I18N_FILE); // 平
-            String txt = String.format("%.3f  %.3f%% %s", realAdd, percent, beginClose);
+            String txt = String.format("%.2f  %.2f%% %s", realAdd, percent, beginClose);
             setText(txt);
         }
 
@@ -338,13 +334,127 @@ public class SOperateButtonPnl extends JPanel
         // 获取到实时价格， 在获取当前 持仓标的，然后设置button
         if (callContract != null && callContract.conid() == msg.contract.conid())
         {
-
+            if (!callContractPortFolio.isClose()) // 已经平仓的则不处理
+            {
+                callContractPortFolio.marketPrice = Double.compare(msg.buyPrice, 0D) == 1 ? msg.buyPrice :
+                                                    msg.lastPrice;
+                callBtn.setProfit(makeYinorkui(callContractPortFolio), makeZdf(callContractPortFolio));
+            }
         }
         else if (putContract != null && putContract.conid() == msg.contract.conid())
         {
-
+            if (!putContractPortFolio.isClose()) // 已经平仓的则不处理
+            {
+                putContractPortFolio.marketPrice = Double.compare(msg.buyPrice, 0D) == 1 ? msg.buyPrice : msg.lastPrice;
+                putBtn.setProfit(makeYinorkui(putContractPortFolio), makeZdf(putContractPortFolio));
+            }
         }
+    }
 
+
+    // 接收账户信息过滤器 : 只显示SPY的OPT
+    static public class portFolioDataFilter implements IMessageFilter<MBAPortFolio>
+    {
+        @Override
+        public boolean accepts(MBAPortFolio msg, SubscriptionContext subscriptionContext)
+        {
+            return msg != null && isSpyOpt(msg);
+        }
+    }
+
+    @Handler(filters = {@Filter(portFolioDataFilter.class)})
+    private void processPortFolioData(MBAPortFolio msg)
+    {
+        if (Types.Right.Call.equals(msg.contract.right()))
+        {
+            callContractPortFolio = msg;
+            callContract = msg.contract.clone();
+            callBtn.setProfit(makeYinorkui(msg), makeZdf(msg));
+            callBtn.setContract(msg.contract);
+            callBtn.initOpenState(true);
+            callBtn.initOperateCount((int)Math.rint(msg.position));
+            symbol.setOrderedCallContract(callContract, Types.Action.BUY);
+        }
+        else if (Types.Right.Put.equals(msg.contract.right()))
+        {
+            putContractPortFolio = msg;
+            putContract = msg.contract.clone();
+            putBtn.setProfit(makeYinorkui(msg), makeZdf(msg));
+            putBtn.setContract(msg.contract);
+            putBtn.initOpenState(true);
+            putBtn.initOperateCount((int)Math.rint(msg.position));
+            symbol.setOrderedCallContract(putContract, Types.Action.BUY);
+        }
+        // 如果是新的contact，则查询期权实时价格
+        queryRealTimePrice(msg);
+    }
+
+    // 如果是新的contact，则查询期权实时价格
+    private void queryRealTimePrice(MBAPortFolio msg)
+    {
+        if (msg != null)
+        {
+            if (Types.Right.Call.equals(msg.contract.right()))
+            {
+                if (callContract == null || msg.contract.conid() != callContract.conid())
+                {
+                    symbol.reqRealTimePrice(callContract, msg.contract);
+                }
+            }
+            else if (Types.Right.Put.equals(msg.contract.right()))
+            {
+                if (putContract == null || msg.contract.conid() != putContract.conid())
+                {
+                    symbol.reqRealTimePrice(putContract, msg.contract);
+                }
+            }
+        }
+    }
+
+
+    private String makeZdf(MBAPortFolio msg) // 涨跌幅
+    {
+        if (msg != null && Double.compare(msg.position, 0D) == 1)
+        {
+            double averavePrice = msg.averageCost / 100D;
+            double diff = msg.marketPrice - averavePrice;
+            Double percent = diff / averavePrice;
+            return String.format("%.2f", percent);
+        }
+        return "";
+    }
+
+    private String makeYinorkui(MBAPortFolio msg)  // 盈亏金额
+    {
+        if (msg != null)
+        {
+            if (msg.isClose()) // 平仓了的用 realizedPNL
+            {
+                return String.format("%.1f", msg.realizedPNL);
+            }
+            else // 未平仓的需要计算
+            {
+                return String.format("%.1f", (msg.marketPrice - (msg.averageCost / 100D)) * msg.position * 100);
+            }
+        }
+        return "";
+    }
+
+    private int getOperateCount(Contract contract)
+    {
+        if (symbol != null)
+        {
+            ContractRealTimeInfo contractRealTimeInfo = symbol.getContractRealTimeInfo(contract);
+            if (contractRealTimeInfo != null)
+            {
+                double realTimePrice = contractRealTimeInfo.lastPrice;
+                if (Double.compare(realTimePrice, 0D) == 1)
+                {
+                    return (int) Math.rint(symbol.getOnceOperateMoney() / realTimePrice * 100D);
+                }
+            }
+        }
+        return 0;
     }
 
 

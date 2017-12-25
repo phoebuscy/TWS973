@@ -3,6 +3,7 @@ package com.utils;
 
 import com.commdata.mbassadorObj.MBAHistoricalData;
 
+import com.commdata.mbassadorObj.MBAPortFolio;
 import com.ib.client.Types;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -19,7 +20,9 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -180,7 +183,7 @@ public class SUtil
         {
             TableColumnModel tableColumnModel = table.getColumnModel();
             int clumCount = tableColumnModel.getColumnCount();
-            if(colindex < clumCount)
+            if (colindex < clumCount)
             {
                 tableColumnModel.getColumn(colindex).setPreferredWidth(width);
             }
@@ -478,21 +481,22 @@ public class SUtil
     // 获取美国当前年的感恩节日
     public static LocalDate getUsaGanEnJie(int year)
     {
-        LocalDate usaLocalDate = LocalDate.of(year, 11,1);
+        LocalDate usaLocalDate = LocalDate.of(year, 11, 1);
         boolean is4th4d = false;
         int sundayCount = 0;
         while (!is4th4d)
         {
             DayOfWeek dayOfWeek = usaLocalDate.getDayOfWeek();
-            sundayCount = (dayOfWeek == DayOfWeek.SUNDAY)? ++sundayCount: sundayCount;
+            sundayCount = (dayOfWeek == DayOfWeek.SUNDAY) ? ++sundayCount : sundayCount;
             is4th4d = (sundayCount == 3 && dayOfWeek == DayOfWeek.THURSDAY);
-            if(!is4th4d)
+            if (!is4th4d)
             {
                 usaLocalDate = usaLocalDate.plusDays(1);
             }
         }
         return usaLocalDate;
     }
+
     public static LocalDate getUsaThisYearGanEnJie()
     {
         int year = LocalDate.now().getYear();
@@ -550,7 +554,7 @@ public class SUtil
             int year = currentAmericaLocalDateTime.getYear();
             int month = currentAmericaLocalDateTime.getMonthValue();
             int day = currentAmericaLocalDateTime.getDayOfMonth();
-            boolean isGanEnJieNextDay = isGanEnJieNextDay(LocalDate.of(year,month,day));
+            boolean isGanEnJieNextDay = isGanEnJieNextDay(LocalDate.of(year, month, day));
             int endHour = isGanEnJieNextDay ? 13 : 16;
             return LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(endHour, 0));
         }
@@ -703,11 +707,11 @@ public class SUtil
     }
 
     // 获取上一个开盘收盘时间段
-    public static Pair<LocalDateTime,LocalDateTime> getLastDayUSAOpenDateTime()
+    public static Pair<LocalDateTime, LocalDateTime> getLastDayUSAOpenDateTime()
     {
         // 获取当前美国日期
         LocalDateTime curUSADateTime = getCurrentAmericaLocalDateTime();
-        if(isOpenDayOfUSADateTime(curUSADateTime))
+        if (isOpenDayOfUSADateTime(curUSADateTime))
         {
             LocalDateTime openDateTime = getCurrentDayUSAOpenDateTime();
             LocalDateTime closeDateTime = getCurrentDayUSACloseDateTime();
@@ -786,6 +790,64 @@ public class SUtil
         {
             return Types.BarSize._30_secs;
         }
+    }
+
+
+    /**
+     * 获取离指定价格最接近的数
+     *
+     * @param numberLst 即将查找的数据list
+     * @param isSorted  查找数据list是否yi已经排序
+     * @param curPrice  当前查找标准
+     * @param count     要查找数据个数
+     * @return
+     */
+    public static List<Double> getNearRestNumber(List<Double> numberLst, boolean isSorted, double curPrice, int count)
+    {
+        List<Double> nearRestNumLst = new ArrayList<>();
+        if (numberLst != null && Double.compare(curPrice, 0D) == 1 && count > 0)
+        {
+            List<Double> tmpLst = new ArrayList<>();
+            if (isSorted)
+            {
+                tmpLst = numberLst;
+            }
+            else
+            {
+                HashSet set = new HashSet(numberLst);
+                tmpLst.addAll(set);  // 去重复
+                Collections.sort(tmpLst); // 排序
+            }
+            for (int i = 0; i < count; i++)
+            {
+                double nearRestNum = Double.NaN;
+                double minAbs = Double.MAX_VALUE;
+                for (Double num : tmpLst)
+                {
+                    if (!nearRestNumLst.contains(num))
+                    {
+                        double abs = Math.abs(curPrice - num);
+                        if (Double.compare(abs, minAbs) == -1)
+                        {
+                            minAbs = abs;
+                            nearRestNum = num;
+                        }
+                    }
+                }
+                if (Double.compare(nearRestNum, Double.NaN) != 0)
+                {
+                    nearRestNumLst.add(nearRestNum);
+                }
+            }
+        }
+        return nearRestNumLst;
+    }
+
+
+    public static boolean isSpyOpt(MBAPortFolio msg)
+    {
+        return msg != null && Types.SecType.OPT.equals(msg.contract.secType()) && "SPY".equals(msg.contract.symbol());
+        //  return msg != null;
     }
 
 

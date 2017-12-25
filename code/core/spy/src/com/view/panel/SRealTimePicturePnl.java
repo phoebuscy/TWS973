@@ -74,12 +74,6 @@ public class SRealTimePicturePnl extends JPanel
         add(sCallRealTimePnl, new GBC(0, 1).setWeight(50, 10).setFill(GBC.BOTH));
         add(sPutRealTimePnl, new GBC(0, 2).setWeight(50, 10).setFill(GBC.BOTH));
 
-        //   List<Date> beginEndDateLst = SUtil.getBeginEndDate();
-        // Date beginDate = beginEndDateLst.get(0);
-        //  Date endDate = beginEndDateLst.get(1);
-        //  sSpyRealTimePnl.setXRange(beginDate, endDate);
-
-        //   setBackground(Color.cyan);
         parentDimension = parentWin.getSize();
         setDimension();
 
@@ -264,45 +258,6 @@ public class SRealTimePicturePnl extends JPanel
 
         }
     }
-
-
-    /*
-    // 接收实时价格的消息过滤器
-    static public class realPriceStatusFilter implements IMessageFilter<MBASymbolRealPrice>
-    {
-        @Override
-        public boolean accepts(MBASymbolRealPrice msg, SubscriptionContext subscriptionContext)
-        {
-            return msg != null && ifNowIsOpenTime();
-        }
-    }
-
-    // 实时价格处理器
-    @Handler(filters = {@Filter(realPriceStatusFilter.class)})
-    private void getRealPrice(MBASymbolRealPrice msg)
-    {
-        if (hasDarwHistory)
-        {
-            openUsaDateTime = getCurrentDayUSAOpenDateTime();
-            closeUsaDateTime = getCurrentDayUSACloseDateTime();
-            setXRange(openUsaDateTime, closeUsaDateTime);
-            hasDarwHistory = false;
-        }
-
-        Range yRange = sSpyRealTimePnl.getYRange();
-        Double lower = yRange.getLowerBound();
-        Double upper = yRange.getUpperBound();
-
-        if (yRange == null || msg.symbolRealPrice < lower || (msg.symbolRealPrice - lower) > 0.6 ||
-            msg.symbolRealPrice > upper || (upper - msg.symbolRealPrice) > 0.6)
-        {
-            sSpyRealTimePnl.setYRange(msg.symbolRealPrice - 0.5, msg.symbolRealPrice + 0.5);
-        }
-        Date date = changeToDate(getCurrentAmericaLocalDateTime());
-        sSpyRealTimePnl.addValue(date, msg.symbolRealPrice);
-    }
-    */
-
 
     // 根据BarSize来获取 “ 开价，最高价，最低价，收价’的时间间隔
     private int getStepSecond(Types.BarSize barSize)

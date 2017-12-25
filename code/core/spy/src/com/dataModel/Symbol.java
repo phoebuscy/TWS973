@@ -6,6 +6,7 @@ import com.commdata.mbassadorObj.MBAHistoricalDataEnd;
 import com.commdata.mbassadorObj.MBAOptionExpireDayList;
 import com.commdata.mbassadorObj.MBASymbolRealPrice;
 import com.commdata.mbassadorObj.MBAtickPrice;
+import com.commdata.pubdata.ContractRealTimeInfo;
 import com.commdata.pubdata.HistoricDataStorage;
 import com.commdata.pubdata.OptHisDataReqParamStorage;
 import com.commdata.pubdata.OptionHistoricReqParams;
@@ -24,9 +25,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import javafx.util.Pair;
@@ -45,6 +48,7 @@ import static com.utils.TConst.SYMBOL_BUS;
 import static com.utils.TPubUtil.getAKmsg;
 import static com.utils.TPubUtil.notNullAndEmptyCollection;
 import static com.utils.TPubUtil.notNullAndEmptyMap;
+import static com.utils.TPubUtil.nullOrEmptyMap;
 import static com.utils.TStringUtil.notNullAndEmptyStr;
 
 /**
@@ -135,6 +139,11 @@ public class Symbol
         return realTimePriceMgr != null && symbolContract != null ? realTimePriceMgr.getRealTimePrice(symbolContract) :
                0D;
 
+    }
+
+    public ContractRealTimeInfo getContractRealTimeInfo(Contract contract)
+    {
+        return realTimePriceMgr != null ? realTimePriceMgr.getContractRealTimeInfo(contract) : null;
     }
 
     public void setSymbolRealPrice(Double realPrice)
@@ -290,55 +299,66 @@ public class Symbol
         }
     }
 
-    // 获取与当前价格最近的contractdetails, 包括 call 和put
-    private List<ContractDetails> getNearestPriceCtrDetails(List<ContractDetails> crtdLst, double curPrice)
+    // 获取与当前价格最近的contractdetails, 包括 call 和put, 注意 ： pairCount 是表示去多少组
+    private Map<Double, List<ContractDetails>> getNearestPriceCtrDetails(List<ContractDetails> crtdLst,
+                                                                         double curPrice,
+                                                                         int pairCount)
     {
-        List<ContractDetails> retCrtLst = new ArrayList<>();
+        Map<Double, List<ContractDetails>> strike2ContractDtalsLst = new HashMap<>();
 
         if (notNullAndEmptyCollection(crtdLst) && Double.compare(curPrice, 0D) >= 0)
         {
-            if (Double.compare(curPrice, 0D) == 0)  // 如果当前价格为0，则返回crtdLst中间一个ContractDetails
+            Set<Integer> conidSet = new HashSet<>();
+            for (int i = 0; i < pairCount; i++)
             {
-                retCrtLst.add(crtdLst.get(crtdLst.size() / 2));
-                return retCrtLst;
-            }
-
-            // 获取call最接近的strike
-            double minAbs = 10000000D;
-            ContractDetails retStrick = null;
-            for (ContractDetails crt : crtdLst)
-            {
-                if (crt.contract().right() != Types.Right.Call)
-                {
-                    continue;
-                }
-                Double strike = crt.contract().strike();
-                double abs = Math.abs(curPrice - strike);
-                if (Double.compare(abs, minAbs) == -1)
-                {
-                    minAbs = abs;
-                    retStrick = crt;
-                }
-            }
-            retCrtLst.add(retStrick);
-            // 获取相同价格的put
-            if (notNullAndEmptyCollection(retCrtLst))
-            {
-                ContractDetails callCrt = retCrtLst.get(0);
+                List<ContractDetails> retCrtLst = new ArrayList<>();
+                // 获取call最接近的strike
+                double minAbs = Double.MAX_VALUE;
+                ContractDetails retStrick = null;
                 for (ContractDetails crt : crtdLst)
                 {
-                    if (crt.contract().right() != Types.Right.Put)
+                    if (crt.contract().right() != Types.Right.Call)
                     {
                         continue;
                     }
-                    if (Double.compare(crt.contract().strike(), callCrt.contract().strike()) == 0)
+                    Double strike = crt.contract().strike();
+                    double abs = Math.abs(curPrice - strike);
+                    if (Double.compare(abs, minAbs) == -1 && !conidSet.contains(crt.conid()))
                     {
-                        retCrtLst.add(crt);
+                        minAbs = abs;
+                        retStrick = crt;
                     }
+                }
+                if (retStrick != null)
+                {
+                    retCrtLst.add(retStrick);
+                    conidSet.add(retStrick.conid());
+                }
+                // 获取相同价格的put
+                if (notNullAndEmptyCollection(retCrtLst))
+                {
+                    ContractDetails callCrt = retCrtLst.get(0);
+                    for (ContractDetails crt : crtdLst)
+                    {
+                        if (crt.contract().right() != Types.Right.Put)
+                        {
+                            continue;
+                        }
+                        if (Double.compare(crt.contract().strike(), callCrt.contract().strike()) == 0)
+                        {
+                            retCrtLst.add(crt);
+                        }
+                    }
+                }
+
+                if (notNullAndEmptyCollection(retCrtLst))
+                {
+                    ContractDetails callCrt = retCrtLst.get(0);
+                    strike2ContractDtalsLst.put(callCrt.contract().strike(), retCrtLst);
                 }
             }
         }
-        return retCrtLst;
+        return strike2ContractDtalsLst;
     }
 
 
@@ -347,14 +367,9 @@ public class Symbol
         Map<Double, List<ContractDetails>> strike2ContractDtalsLst = new HashMap<>();
         double curSymbolRealPrice = getSymbolRealPrice();  // 需要用一个方法获取当前symbol的价格
         List<ContractDetails> ctrdetailLst = day2CtrdMap.get(expireDay);
-        // 获取离当前价格最近的 ContractDetails
-        List<ContractDetails> nearestCrtLst = getNearestPriceCtrDetails(ctrdetailLst, curSymbolRealPrice);
-        if (notNullAndEmptyCollection(nearestCrtLst) && nearestCrtLst.size() == 2)
-        {
-            ContractDetails crtDt = nearestCrtLst.get(0);
-            strike2ContractDtalsLst.put(crtDt.contract().strike(), nearestCrtLst);
-        }
-        else
+        // 获取离当前价格最近的 ContractDetails,3对
+        strike2ContractDtalsLst = getNearestPriceCtrDetails(ctrdetailLst, curSymbolRealPrice, 3);
+        if (nullOrEmptyMap(strike2ContractDtalsLst))
         {
             LogApp.error("Symbol getStrike2ContractDtalsLst get contractdetails faile");
         }
