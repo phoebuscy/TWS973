@@ -116,10 +116,10 @@ public class RealTimePriceMgr
             }
 
             // 如果不是开盘时间，则通过历史数据获取当前价格和开盘价格
-            if (!ifNowIsOpenTime())
-            {
+          //  if (!ifNowIsOpenTime())
+          //  {
                 getLastOpenDayHistoryData(contract);
-            }
+          //  }
         }
     }
 

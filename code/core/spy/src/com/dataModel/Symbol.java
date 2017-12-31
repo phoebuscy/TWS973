@@ -368,7 +368,7 @@ public class Symbol
         double curSymbolRealPrice = getSymbolRealPrice();  // 需要用一个方法获取当前symbol的价格
         List<ContractDetails> ctrdetailLst = day2CtrdMap.get(expireDay);
         // 获取离当前价格最近的 ContractDetails,3对
-        strike2ContractDtalsLst = getNearestPriceCtrDetails(ctrdetailLst, curSymbolRealPrice, 3);
+        strike2ContractDtalsLst = getNearestPriceCtrDetails(ctrdetailLst, curSymbolRealPrice, 5);
         if (nullOrEmptyMap(strike2ContractDtalsLst))
         {
             LogApp.error("Symbol getStrike2ContractDtalsLst get contractdetails faile");

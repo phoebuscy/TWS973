@@ -153,6 +153,7 @@ public class SOperateButtonPnl extends JPanel
         {
             if (contract != null && operateCount > 0)
             {
+                contract.exchange("SMART");
                 symbol.placeOrder(contract, Types.Action.SELL, operateCount);
                 isOpenState = false;
             }
@@ -162,6 +163,7 @@ public class SOperateButtonPnl extends JPanel
         {
             if (contract != null)
             {
+                contract.exchange("SMART");
                 operateCount = getOperateCount(contract);
                 symbol.placeOrder(contract, Types.Action.BUY, operateCount);
                 setButProfitTxt(0D, 0D);
@@ -304,10 +306,12 @@ public class SOperateButtonPnl extends JPanel
             if (Types.Right.Call.equals(contract.right()))
             {
                 callContract = contract.clone();
+                callBtn.setContract(callContract);
             }
             else
             {
                 putContract = contract.clone();
+                putBtn.setContract(putContract);
             }
         }
     }
@@ -450,7 +454,7 @@ public class SOperateButtonPnl extends JPanel
                 double realTimePrice = contractRealTimeInfo.lastPrice;
                 if (Double.compare(realTimePrice, 0D) == 1)
                 {
-                    return (int) Math.rint(symbol.getOnceOperateMoney() / realTimePrice * 100D);
+                    return (int) Math.rint(symbol.getOnceOperateMoney() / (realTimePrice * 100D));
                 }
             }
         }
