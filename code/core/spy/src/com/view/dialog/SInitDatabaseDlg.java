@@ -77,9 +77,7 @@ public class SInitDatabaseDlg extends JFrame
         JPanel contentPnl = new JPanel();
         contentPnl.setLayout(new GridBagLayout());
         JLabel userLabel = new JLabel(getConfigValue("user.name", TConst.CONFIG_I18N_FILE));
-        //  JTextField userTextField = new JTextField(20);
         JLabel pwLabel = new JLabel(getConfigValue("passworld", TConst.CONFIG_I18N_FILE));
-        // JTextField pwTextField = new JTextField(20);
 
         JButton confirmBtn = new JButton(getConfigValue("confirm", TConst.CONFIG_I18N_FILE));
         confirmBtn.addActionListener(new AbstractAction()

@@ -96,16 +96,19 @@ public class SMainFram extends JFrame
 
         JMenu menuDatabase = new JMenu(getConfigValue("database", TConst.CONFIG_I18N_FILE));
         JMenuItem itemInitDatabase = new JMenuItem(getConfigValue("init.database", TConst.CONFIG_I18N_FILE));
-        itemInitDatabase.addActionListener(new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                SInitDatabaseDlg initDatabaseDlg = new SInitDatabaseDlg();
-                initDatabaseDlg.setVisible(true);
-            }
+        itemInitDatabase.addActionListener(e -> {
+            SInitDatabaseDlg initDatabaseDlg = new SInitDatabaseDlg();
+            initDatabaseDlg.setVisible(true);
         });
         menuDatabase.add(itemInitDatabase);
+        JMenuItem itemInitHistoricData = new JMenuItem(getConfigValue("init.historic.data", TConst.CONFIG_I18N_FILE));
+        menuDatabase.add(itemInitHistoricData);
+        itemInitHistoricData.addActionListener(e -> {
+
+            SInitHistoricDataDlg initHistoricDataDlg = new SInitHistoricDataDlg();
+            initHistoricDataDlg.setVisible(true);
+
+        });
 
         bar.add(menuDatabase);
 

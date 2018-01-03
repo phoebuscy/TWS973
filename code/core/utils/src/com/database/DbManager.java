@@ -1,16 +1,14 @@
 package com.database;
 
 import java.sql.CallableStatement;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import static com.utils.TStringUtil.trimStr;
 
 public class DbManager
 {
@@ -25,14 +23,8 @@ public class DbManager
 
     public static void main(String[] args)
     {
-        DbManager dbManager = getInstance();
-
-        List<Integer> reqidLst = new ArrayList<>();
-        for (int i = 0; i < 10000; i++)
-        {
-            int reqid = dbManager.queryReqID();
-            reqidLst.add(reqid);
-        }
+        com.ib.client.Types.BarSize barSize = com.ib.client.Types.BarSize._2_mins;
+        String str = barSize.toString().trim();
 
         int a = 1;
     }
@@ -62,8 +54,10 @@ public class DbManager
     // 创建数据库的各种表
     private void createTables(Connection connection)
     {
+        // 查询id表
         createQueryIDTable(connection);
-
+        // 历史数据表
+        createHistoricDataIDTable(connection);
     }
 
     // 创建数据库的存储过程
@@ -187,7 +181,6 @@ public class DbManager
                 String sqlInsertData = "insert into queryidtable values(100000000)";
                 stmt.executeUpdate(sqlInsertData);
 
-
                 System.out.println("创建成功！");
                 stmt.close();
             }
@@ -244,6 +237,106 @@ public class DbManager
         }
         return retid;
     }
+
+    /**
+     *   创建历史数据表 ,表的规格如下
+     * 5 秒
+     15 秒
+     30 秒
+     1 分钟
+     2 分钟
+     3 分钟
+     5 分钟
+     15 分钟
+     30 分钟
+     1 小时
+     1 天
+     * @param connection 数据库连接
+     */
+    private void createHistoricDataIDTable(Connection connection)
+    {
+        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._5_secs);
+        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._15_secs);
+        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._30_secs);
+        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._1_min);
+        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._2_mins);
+        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._3_mins);
+        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._5_mins);
+        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._15_mins);
+        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._30_mins);
+        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._1_hour);
+        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._1_day);
+    }
+
+    /**
+     * 创建历史数据表 ,表的规格如下
+     * @param connection 数据库连接
+     * @param barSize 柱
+     */
+    private void createHistoricDataIDTable(Connection connection, com.ib.client.Types.BarSize barSize)
+    {
+        if (connection != null)
+        {
+            try
+            {
+                //加载驱动
+                Class.forName("com.mysql.jdbc.Driver");
+                //链接到数据库
+                String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC";
+                //获取对象
+                Statement stmt = connection.createStatement();
+                String tableName = "hisdata" + trimStr(barSize.toString());
+                //  String delTableSqlStr = "drop table if exists" + tableName + ";";
+                //  stmt.execute(delTableSqlStr);
+
+                String sqlstr2 = "create table queryidtable(reqid int(1));";
+                String sqlstr = "create table" + " " +  tableName + " " + crtHistoricDataFileStatement();
+                int ret = stmt.executeUpdate(sqlstr);
+
+                System.out.println("创建成功！");
+                stmt.close();
+            }
+            catch (Exception e)
+            {
+                System.out.println("创建失败！或已经存在该表格" + e);
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 创建历史数据的字段
+     * public String date;
+     public double open;
+     public double high;
+     public double low;
+     public double close;
+     public int volume;
+     public int count;
+     public double WAP;
+     public boolean hasGaps;
+     * @return
+     */
+    private String crtHistoricDataFileStatement()
+    {
+        StringBuilder strBuder = new StringBuilder();
+        strBuder.append("(");
+
+        strBuder.append("date char(30), ");
+        strBuder.append("open double(16,3), ");
+        strBuder.append("high double(16,3), ");
+        strBuder.append("low double(16,3), ");
+        strBuder.append("close double(16,3), ");
+        strBuder.append("volume int(10), ");
+        strBuder.append("count int(10), ");
+        strBuder.append("WAP double(16,3), ");
+        strBuder.append("hasGaps double(16,3), ");
+        strBuder.append("PRIMARY KEY(date)");
+
+        strBuder.append(");");
+        return strBuder.toString();
+    }
+
 
 
 }

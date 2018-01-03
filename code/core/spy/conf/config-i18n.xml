@@ -36,6 +36,11 @@
         <pair label-key='exit' label-value='退出'/>
         <pair label-key='database' label-value='数据库'/>
         <pair label-key='init.database' label-value='初始化数据库'/>
+        <pair label-key='init.historic.data' label-value='初始化历史数据'/>
+        <pair label-key='date' label-value='日期'/>
+        <pair label-key='date.from' label-value='起'/>
+        <pair label-key='date.to' label-value='止'/>
+        <pair label-key='get.historic.data' label-value='获取历史数据'/>
         <pair label-key='passworld' label-value='密码'/>
 
         <pair label-key='confirm' label-value='确定'/>

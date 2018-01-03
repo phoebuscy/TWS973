@@ -447,7 +447,7 @@ public class SUtil
     // 判断指定美国日期是否是交易日期
     // 美国股市放假时间
     /*
-    2017年1月2日 ： 新年元旦次日，休市一天。
+    2017年1月1日 ： 新年元旦，休市一天。
 　　2017年1月16日 ： 马丁-路德-金纪念日，休市一天。
 　　2017年2月20日 ： 华盛顿诞辰日（总统日），休市一天。
 　　2017年4月14日 ： 耶稣受难日，休市一天。
@@ -465,7 +465,7 @@ public class SUtil
             int m = usaDateTime.getMonthValue();
             int d = usaDateTime.getDayOfMonth();
             DayOfWeek dayOfWeek = usaDateTime.getDayOfWeek();
-            if ((m == 1 && d == 2) || (m == 1 && d == 16) || (m == 2 && d == 20) || (m == 4 && d == 14) ||
+            if ((m == 1 && d == 1) || (m == 1 && d == 16) || (m == 2 && d == 20) || (m == 4 && d == 14) ||
                 (m == 5 && d == 29) || (m == 7 && d == 4) || (m == 9 && d == 4) || (m == 11 && d == 23) ||
                 (m == 12 && d == 25) || SATURDAY.equals(dayOfWeek) || SUNDAY.equals(dayOfWeek))
             {
