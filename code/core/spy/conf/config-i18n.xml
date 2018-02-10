@@ -68,6 +68,14 @@
 
         <pair label-key="tip.have.order" label-value="如要选择备选开仓obj，请先平仓。"/>
         <pair label-key="input.has.error" label-value="输入有误"/>
+        <pair label-key="get.opt.count.failed" label-value="获取期权数量失败"/>
+
+        <!--  未开仓，正在开仓，已开仓，正在平仓 -->
+        <pair label-key="enmu.no.open" label-value="未开仓"/>
+        <pair label-key="enmu.open.ing" label-value="正在开仓"/>
+        <pair label-key="enmu.opened" label-value="已开仓"/>
+        <pair label-key="enmu.close.ing" label-value="正在平仓"/>
+
 
 
 

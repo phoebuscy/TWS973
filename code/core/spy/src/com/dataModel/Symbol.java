@@ -80,11 +80,6 @@ public class Symbol
     private reqOptHisDataThread reqOptHisDataThread = new reqOptHisDataThread(optHisDataReqParamStorage);
     private boolean reqOptHisDataThreadStartFlg = false;  // reqOptHisDataThread 线程已启动标志
 
-    private Contract prepareOrderCallContract;  // 选中的准备交易的Call
-    private Contract prepareOrderPutContract;   // 选中的准备交易的put
-    private Contract orderedCallContract; // 正在交易的Call contract
-    private Contract orderedPutContract;  // 正在交易的put Contract
-
     //查询历史数据相关变量
     private static Map<Integer, HistoricDataStorage> reqid2HistoricDataStorageMap = new ConcurrentHashMap<>();
 
@@ -615,105 +610,6 @@ public class Symbol
         }
     }
 
-    public void setPrepareOrderContract(Contract contract)
-    {
-        if (contract != null)
-        {
-            if (Types.Right.Call.equals(contract.right()))
-            {
-                setPrepareOrderCallContract(contract);
-            }
-            else if (Types.Right.Put.equals(contract.right()))
-            {
-                setPrepareOrderPutContract(contract);
-            }
-        }
-    }
-
-    public void setPrepareOrderCallContract(Contract contract)
-    {
-        prepareOrderCallContract = contract;
-    }
-
-    public void setPrepareOrderPutContract(Contract contract)
-    {
-        prepareOrderPutContract = contract;
-    }
-
-    public void clearPrepareOrderCallContract()
-    {
-        prepareOrderCallContract = null;
-    }
-
-    public void clearPrepareOrderPutContract()
-    {
-        prepareOrderPutContract = null;
-    }
-
-    public Contract getPrepareOrderCallContract()
-    {
-        return prepareOrderCallContract;
-    }
-
-    public Contract getPrepareOrderPutContract()
-    {
-        return prepareOrderPutContract;
-    }
-
-    public Contract getOrderedCallContract()
-    {
-        return orderedCallContract;
-    }
-
-    public Contract getOrderedPutContract()
-    {
-        return orderedPutContract;
-    }
-
-    public void setOrderedCallContract(Contract contract, Types.Action action)
-    {
-        if (Types.Action.SELL.equals(action))
-        {
-            orderedCallContract = null;
-        }
-        else if (Types.Action.BUY.equals(action))
-        {
-            orderedCallContract = contract;
-        }
-    }
-
-    public void setOrderedPutContract(Contract contract, Types.Action action)
-    {
-        if (Types.Action.SELL.equals(action))
-        {
-            orderedPutContract = null;
-        }
-        else if (Types.Action.BUY.equals(action))
-        {
-            orderedPutContract = contract;
-        }
-    }
-
-    public void clearOrderedCallContract()
-    {
-        orderedCallContract = null;
-    }
-
-    public void clearOrderedPutContract()
-    {
-        orderedPutContract = null;
-    }
-
-    public boolean isOrderedCallContract()
-    {
-        return orderedCallContract != null;
-    }
-
-    public boolean isOrderedPutContract()
-    {
-        return orderedPutContract != null;
-    }
-
 
     public int placeOrder(Contract contract, Types.Action action, int count)
     {
@@ -726,18 +622,7 @@ public class Symbol
             order.action(action);
             order.totalQuantity(count);
             order.orderType(OrderType.MKT);
-
             m_client.placeOrder(reqid, contract, order);
-
-            if (Types.Right.Call.equals(contract.right()))
-            {
-                setOrderedCallContract(contract, action);
-            }
-            else
-            {
-                setOrderedPutContract(contract, action);
-            }
-
             return reqid;
         }
         return -1;

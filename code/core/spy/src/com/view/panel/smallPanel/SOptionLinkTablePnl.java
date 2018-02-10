@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import net.engio.mbassy.listener.Filter;
@@ -52,7 +51,7 @@ public class SOptionLinkTablePnl extends JPanel
     private Dimension parentDimension;
     private SOptionLinkTable optionLinkTable;
 
-    private static  Map<Integer,Contract> conid2ContractMap = new HashMap<>(); // 存放contract id 和contract 的Map
+    private static Map<Integer, Contract> conid2ContractMap = new HashMap<>(); // 存放contract id 和contract 的Map
 
     private Symbol symbol = SDataManager.getInstance().getSymbol();
 
@@ -116,15 +115,6 @@ public class SOptionLinkTablePnl extends JPanel
                 if (selectObj instanceof Integer)
                 {
                     Contract contract = conid2ContractMap.get(selectObj);
-                    // 找到了contractDetail 和 reqid 之后 广播消息
-                    // 校验是否有正在下单的对应的 call或put
-                    Types.Right right = contract.right();
-                    if ((Types.Right.Call.equals(right) && symbol.getOrderedCallContract() != null) ||
-                        (Types.Right.Put.equals(right) && symbol.getOrderedPutContract() != null))
-                    {
-                        JOptionPane.showMessageDialog(this, getConfigValue("tip.have.order", TConst.CONFIG_I18N_FILE));
-                    }
-
                     // Symbol发布数据
                     TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBAReqIDContractDetails(-1,
                                                                                                     contract,
@@ -132,8 +122,7 @@ public class SOptionLinkTablePnl extends JPanel
                                                                                                     0D,
                                                                                                     0D,
                                                                                                     0D));
-                    //  symbol 设置准备进行开仓的contract
-                    symbol.setPrepareOrderContract(contract);
+
                 }
             }
         }
@@ -239,7 +228,7 @@ public class SOptionLinkTablePnl extends JPanel
                 {
                     for (ContractDetails contractDetails : contractDetailsList)
                     {
-                        conid2ContractMap.put(contractDetails.contract().conid(),contractDetails.contract());
+                        conid2ContractMap.put(contractDetails.contract().conid(), contractDetails.contract());
                         symbol.reqRealTimePrice(contractDetails.contract());
                     }
                 }
@@ -263,7 +252,6 @@ public class SOptionLinkTablePnl extends JPanel
     {
         if (msg != null)
         {
-
             TCyTableModel cyTableModel = (TCyTableModel) optionLinkTable.getModel();
             int rowIndex = cyTableModel.getRowIndexByUserObj(msg.contract.conid());
             if (rowIndex >= 0)

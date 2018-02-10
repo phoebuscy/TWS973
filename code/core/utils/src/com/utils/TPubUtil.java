@@ -2,6 +2,7 @@ package com.utils;
 
 import com.answermodel.AnswerObj;
 import com.ib.client.Contract;
+import com.ib.client.Types;
 import java.util.Collection;
 import java.util.Map;
 import static com.utils.TStringUtil.notNullAndEmptyStr;
@@ -131,6 +132,42 @@ public class TPubUtil
             return contract;
         }
         return null;
+    }
+
+    public static boolean isCall(Contract contract)
+    {
+        if(contract != null)
+        {
+            return (Types.Right.Call.equals(contract.right()));
+        }
+        return false;
+    }
+
+    public static boolean isPut(Contract contract)
+    {
+        if(contract != null)
+        {
+            return (Types.Right.Put.equals(contract.right()));
+        }
+        return false;
+    }
+
+    public static boolean isSameRight(Contract one, Contract other)
+    {
+        if(one != null && !Types.Right.None.equals(one.right()) && other != null)
+        {
+            return one.right().equals(other.right());
+        }
+        return false;
+    }
+
+    public static boolean isSameContractID(Contract one, Contract other)
+    {
+        if(one != null && other != null)
+        {
+            return one.conid() == other.conid();
+        }
+        return false;
     }
 
 
