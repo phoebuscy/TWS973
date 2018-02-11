@@ -180,10 +180,10 @@ public class SOperateButtonPnl extends JPanel
     // 如果是新的contact，则查询期权实时价格
     private void queryRealTimePrice(MBAPortFolio msg)
     {
-        if (msg != null)
+        if (msg != null && msg.contract != null)
         {
             Contract openedContract = isCall(msg.contract) ? callBtn.getOpenContract() : putBtn.getOpenContract();
-            if (openedContract != null && !isSameContractID(openedContract, msg.contract))
+            if (openedContract == null || !isSameContractID(openedContract, msg.contract))
             {
                 symbol.reqRealTimePrice(openedContract, msg.contract);
             }
