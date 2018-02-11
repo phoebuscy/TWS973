@@ -1,5 +1,9 @@
 package com.commdata.mbassadorObj;
 
+import java.time.LocalDateTime;
+
+import static com.utils.SUtil.getLocalDateTimeByEpochSecond;
+
 public class MBAHistoricalData
 {
     public int reqId;
@@ -57,4 +61,11 @@ public class MBAHistoricalData
         this.hasGaps = false;
     }
 
+    @Override
+    public String toString()
+    {
+        LocalDateTime dateTime = getLocalDateTimeByEpochSecond(date);
+        return "reqId: " +  reqId + ", Time: " + dateTime.toString() + ", open: " + open + ", high: " + high + ", low: " + low + ", " +
+                "close: " + close;
+    }
 }

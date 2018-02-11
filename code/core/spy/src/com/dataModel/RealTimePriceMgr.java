@@ -9,25 +9,23 @@ import com.ib.client.Contract;
 import com.ib.client.TickType;
 import com.ib.client.Types;
 import com.utils.TMbassadorSingleton;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import javafx.util.Pair;
 import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
-import static com.utils.SUtil.changeToDate;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static com.utils.SUtil.getCurrentAmericaLocalDateTime;
 import static com.utils.SUtil.getLastDayUSAOpenDateTime;
-import static com.utils.SUtil.getLowHighPair;
 import static com.utils.SUtil.getUSADateTimeByEpochSecond;
 import static com.utils.SUtil.getUSAOpenDateTimeByLastDay;
-import static com.utils.SUtil.ifNowIsOpenTime;
 import static com.utils.SUtil.usaChangeToLocalDateTime;
 import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TConst.REALTIMEPRICEMGR_BUS;
@@ -98,8 +96,7 @@ public class RealTimePriceMgr
                 reqid2ContractMap.put(reqid, contract);
                 contractid2ReqCountMap.put(contract.conid(), 1); // contractid 计数 1次
                 contractid2RealPriceMap.put(contract.conid(), new ContractRealTimeInfo(contract));
-            }
-            else
+            } else
             {
                 int reqCount = contractid2ReqCountMap.get(contract.conid());
                 contractid2ReqCountMap.put(contract.conid(), reqCount + 1);
@@ -116,10 +113,10 @@ public class RealTimePriceMgr
             }
 
             // 如果不是开盘时间，则通过历史数据获取当前价格和开盘价格
-          //  if (!ifNowIsOpenTime())
-          //  {
-                getLastOpenDayHistoryData(contract);
-          //  }
+            //  if (!ifNowIsOpenTime())
+            //  {
+            getLastOpenDayHistoryData(contract);
+            //  }
         }
     }
 
@@ -144,11 +141,11 @@ public class RealTimePriceMgr
 
         // 注意：查询历史数据需要用本地时间
         symbol.getHistoricDatasAndProcess(contract,
-                                          locatime,
-                                          duration,
-                                          Types.DurationUnit.DAY,
-                                          barSize,
-                                          getDataFinishProcess(contract));
+                locatime,
+                duration,
+                Types.DurationUnit.DAY,
+                barSize,
+                getDataFinishProcess(contract));
 
     }
 
@@ -182,10 +179,10 @@ public class RealTimePriceMgr
                             TMbassadorSingleton.getInstance(REALTIMEPRICEMGR_BUS).publish(new ContractRealTimeInfo(
                                     contractRealTimeInfo,
                                     TickType.LAST));
-                           // return;
+                            // return;
                         }
                     }
-                    if(closeTime.equals(usaDateTime) && Double.compare(contractRealTimeInfo.yesterdayClose,0D) == 0)
+                    if (closeTime.equals(usaDateTime) && Double.compare(contractRealTimeInfo.yesterdayClose, 0D) == 0)
                     {
                         contractRealTimeInfo.yesterdayClose = historicalData.close;
                     }
@@ -216,8 +213,7 @@ public class RealTimePriceMgr
                         symbol.cancelMktData(reqid);
                         removeContract(contract);
                     }
-                }
-                else if (reqCount > 1)
+                } else if (reqCount > 1)
                 {
                     contractid2ReqCountMap.put(contract.conid(), reqCount - 1);
                 }
@@ -290,7 +286,7 @@ public class RealTimePriceMgr
             contractRealTimeInfo.setPrice(tickType, msg.price);
             // 发布实时价格数据
             TMbassadorSingleton.getInstance(REALTIMEPRICEMGR_BUS).publish(new ContractRealTimeInfo(contractRealTimeInfo,
-                                                                                                   tickType));
+                    tickType));
         }
     }
 

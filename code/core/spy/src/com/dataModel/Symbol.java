@@ -46,6 +46,7 @@ import static com.utils.TConst.AK_CONTRACT_DETAIL_END;
 import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TConst.SYMBOL_BUS;
 import static com.utils.TPubUtil.getAKmsg;
+import static com.utils.TPubUtil.isSameContractID;
 import static com.utils.TPubUtil.notNullAndEmptyCollection;
 import static com.utils.TPubUtil.notNullAndEmptyMap;
 import static com.utils.TPubUtil.nullOrEmptyMap;
@@ -180,7 +181,7 @@ public class Symbol
         {
             realTimePriceMgr.reqRealTimePrice(newContract);
         }
-        if (oldContract != null)
+        if (!isSameContractID(oldContract, newContract))
         {
             realTimePriceMgr.cancelRealTimePrice(oldContract);
         }
@@ -667,7 +668,7 @@ public class Symbol
                                            formatData,
                                            tagValueList);
 
-                HistoricDataStorage historicDataStorage = new HistoricDataStorage(reqId);
+                final HistoricDataStorage historicDataStorage = new HistoricDataStorage(reqId);
                 reqid2HistoricDataStorageMap.put(reqId, historicDataStorage);
 
                 SwingWorker worker = new SwingWorker()
@@ -739,6 +740,8 @@ public class Symbol
             reqid2HistoricDataStorageMap.put(msg.reqId, historicDataStorage);
         }
         historicDataStorage.produce(msg);
+
+        LogMsg.info("HistoricalData: " + msg.toString());
     }
 
     // 接收历史数据消息结束
