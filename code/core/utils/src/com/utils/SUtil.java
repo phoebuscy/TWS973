@@ -5,6 +5,7 @@ import com.commdata.mbassadorObj.MBAHistoricalData;
 
 import com.commdata.mbassadorObj.MBAPortFolio;
 import com.ib.client.Types;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -18,12 +19,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -163,8 +166,7 @@ public class SUtil
         try
         {
             UIManager.setLookAndFeel(sty);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             e.printStackTrace();
         }
@@ -362,20 +364,17 @@ public class SUtil
             if (ifPer)
             {
                 label.setText(getPercentValStr(num));
-            }
-            else
+            } else
             {
                 label.setText(num.toString());
             }
-        }
-        else if (isDoubleNumber(num))
+        } else if (isDoubleNumber(num))
         {
             db = Double.valueOf(num.toString());
             if (ifPer)
             {
                 label.setText(getPercentValStr(num));
-            }
-            else
+            } else
             {
                 label.setText(String.format("%.3f", db));
             }
@@ -394,12 +393,10 @@ public class SUtil
             if (integer > 0 || db > 0.0)
             {
                 label.setForeground(Cst.ReadColor);
-            }
-            else if (integer < 0 || db < 0.0)
+            } else if (integer < 0 || db < 0.0)
             {
                 label.setForeground(Cst.GreenColor);
-            }
-            else
+            } else
             {
                 label.setForeground(Cst.BlackColor);
             }
@@ -466,8 +463,8 @@ public class SUtil
             int d = usaDateTime.getDayOfMonth();
             DayOfWeek dayOfWeek = usaDateTime.getDayOfWeek();
             if ((m == 1 && d == 1) || (m == 1 && d == 16) || (m == 2 && d == 20) || (m == 4 && d == 14) ||
-                (m == 5 && d == 29) || (m == 7 && d == 4) || (m == 9 && d == 4) || (m == 11 && d == 23) ||
-                (m == 12 && d == 25) || SATURDAY.equals(dayOfWeek) || SUNDAY.equals(dayOfWeek))
+                    (m == 5 && d == 29) || (m == 7 && d == 4) || (m == 9 && d == 4) || (m == 11 && d == 23) ||
+                    (m == 12 && d == 25) || SATURDAY.equals(dayOfWeek) || SUNDAY.equals(dayOfWeek))
             {
                 return false;
             }
@@ -524,8 +521,8 @@ public class SUtil
             int endHour = 16;
             endHour = isGanEnJieNext ? 13 : endHour;
             return curUSADateTime.isAfter(LocalDateTime
-                                                  .of(LocalDate.of(year, month, day), LocalTime.of(beginHour, 30))) &&
-                   curUSADateTime.isBefore(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(endHour, 0)));
+                    .of(LocalDate.of(year, month, day), LocalTime.of(beginHour, 30))) &&
+                    curUSADateTime.isBefore(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(endHour, 0)));
         }
         return false;
     }
@@ -715,9 +712,14 @@ public class SUtil
         {
             LocalDateTime openDateTime = getCurrentDayUSAOpenDateTime();
             LocalDateTime closeDateTime = getCurrentDayUSACloseDateTime();
-            return new Pair<>(openDateTime, closeDateTime);
-        }
-        else
+            if (curUSADateTime.isAfter(openDateTime))
+            {
+                return new Pair<>(openDateTime, closeDateTime);
+            } else
+            {
+                return getUSAOpenDateTimeByLastDay(1);
+            }
+        } else
         {
             return getUSAOpenDateTimeByLastDay(1);
         }
@@ -747,8 +749,8 @@ public class SUtil
             int endHour = isGanEnJieNextDay ? 13 : 16;
 
             LocalDate usaLocalDate = LocalDate.of(curUSADateTime.getYear(),
-                                                  curUSADateTime.getMonthValue(),
-                                                  curUSADateTime.getDayOfMonth());
+                    curUSADateTime.getMonthValue(),
+                    curUSADateTime.getDayOfMonth());
 
             LocalDateTime openUsaDateTime = LocalDateTime.of(usaLocalDate, LocalTime.of(beginHour, 30));
             LocalDateTime closeUsaDateTime = LocalDateTime.of(usaLocalDate, LocalTime.of(endHour, 0));
@@ -777,16 +779,13 @@ public class SUtil
         if (seconds <= 10000)
         {
             return Types.BarSize._5_secs;
-        }
-        else if (seconds <= 20000)
+        } else if (seconds <= 20000)
         {
             return Types.BarSize._10_secs;
-        }
-        else if (seconds <= 30000)
+        } else if (seconds <= 30000)
         {
             return Types.BarSize._15_secs;
-        }
-        else
+        } else
         {
             return Types.BarSize._30_secs;
         }
@@ -811,8 +810,7 @@ public class SUtil
             if (isSorted)
             {
                 tmpLst = numberLst;
-            }
-            else
+            } else
             {
                 HashSet set = new HashSet(numberLst);
                 tmpLst.addAll(set);  // 去重复
@@ -847,7 +845,34 @@ public class SUtil
     public static boolean isSpyOpt(MBAPortFolio msg)
     {
         return msg != null && Types.SecType.OPT.equals(msg.contract.secType()) && "SPY".equals(msg.contract.symbol());
-        //  return msg != null;
+    }
+
+    // 获取指定时间的历史数据
+    public static MBAHistoricalData getMBAHistoricalDataByDateTime(LocalDateTime dateTime, final List<MBAHistoricalData>
+            historicalDataList)
+    {
+        if (dateTime != null && notNullAndEmptyCollection(historicalDataList))
+        {
+
+            ZoneOffset zoneOffset = ZoneOffset.UTC;
+            long timeLongVal = dateTime.toEpochSecond(zoneOffset);
+            long minDiff = Long.MAX_VALUE;  // 定义最小差值，赋初值为最大值
+            MBAHistoricalData retHistoricData = null;
+            for (MBAHistoricalData historicalData : historicalDataList)
+            {
+                if (isIntNumeric(historicalData.date))
+                {
+                    long diff = Math.abs(timeLongVal - Integer.valueOf(historicalData.date).longValue());
+                    if (minDiff > diff)
+                    {
+                        retHistoricData = historicalData.clone();
+                        minDiff = diff;
+                    }
+                }
+            }
+            return retHistoricData;
+        }
+        return null;
     }
 
 

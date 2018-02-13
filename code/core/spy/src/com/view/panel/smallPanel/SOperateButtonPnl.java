@@ -12,15 +12,18 @@ import com.utils.GBC;
 import com.utils.TMbassadorSingleton;
 import com.view.panel.smallPanel.button.ChangeOperateButton;
 import com.view.panel.smallPanel.button.OpenCloseButton;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import javax.swing.JPanel;
+
 import net.engio.mbassy.listener.Filter;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.IMessageFilter;
 import net.engio.mbassy.subscription.SubscriptionContext;
+
 import static com.utils.SUtil.getDimension;
 import static com.utils.SUtil.isSpyOpt;
 import static com.utils.TConst.DATAMAAGER_BUS;
@@ -79,11 +82,11 @@ public class SOperateButtonPnl extends JPanel
     {
         setLayout(new GridBagLayout());
         add(callBtn, new GBC(0, 0).setAnchor(GBC.WEST).setIpad(10, 10).setInsets(0, 20, 0, 30).setWeight(1, 10)
-                                  .setFill(GBC.BOTH));
+                .setFill(GBC.BOTH));
         add(callPutChangeBtn, new GBC(1, 0).setAnchor(GBC.WEST).setIpad(10, 10).setInsets(0, 20, 0, 30).setWeight(1, 10)
-                                           .setFill(GBC.BOTH));
+                .setFill(GBC.BOTH));
         add(putBtn, new GBC(2, 0).setAnchor(GBC.WEST).setIpad(10, 10).setInsets(0, 20, 0, 30).setWeight(1, 10)
-                                 .setFill(GBC.BOTH));
+                .setFill(GBC.BOTH));
     }
 
     // 接收双击期权实时信息table的行信息过滤方法
@@ -106,8 +109,7 @@ public class SOperateButtonPnl extends JPanel
             if (isCall(contract))
             {
                 callBtn.setPrepareContract(contract);
-            }
-            else if (isPut(contract))
+            } else if (isPut(contract))
             {
                 putBtn.setPrepareContract(contract);
             }
@@ -123,7 +125,7 @@ public class SOperateButtonPnl extends JPanel
             if (msg != null && msg.contract != null)
             {
                 return isSameContractID(callBtn.getOpenContract(), msg.contract) ||
-                       isSameContractID(putBtn.getOpenContract(), msg.contract);
+                        isSameContractID(putBtn.getOpenContract(), msg.contract);
             }
             return false;
         }
@@ -138,11 +140,10 @@ public class SOperateButtonPnl extends JPanel
             if (callContractPortFolio != null && !callContractPortFolio.isClose()) // 已经平仓的则不处理
             {
                 callContractPortFolio.marketPrice = Double.compare(msg.buyPrice, 0D) == 1 ? msg.buyPrice :
-                                                    msg.lastPrice;
+                        msg.lastPrice;
                 callBtn.setProfit(makeYinorkui(callContractPortFolio), makeZdf(callContractPortFolio));
             }
-        }
-        else if (isSameContractID(putBtn.getOpenContract(), msg.contract))
+        } else if (isSameContractID(putBtn.getOpenContract(), msg.contract))
         {
             if (putContractPortFolio != null && !putContractPortFolio.isClose()) // 已经平仓的则不处理
             {
@@ -168,25 +169,22 @@ public class SOperateButtonPnl extends JPanel
         if (msg.isClose()) // 处理已平仓contract
         {
             processClosedContract(msg);
-        }
-        else // 处理未平仓contract
+            symbol.cancelRealTimePrice(msg.contract);
+        } else // 处理未平仓contract
         {
             processOpenedContract(msg);
+            // 如果是新的contact，则查询期权实时价格
+            queryRealTimePrice(msg);
         }
-        // 如果是新的contact，则查询期权实时价格
-        queryRealTimePrice(msg);
     }
 
     // 如果是新的contact，则查询期权实时价格
     private void queryRealTimePrice(MBAPortFolio msg)
     {
-        if (msg != null && msg.contract != null)
+        if (msg != null)
         {
             Contract openedContract = isCall(msg.contract) ? callBtn.getOpenContract() : putBtn.getOpenContract();
-            if (openedContract == null || !isSameContractID(openedContract, msg.contract))
-            {
-                symbol.reqRealTimePrice(openedContract, msg.contract);
-            }
+            symbol.reqRealTimePrice(openedContract, msg.contract);
         }
     }
 
@@ -209,8 +207,7 @@ public class SOperateButtonPnl extends JPanel
             if (msg.isClose()) // 平仓了的用 realizedPNL
             {
                 return String.format("%.1f", msg.realizedPNL);
-            }
-            else // 未平仓的需要计算
+            } else // 未平仓的需要计算
             {
                 return String.format("%.1f", (msg.marketPrice - (msg.averageCost / 100D)) * msg.position * 100);
             }
@@ -225,14 +222,13 @@ public class SOperateButtonPnl extends JPanel
         if (portFolio != null && portFolio.contract != null)
         {
             if (isCall(portFolio.contract) && callContractPortFolio != null &&
-                isSameContractID(callContractPortFolio.contract, portFolio.contract))
+                    isSameContractID(callContractPortFolio.contract, portFolio.contract))
             {
                 callContractPortFolio = null;
                 callBtn.setOpenState(SOpenState.NO_OPEN);
                 callBtn.init();
-            }
-            else if (isPut(portFolio.contract) && putContractPortFolio != null &&
-                     isSameContractID(putContractPortFolio.contract, portFolio.contract))
+            } else if (isPut(portFolio.contract) && putContractPortFolio != null &&
+                    isSameContractID(putContractPortFolio.contract, portFolio.contract))
             {
                 putContractPortFolio = null;
                 putBtn.setOpenState(SOpenState.NO_OPEN);
@@ -244,22 +240,24 @@ public class SOperateButtonPnl extends JPanel
     // 处理未平仓contract
     private void processOpenedContract(MBAPortFolio portFolio)
     {
-        if (portFolio != null && portFolio.contract != null)
+        if (portFolio != null && !portFolio.isClose() && portFolio.contract != null)
         {
-            if (isCall(portFolio.contract) && callContractPortFolio != null &&
-                isSameContractID(callBtn.getOpenContract(), portFolio.contract))
+            Contract openedCallContract = callBtn.getOpenContract();
+            Contract openedPutContract = putBtn.getOpenContract();
+
+            if (isCall(portFolio.contract) && (openedCallContract == null ||
+                    isSameContractID(openedCallContract, portFolio.contract)))
             {
-                callContractPortFolio = portFolio;
+                callContractPortFolio = portFolio.clone();
                 callBtn.setProfit(makeYinorkui(portFolio), makeZdf(portFolio));
                 callBtn.setOpenContract(portFolio.contract);
                 callBtn.setOpenState(SOpenState.OPENED);
                 callBtn.initOperateCount((int) Math.rint(portFolio.position));
 
-            }
-            else if (isPut(portFolio.contract) && putContractPortFolio != null &&
-                     isSameContractID(putBtn.getOpenContract(), portFolio.contract))
+            } else if (isPut(portFolio.contract) && (openedPutContract == null ||
+                    isSameContractID(openedPutContract, portFolio.contract)))
             {
-                putContractPortFolio = portFolio;
+                putContractPortFolio = portFolio.clone();
                 putBtn.setProfit(makeYinorkui(portFolio), makeZdf(portFolio));
                 putBtn.setOpenContract(portFolio.contract);
                 putBtn.setOpenState(SOpenState.OPENED);

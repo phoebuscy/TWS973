@@ -115,7 +115,7 @@ public class RealTimePriceMgr
             // 如果不是开盘时间，则通过历史数据获取当前价格和开盘价格
             //  if (!ifNowIsOpenTime())
             //  {
-            getLastOpenDayHistoryData(contract);
+           // getLastOpenDayHistoryData(contract);
             //  }
         }
     }
@@ -179,7 +179,6 @@ public class RealTimePriceMgr
                             TMbassadorSingleton.getInstance(REALTIMEPRICEMGR_BUS).publish(new ContractRealTimeInfo(
                                     contractRealTimeInfo,
                                     TickType.LAST));
-                            // return;
                         }
                     }
                     if (closeTime.equals(usaDateTime) && Double.compare(contractRealTimeInfo.yesterdayClose, 0D) == 0)

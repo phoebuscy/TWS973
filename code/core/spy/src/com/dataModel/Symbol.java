@@ -674,7 +674,7 @@ public class Symbol
                 SwingWorker worker = new SwingWorker()
                 {
                     @Override
-                    protected Object doInBackground() throws Exception
+                    protected Object doInBackground()
                     {
                         List<MBAHistoricalData> historicalDataList = historicDataStorage.consume();
                         return historicalDataList;

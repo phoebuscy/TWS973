@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import static com.utils.SUtil.getLocalDateTimeByEpochSecond;
 
-public class MBAHistoricalData
+public class MBAHistoricalData implements Cloneable
 {
     public int reqId;
     public String date;
@@ -67,5 +67,21 @@ public class MBAHistoricalData
         LocalDateTime dateTime = getLocalDateTimeByEpochSecond(date);
         return "reqId: " +  reqId + ", Time: " + dateTime.toString() + ", open: " + open + ", high: " + high + ", low: " + low + ", " +
                 "close: " + close;
+    }
+
+
+    @Override
+    public MBAHistoricalData clone()
+    {
+        try
+        {
+            MBAHistoricalData copy = (MBAHistoricalData) super.clone();
+            return copy;
+        }
+        catch (CloneNotSupportedException e)
+        {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

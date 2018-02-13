@@ -16,7 +16,7 @@ import com.ib.client.Contract;
  * accountName	信息应用于的账户名称。适用于金融顾问子账户信息。
  */
 
-public class MBAPortFolio
+public class MBAPortFolio implements Cloneable
 {
     public Contract contract;
     public double position;
@@ -74,5 +74,19 @@ public class MBAPortFolio
             return contract.conid() == other.contract.conid();
         }
         return false;
+    }
+
+    @Override
+    public MBAPortFolio clone()
+    {
+        try
+        {
+            MBAPortFolio copy = (MBAPortFolio) super.clone();
+            return copy;
+        } catch (CloneNotSupportedException e)
+        {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
