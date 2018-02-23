@@ -96,7 +96,8 @@ public class RealTimePriceMgr
                 reqid2ContractMap.put(reqid, contract);
                 contractid2ReqCountMap.put(contract.conid(), 1); // contractid 计数 1次
                 contractid2RealPriceMap.put(contract.conid(), new ContractRealTimeInfo(contract));
-            } else
+            }
+            else
             {
                 int reqCount = contractid2ReqCountMap.get(contract.conid());
                 contractid2ReqCountMap.put(contract.conid(), reqCount + 1);
@@ -112,11 +113,8 @@ public class RealTimePriceMgr
                 }
             }
 
-            // 如果不是开盘时间，则通过历史数据获取当前价格和开盘价格
-            //  if (!ifNowIsOpenTime())
-            //  {
-           // getLastOpenDayHistoryData(contract);
-            //  }
+            // 不管开盘还是不开盘时间都要通过历史数据获取昨收/今开价格
+            getLastOpenDayHistoryData(contract);
         }
     }
 
@@ -126,6 +124,7 @@ public class RealTimePriceMgr
         // 获取指定天数之前的开盘的本地时间, 参数 lastDay 是表示之前多少天
         Pair<LocalDateTime, LocalDateTime> lastUsaOpenCloseTime = getLastDayUSAOpenDateTime();
         LocalDateTime usaCurDateTime = getCurrentAmericaLocalDateTime();
+
         if (usaCurDateTime.isBefore(lastUsaOpenCloseTime.getKey()))
         {
             lastUsaOpenCloseTime = getUSAOpenDateTimeByLastDay(1);
@@ -161,6 +160,7 @@ public class RealTimePriceMgr
                 LocalDateTime openTime = lastUsaOpenCloseTime.getKey();
                 LocalDateTime closeTime = lastUsaOpenCloseTime.getValue();
                 List<MBAHistoricalData> historicalDataList = (List) param;
+
                 ContractRealTimeInfo contractRealTimeInfo = contractid2RealPriceMap.get(contract.conid());
                 for (MBAHistoricalData historicalData : historicalDataList)
                 {

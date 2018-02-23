@@ -109,7 +109,7 @@ public class SOperateStatisticTablePnl extends JPanel
         {
             if (msg.isClose())
             {
-                symbol.cancelRealTimePrice(msg.contract);
+             //   symbol.cancelRealTimePrice(msg.contract);
             }
             else if (!conid2MBAPortFolioMap.containsKey(msg.contract.conid()))
             {
