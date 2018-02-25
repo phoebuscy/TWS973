@@ -76,6 +76,11 @@
         <pair label-key="enmu.opened" label-value="已开仓"/>
         <pair label-key="enmu.close.ing" label-value="正在平仓"/>
 
+        <pair label-key="auto.buy.sale" label-value="自动化"/>
+        <pair label-key="begin.auto.buy.sale" label-value="开始自动化"/>
+        <pair label-key="stop.auto.buy.sale" label-value="停止自动化"/>
+
+
 
 
 

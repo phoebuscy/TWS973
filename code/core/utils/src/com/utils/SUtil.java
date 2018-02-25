@@ -534,6 +534,27 @@ public class SUtil
         return false;
     }
 
+    // 判断指定时间是否是开盘时间
+    public static boolean isOpenTime(LocalDateTime usaDateTime)
+    {
+        if (isOpenDayOfUSADateTime(usaDateTime))
+        {
+            int year = usaDateTime.getYear();
+            int month = usaDateTime.getMonthValue();
+            int day = usaDateTime.getDayOfMonth();
+            boolean isGanEnJieNext = (month == 11 && day == 24);  // 是否是感恩节次日
+
+            int beginHour = 9;
+            int endHour = 16;
+            endHour = isGanEnJieNext ? 13 : endHour;
+            return usaDateTime.isAfter(LocalDateTime
+                                                  .of(LocalDate.of(year, month, day), LocalTime.of(beginHour, 30))) &&
+                   usaDateTime.isBefore(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(endHour, 0)));
+        }
+        return false;
+
+    }
+
 
     // 获取当天美国开盘时间
     public static LocalDateTime getCurrentDayUSAOpenDateTime()

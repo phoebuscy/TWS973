@@ -63,8 +63,8 @@ public class SSettingDlg extends JFrame
                 String onceMoneyStr = onceMoneyTextField.getText().trim();
                 if (isIntOrDoubleNumber(onceMoneyStr))
                 {
-                    setSpyConfigFile("symbol", "oncemoney", onceMoneyStr);
                     symbol.setOnceOperateMoney(Double.valueOf(onceMoneyStr));
+                    setSpyConfigFile("symbol", "oncemoney", onceMoneyStr);
                     JOptionPane.showMessageDialog(onceMoneyTextField, getConfigValue("saved", TConst.CONFIG_I18N_FILE));
                     setVisible(false);
                 }
@@ -76,14 +76,7 @@ public class SSettingDlg extends JFrame
             }
         });
         JButton cancelBtn = new JButton(getConfigValue("cancel", TConst.CONFIG_I18N_FILE));
-        cancelBtn.addActionListener(new AbstractAction()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                setVisible(false);
-            }
-        });
+        cancelBtn.addActionListener(e -> setVisible(false));
         contentPnl.add(onceMoneyLabel, new GBC(0, 0));
         contentPnl.add(onceMoneyTextField, new GBC(1, 0));
         contentPnl.add(confirmBtn, new GBC(0, 2));

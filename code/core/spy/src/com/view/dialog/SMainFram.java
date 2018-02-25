@@ -5,8 +5,6 @@ import com.utils.TConst;
 import com.utils.TPubUtil;
 import com.view.panel.STopoFramContentPnl;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -80,17 +78,22 @@ public class SMainFram extends JFrame
         JMenuBar bar = new JMenuBar();
         JMenu menuFile = new JMenu(getConfigValue("file", TConst.CONFIG_I18N_FILE));
         JMenuItem itemConfig = new JMenuItem(getConfigValue("config", TConst.CONFIG_I18N_FILE));
+        JMenuItem itemAuto = new JMenuItem(getConfigValue("auto.buy.sale", TConst.CONFIG_I18N_FILE));
         JMenuItem itemExit = new JMenuItem(getConfigValue("exit", TConst.CONFIG_I18N_FILE));
         menuFile.add(itemConfig);
+        menuFile.add(itemAuto);
         menuFile.add(itemExit);
-        itemConfig.addActionListener(new ActionListener()
+        itemConfig.addActionListener(e -> {
+            SSettingDlg settingDlg = new SSettingDlg();
+            settingDlg.setVisible(true);
+        });
+
+        // 自动化操作
+        itemAuto.addActionListener(e ->
         {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                SSettingDlg settingDlg = new SSettingDlg();
-                settingDlg.setVisible(true);
-            }
+            SAutoBuyOrSaleDlg autoBuyOrSale = new SAutoBuyOrSaleDlg();
+            autoBuyOrSale.setVisible(true);
+
         });
         bar.add(menuFile);
 
