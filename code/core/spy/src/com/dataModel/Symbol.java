@@ -358,13 +358,14 @@ public class Symbol
     }
 
 
-    public Map<Double, List<ContractDetails>> getStrike2ContractDtalsLst(String expireDay)
+    // 获取指定日期的期权 及 数量，该期权以当前symbol的价格为中心的期权
+    public Map<Double, List<ContractDetails>> getStrike2ContractDtalsLst(String expireDay, int strickCount)
     {
         Map<Double, List<ContractDetails>> strike2ContractDtalsLst = new HashMap<>();
         double curSymbolRealPrice = getSymbolRealPrice();  // 需要用一个方法获取当前symbol的价格
         List<ContractDetails> ctrdetailLst = day2CtrdMap.get(expireDay);
         // 获取离当前价格最近的 ContractDetails,3对
-        strike2ContractDtalsLst = getNearestPriceCtrDetails(ctrdetailLst, curSymbolRealPrice, 5);
+        strike2ContractDtalsLst = getNearestPriceCtrDetails(ctrdetailLst, curSymbolRealPrice, strickCount);
         if (nullOrEmptyMap(strike2ContractDtalsLst))
         {
             LogApp.error("Symbol getStrike2ContractDtalsLst get contractdetails faile");

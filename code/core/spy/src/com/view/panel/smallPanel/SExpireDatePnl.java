@@ -81,9 +81,12 @@ public class SExpireDatePnl extends JPanel
             if (selecteddate instanceof String)
             {
                 String expireDay = (String) selecteddate;
+
+                // 获取指定数量期权
                 Map<Double, List<ContractDetails>> strike2ContractDtalsLst = SDataManager.getInstance().getSymbol()
                                                                                          .getStrike2ContractDtalsLst(
-                                                                                                 expireDay);
+                                                                                                 expireDay,
+                                                                                                 8);
                 // 发送构造好的当前期权链的消息
                 TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(new MBAOptionChainMap(strike2ContractDtalsLst));
             }
