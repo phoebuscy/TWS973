@@ -25,8 +25,6 @@ import static com.utils.TFileUtil.getConfigValue;
 public class SInitHistoricDataDlg extends JFrame
 {
     private static Logger LogApp = LogManager.getLogger("applog");
-    private DbManager dbManager = DbManager.getInstance();
-
 
     JTextField dateFromField = new JTextField(LocalDate.now().toString(), 10);
     JTextField dateToField = new JTextField(LocalDate.now().toString(), 10);

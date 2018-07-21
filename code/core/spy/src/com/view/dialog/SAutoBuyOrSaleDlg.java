@@ -32,8 +32,6 @@ import static com.utils.TFileUtil.getConfigValue;
 public class SAutoBuyOrSaleDlg extends JFrame
 {
     private static Logger LogApp = LogManager.getLogger("applog");
-    private DbManager dbManager = DbManager.getInstance();
-
     private Caculate caculate = Caculate.getInstance();
     private BuyOrSale buyOrSale = BuyOrSale.getInstance();
 

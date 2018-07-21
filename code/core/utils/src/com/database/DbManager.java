@@ -6,8 +6,11 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import static com.utils.TStringUtil.notNullAndEmptyStr;
 import static com.utils.TStringUtil.trimStr;
 
 public class DbManager
@@ -15,16 +18,19 @@ public class DbManager
     private static Logger LogApp = LogManager.getLogger("applog");
     private final String dbname = "twsdb";
     private String userName = "root";
-    private String password = "try258TRY";
-    private Connection connection;
+    private String password = "@try258TRY";
+    private Connection mysql_connection;  // mysql的 conn
+    private Connection db_connection;     // db的conn
 
-    private static DbManager instance = new DbManager();
+    private static DbManager instance = null;
 
 
     public static void main(String[] args)
     {
-        com.ib.client.Types.BarSize barSize = com.ib.client.Types.BarSize._2_mins;
-        String str = barSize.toString().trim();
+        String userName = "root";
+        String password = "@try258TRY";
+        DbManager dbManager = DbManager.getInstance();
+        dbManager.initDb(userName, password);
 
         int a = 1;
     }
@@ -32,23 +38,40 @@ public class DbManager
 
     private DbManager()
     {
-        connection = connectDB(dbname, userName, password);
+        if(mysql_connection == null)
+        {
+            mysql_connection = connectMySql(userName, password);
+        }
+        if(db_connection == null)
+        {
+            db_connection = connectDB(dbname, userName, password);
+        }
+
     }
 
     public static DbManager getInstance()
     {
+        if (instance == null)
+        {
+            instance = new DbManager();
+        }
         return instance;
     }
 
     public void initDb(String userName, String password)
     {
-        this.userName = userName;
-        this.password = password;
-        Connection mysqlConn = connectMySql(userName, password);
-        createTwsDb(mysqlConn, dbname);  // 如果不存在则创建TwsDb数据库
-        connection = connectDB(dbname, userName, password);
-        createTables(connection);  // 创建各种表
-        createProcedure(connection);
+        if (mysql_connection == null)
+        {
+            mysql_connection = connectMySql(userName, password);
+        }
+        if (mysql_connection != null && notNullAndEmptyStr(userName) && notNullAndEmptyStr(password) && userName.equals(
+                this.userName) && password.equals(this.password))
+        {
+            createTwsDb(mysql_connection, dbname);  // 如果不存在则创建TwsDb数据库
+            db_connection = connectDB(dbname, userName, password);
+            createTables(db_connection);  // 创建各种表
+            createProcedure(db_connection);
+        }
     }
 
     // 创建数据库的各种表
@@ -121,7 +144,7 @@ public class DbManager
     }
 
     /**
-     * 连接到数据库
+     * 连接到Mysql
      */
     private Connection connectMySql(String userName, String password)
     {
@@ -220,11 +243,11 @@ public class DbManager
     public int queryReqID()
     {
         int retid = 0;
-        if (connection != null)
+        if (db_connection != null)
         {
             try
             {
-                CallableStatement cs = connection.prepareCall("{call queryReqIDProc(?)}");
+                CallableStatement cs = db_connection.prepareCall("{call queryReqIDProc(?)}");
                 cs.registerOutParameter(1, Types.INTEGER);
                 cs.execute();
                 retid = cs.getInt(1);
@@ -239,39 +262,41 @@ public class DbManager
     }
 
     /**
-     *   创建历史数据表 ,表的规格如下
+     * 创建历史数据表 ,表的规格如下
      * 5 秒
-     15 秒
-     30 秒
-     1 分钟
-     2 分钟
-     3 分钟
-     5 分钟
-     15 分钟
-     30 分钟
-     1 小时
-     1 天
+     * 15 秒
+     * 30 秒
+     * 1 分钟
+     * 2 分钟
+     * 3 分钟
+     * 5 分钟
+     * 15 分钟
+     * 30 分钟
+     * 1 小时
+     * 1 天
+     *
      * @param connection 数据库连接
      */
     private void createHistoricDataIDTable(Connection connection)
     {
-        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._5_secs);
-        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._15_secs);
-        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._30_secs);
-        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._1_min);
-        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._2_mins);
-        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._3_mins);
-        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._5_mins);
-        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._15_mins);
-        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._30_mins);
-        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._1_hour);
-        createHistoricDataIDTable(connection,com.ib.client.Types.BarSize._1_day);
+        createHistoricDataIDTable(connection, com.ib.client.Types.BarSize._5_secs);
+        createHistoricDataIDTable(connection, com.ib.client.Types.BarSize._15_secs);
+        createHistoricDataIDTable(connection, com.ib.client.Types.BarSize._30_secs);
+        createHistoricDataIDTable(connection, com.ib.client.Types.BarSize._1_min);
+        createHistoricDataIDTable(connection, com.ib.client.Types.BarSize._2_mins);
+        createHistoricDataIDTable(connection, com.ib.client.Types.BarSize._3_mins);
+        createHistoricDataIDTable(connection, com.ib.client.Types.BarSize._5_mins);
+        createHistoricDataIDTable(connection, com.ib.client.Types.BarSize._15_mins);
+        createHistoricDataIDTable(connection, com.ib.client.Types.BarSize._30_mins);
+        createHistoricDataIDTable(connection, com.ib.client.Types.BarSize._1_hour);
+        createHistoricDataIDTable(connection, com.ib.client.Types.BarSize._1_day);
     }
 
     /**
      * 创建历史数据表 ,表的规格如下
+     *
      * @param connection 数据库连接
-     * @param barSize 柱
+     * @param barSize    柱
      */
     private void createHistoricDataIDTable(Connection connection, com.ib.client.Types.BarSize barSize)
     {
@@ -290,7 +315,7 @@ public class DbManager
                 //  stmt.execute(delTableSqlStr);
 
                 String sqlstr2 = "create table queryidtable(reqid int(1));";
-                String sqlstr = "create table" + " " +  tableName + " " + crtHistoricDataFileStatement();
+                String sqlstr = "create table" + " " + tableName + " " + crtHistoricDataFileStatement();
                 int ret = stmt.executeUpdate(sqlstr);
 
                 System.out.println("创建成功！");
@@ -307,14 +332,15 @@ public class DbManager
     /**
      * 创建历史数据的字段
      * public String date;
-     public double open;
-     public double high;
-     public double low;
-     public double close;
-     public int volume;
-     public int count;
-     public double WAP;
-     public boolean hasGaps;
+     * public double open;
+     * public double high;
+     * public double low;
+     * public double close;
+     * public int volume;
+     * public int count;
+     * public double WAP;
+     * public boolean hasGaps;
+     *
      * @return
      */
     private String crtHistoricDataFileStatement()
@@ -336,7 +362,6 @@ public class DbManager
         strBuder.append(");");
         return strBuder.toString();
     }
-
 
 
 }
