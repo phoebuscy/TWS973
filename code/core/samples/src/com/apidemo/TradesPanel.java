@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.apidemo;
@@ -7,6 +7,8 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -23,8 +25,8 @@ import com.ib.controller.ApiController.ITradeReportHandler;
 import com.apidemo.util.HtmlButton;
 
 public class TradesPanel extends JPanel implements ITradeReportHandler {
-	private ArrayList<FullExec> m_trades = new ArrayList<>();
-	private HashMap<String,FullExec> m_map = new HashMap<>();
+	private List<FullExec> m_trades = new ArrayList<>();
+	private Map<String,FullExec> m_map = new HashMap<>();
 	private Model m_model = new Model();
 	
 	TradesPanel() {
@@ -85,7 +87,7 @@ public class TradesPanel extends JPanel implements ITradeReportHandler {
 		}
 
 		@Override public int getColumnCount() {
-			return 8;
+			return 9;
 		}
 		
 		@Override public String getColumnName(int col) {
@@ -98,6 +100,7 @@ public class TradesPanel extends JPanel implements ITradeReportHandler {
 				case 5: return "Description";
 				case 6: return "Price";
 				case 7: return "Commission";
+				case 8: return "Last liquidity";
 				default: return null;
 			}
 		}
@@ -114,6 +117,7 @@ public class TradesPanel extends JPanel implements ITradeReportHandler {
 				case 5: return full.m_contract.description();
 				case 6: return full.m_trade.price();
 				case 7: return full.m_commissionReport != null ? full.m_commissionReport.m_commission : null;
+				case 8: return full.m_trade.lastLiquidity();
 				default: return null;
 			}
 		}

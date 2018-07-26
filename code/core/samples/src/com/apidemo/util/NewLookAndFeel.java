@@ -1,9 +1,9 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.apidemo.util;
 
-import java.awt.Dimension;
+import java.awt.*;
 
 import javax.swing.JComponent;
 import javax.swing.JTable;
@@ -52,7 +52,7 @@ public class NewLookAndFeel extends MetalLookAndFeel {
 	    
 	    @Override public void installUI(JComponent c) {
 	    	super.installUI(c);
-	    	c.setFont( c.getFont().deriveFont(0) );
+	    	c.setFont( c.getFont().deriveFont(Font.PLAIN) );
 	    }
 	}
 	
@@ -76,7 +76,7 @@ public class NewLookAndFeel extends MetalLookAndFeel {
 	    
 	    @Override public void installUI(JComponent c) {
 	    	super.installUI(c);
-	    	c.setFont( c.getFont().deriveFont(0) );
+	    	c.setFont( c.getFont().deriveFont(Font.PLAIN) );
 	    	c.setPreferredSize( new Dimension( c.getPreferredSize().width, 19));
 	    }
 	}

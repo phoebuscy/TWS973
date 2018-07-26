@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.apidemo;
@@ -7,10 +7,7 @@ package com.apidemo;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
@@ -37,11 +34,8 @@ public class AccountInfoPanel extends JPanel implements INewTab, IAccountHandler
 	private JList<String> m_accounts = new JList<>( m_acctList);
 	private String m_selAcct = "";
 	private MarginModel m_marginModel = new MarginModel();
-	private JTable m_marginTable = new Table( m_marginModel);
 	private PortfolioModel m_portfolioModel = new PortfolioModel();
-	private JTable m_portfolioTable = new Table( m_portfolioModel);
 	private MktValModel m_mktValModel = new MktValModel();
-	private JTable m_mktValTable = new Table( m_mktValModel, 2);
 	private JLabel m_lastUpdated = new JLabel();
 
 	AccountInfoPanel() {
@@ -51,9 +45,9 @@ public class AccountInfoPanel extends JPanel implements INewTab, IAccountHandler
 		JScrollPane acctScroll = new JScrollPane( m_accounts);
 		acctScroll.setBorder( new TitledBorder( "Select Account"));
 
-		JScrollPane marginScroll = new JScrollPane( m_marginTable);
-		JScrollPane mvScroll = new JScrollPane( m_mktValTable);
-		JScrollPane portScroll = new JScrollPane( m_portfolioTable);
+		JScrollPane marginScroll = new JScrollPane(new Table(m_marginModel));
+		JScrollPane mvScroll = new JScrollPane(new Table(m_mktValModel, 2));
+		JScrollPane portScroll = new JScrollPane(new Table(m_portfolioModel));
 		
 		NewTabbedPanel tabbedPanel = new NewTabbedPanel();
 		tabbedPanel.addTab( "Balances and Margin", marginScroll);
@@ -130,8 +124,8 @@ public class AccountInfoPanel extends JPanel implements INewTab, IAccountHandler
 	}
 	
 	private static class MarginModel extends AbstractTableModel {
-		HashMap<MarginRowKey,MarginRow> m_map = new HashMap<>();
-		ArrayList<MarginRow> m_list = new ArrayList<>();
+		Map<MarginRowKey,MarginRow> m_map = new HashMap<>();
+		List<MarginRow> m_list = new ArrayList<>();
 
 		void clear() {
 			m_map.clear();
@@ -174,9 +168,18 @@ public class AccountInfoPanel extends JPanel implements INewTab, IAccountHandler
 			}
 			
 			switch( type) {
-				case 0: row.m_val = value; break;
-				case 1: row.m_secVal = value; break;
-				case 2: row.m_comVal = value; break;
+				case 0:
+					row.m_val = value;
+					break;
+				case 1:
+					row.m_secVal = value;
+					break;
+				case 2:
+					row.m_comVal = value;
+					break;
+				default:
+					row.m_val = value;
+					break;
 			}
 			
 			SwingUtilities.invokeLater(this::fireTableDataChanged);
@@ -231,13 +234,7 @@ public class AccountInfoPanel extends JPanel implements INewTab, IAccountHandler
 
 		@Override
 		public boolean equals(Object obj) {
-			if (this == obj) {
-				return true;
-			}
-			if (!(obj instanceof MarginRow)) {
-				return false;
-			}
-			return compareTo((MarginRow) obj) == 0;
+			return this == obj || (obj instanceof MarginRow && compareTo((MarginRow) obj) == 0);
 		}
 
 		@Override
@@ -273,8 +270,8 @@ public class AccountInfoPanel extends JPanel implements INewTab, IAccountHandler
 	}
 	
 	static class MktValModel extends AbstractTableModel {
-		private HashMap<String,MktValRow> m_map = new HashMap<>();
-		private ArrayList<MktValRow> m_list = new ArrayList<>();
+		private Map<String,MktValRow> m_map = new HashMap<>();
+		private List<MktValRow> m_list = new ArrayList<>();
 		
 		void handle(String account, String currency, MarketValueTag mvTag, String value) {
 			String key = account + currency;
@@ -318,37 +315,12 @@ public class AccountInfoPanel extends JPanel implements INewTab, IAccountHandler
 				default: return format( row.get( MarketValueTag.get( col - 2) ), null);
 			}
 		}
-	}
-	
-//	private static class MktValKey {
-//		String m_account;
-//		String m_currency;
-//
-//		public MktValKey(String account, String currency) {
-//			m_account = account;
-//			m_currency = currency;
-//		}
-//
-//		@Override public int hashCode() {
-//			return m_account.hashCode() + m_currency.hashCode();
-//		}
-//
-//		@Override public boolean equals(Object obj) {
-//			if (this == obj) {
-//				return true;
-//			}
-//			if (!(obj instanceof MktValKey)) {
-//				return false;
-//			}
-//			MktValKey other = (MktValKey)obj;
-//			return m_account.equals( other.m_account) && m_currency.equals( other.m_currency);
-//		}
-//	}
+	}	
 	
 	private static class MktValRow {
 		String m_account;
 		String m_currency;
-		HashMap<MarketValueTag,String> m_map = new HashMap<>();
+		Map<MarketValueTag,String> m_map = new HashMap<>();
 		
 		MktValRow(String account, String currency) {
 			m_account = account;
@@ -366,8 +338,8 @@ public class AccountInfoPanel extends JPanel implements INewTab, IAccountHandler
 
 	/** Shared with ExercisePanel. */
 	static class PortfolioModel extends AbstractTableModel {
-		private HashMap<Integer,Position> m_portfolioMap = new HashMap<>();
-		private ArrayList<Integer> m_positions = new ArrayList<>(); // must store key because Position is overwritten
+		private Map<Integer,Position> m_portfolioMap = new HashMap<>();
+		private List<Integer> m_positions = new ArrayList<>(); // must store key because Position is overwritten
 		
 		void clear() {
 			m_positions.clear();

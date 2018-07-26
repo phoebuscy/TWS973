@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.TestJavaClient;
@@ -6,9 +6,8 @@ package com.TestJavaClient;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -30,7 +29,7 @@ public class ScannerDlg extends JDialog {
     public int          m_userSelection = NO_SELECTION;
     public int 			m_id;
     public ScannerSubscription m_subscription = new ScannerSubscription();
-    private ArrayList<TagValue> m_scannerSubscriptionOptions = new ArrayList<>();
+    private List<TagValue> m_scannerSubscriptionOptions = new ArrayList<>();
 
     private JTextField m_Id = new JTextField( "0");
     private JTextField m_numberOfRows = new JTextField("10");
@@ -63,7 +62,7 @@ public class ScannerDlg extends JDialog {
     private static final int COL1_WIDTH = 30;
     private static final int COL2_WIDTH = 100 - COL1_WIDTH;
 
-    ArrayList<TagValue> scannerSubscriptionOptions() {
+    List<TagValue> scannerSubscriptionOptions() {
     	return m_scannerSubscriptionOptions;
     }
     
@@ -146,26 +145,10 @@ public class ScannerDlg extends JDialog {
         buttonPanel.add( m_cancel);
         buttonPanel.add( m_options);
 
-        m_requestParameters.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e) {
-                onRequestParameters();
-            }
-        });
-        m_subscribe.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e) {
-                onSubscribe();
-            }
-        });
-        m_cancel.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e) {
-                onCancelSubscription();
-            }
-        });
-        m_options.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e) {
-                onOptions();
-            }
-        });
+        m_requestParameters.addActionListener(e -> onRequestParameters());
+        m_subscribe.addActionListener(e -> onSubscribe());
+        m_cancel.addActionListener(e -> onCancelSubscription());
+        m_options.addActionListener(e -> onOptions());
 
         // create top panel
         JPanel topPanel = new JPanel();
@@ -198,7 +181,7 @@ public class ScannerDlg extends JDialog {
         }
     }
 
-    void onSubscribe() {
+    private void onSubscribe() {
         m_userSelection = NO_SELECTION;
 
         try {
@@ -237,18 +220,18 @@ public class ScannerDlg extends JDialog {
         setVisible( false);
     }
 
-    void onRequestParameters() {
+    private void onRequestParameters() {
         m_userSelection = REQUEST_PARAMETERS_SELECTION;
         setVisible( false);
     }
 
-    void onCancelSubscription() {
+    private void onCancelSubscription() {
         m_userSelection = CANCEL_SELECTION;
         m_id = Integer.parseInt( m_Id.getText().trim() );
         setVisible( false);
     }
 
-    void onOptions() {
+    private void onOptions() {
         SmartComboRoutingParamsDlg smartComboRoutingParamsDlg = new SmartComboRoutingParamsDlg("Scanner Subscription Options", m_scannerSubscriptionOptions, this);
 
         // show smart combo routing params dialog
@@ -256,9 +239,12 @@ public class ScannerDlg extends JDialog {
         
         m_scannerSubscriptionOptions = smartComboRoutingParamsDlg.smartComboRoutingParams();
     }
-    
-    public void show() {
-        m_userSelection = NO_SELECTION;
-        super.show();
+
+    @Override
+    public void setVisible(final boolean b) {
+        if (b) {
+            m_userSelection = NO_SELECTION;
+        }
+        super.setVisible(b);
     }
 }

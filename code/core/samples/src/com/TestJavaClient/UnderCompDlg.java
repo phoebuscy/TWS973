@@ -108,7 +108,7 @@ public class UnderCompDlg extends JDialog {
 			setVisible( false);
 		}
 		catch ( Exception e) {
-			Main.inform( this, "Error - " + e);
+			Main.inform(this, "Error - " + e);
 		}
 	}
 

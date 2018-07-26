@@ -1,8 +1,9 @@
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+ * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
+
 package com.TestJavaClient;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -21,15 +22,15 @@ public class SmartComponentsParamsReqDlg extends JDialog {
 	final private JTextField m_BBOExchangeFld = new JTextField();
 
 
-	public SmartComponentsParamsReqDlg(SampleFrame owner) {
+	SmartComponentsParamsReqDlg(SampleFrame owner) {
 		super(owner);
 		
 		VerticalPanel paramsPanel = new VerticalPanel();
 		JButton ok = new JButton("OK");
 		JButton cancel = new JButton("Cancel");
 		
-		ok.addActionListener(new ActionListener() { @Override public void actionPerformed(ActionEvent e) { onOK(); } });
-		cancel.addActionListener(new ActionListener() { @Override public void actionPerformed(ActionEvent e) { onCancel(); } });
+		ok.addActionListener(e -> onOK());
+		cancel.addActionListener(e -> onCancel());
 				
 		paramsPanel.add("Req Id", m_idFld);			
 		paramsPanel.add("BBO Exchange", m_BBOExchangeFld);			
@@ -58,7 +59,7 @@ public class SmartComponentsParamsReqDlg extends JDialog {
 		return m_isOk;
 	}
 	
-	public String BBOExchange() {
+	String BBOExchange() {
 		return m_BBOExchange;
 	}
 	

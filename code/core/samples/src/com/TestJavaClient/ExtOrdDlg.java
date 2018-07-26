@@ -1,12 +1,10 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.TestJavaClient;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -18,6 +16,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import com.ib.client.Order;
+
+import com.apidemo.util.UpperField;
 
 public class ExtOrdDlg extends JDialog {
     public Order 		m_order = new Order();
@@ -100,11 +100,13 @@ public class ExtOrdDlg extends JDialog {
 	private JCheckBox 	m_solicited = new JCheckBox("Solicited", false);
 	private JCheckBox 	m_randomizeSize = new JCheckBox("Randomize size", false);
 	private JCheckBox 	m_randomizePrice = new JCheckBox("Randomize price", false);
+	private UpperField  m_mifid2DecisionMaker = new UpperField();
+	private UpperField  m_mifid2DecisionAlgo = new UpperField();
+    private UpperField  m_mifid2ExecutionTrader = new UpperField();
+    private UpperField  m_mifid2ExecutionAlgo = new UpperField();
+    private JCheckBox   m_dontUseAutoPriceForHedge = new JCheckBox("Don't use auto price for hedge", false);
 
-    private JButton 	m_ok = new JButton( "OK");
-    private JButton 	m_cancel = new JButton( "Cancel");
-
-    public ExtOrdDlg( OrderDlg owner) {
+    ExtOrdDlg( OrderDlg owner) {
         super( owner, true);
 
         setTitle( "Sample");
@@ -260,23 +262,29 @@ public class ExtOrdDlg extends JDialog {
         extOrderDetailsPanel.add(m_solicited);
         extOrderDetailsPanel.add(m_randomizeSize);
         extOrderDetailsPanel.add(m_randomizePrice);
+        
+        extOrderDetailsPanel.add(new JLabel("MiFID II Decision Maker"));
+        extOrderDetailsPanel.add(m_mifid2DecisionMaker);
+        extOrderDetailsPanel.add(new JLabel("MiFID II Decision Algo"));
+        extOrderDetailsPanel.add(m_mifid2DecisionAlgo);
+
+        extOrderDetailsPanel.add(new JLabel("MiFID II Execution Trader"));
+        extOrderDetailsPanel.add(m_mifid2ExecutionTrader);
+        extOrderDetailsPanel.add(new JLabel("MiFID II Execution Algo"));
+        extOrderDetailsPanel.add(m_mifid2ExecutionAlgo);
+        
+        extOrderDetailsPanel.add(m_dontUseAutoPriceForHedge);
 
         // create button panel
         JPanel buttonPanel = new JPanel();
-        buttonPanel.add( m_ok);
-        buttonPanel.add( m_cancel);
+        JButton btnOk = new JButton("OK");
+        buttonPanel.add(btnOk);
+        JButton btnCancel = new JButton("Cancel");
+        buttonPanel.add(btnCancel);
 
         // create action listeners
-        m_ok.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e) {
-                onOk();
-            }
-        });
-        m_cancel.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e) {
-                onCancel();
-            }
-        });
+        btnOk.addActionListener(e -> onOk());
+        btnCancel.addActionListener(e -> onCancel());
 
         // create dlg box
         getContentPane().add( extOrderDetailsPanel, BorderLayout.CENTER);
@@ -369,6 +377,12 @@ public class ExtOrdDlg extends JDialog {
             
             m_order.randomizePrice(m_randomizePrice.isSelected());
             m_order.randomizeSize(m_randomizeSize.isSelected());
+            
+            m_order.mifid2DecisionMaker(m_mifid2DecisionMaker.getText());
+            m_order.mifid2DecisionAlgo(m_mifid2DecisionAlgo.getText());
+            m_order.mifid2ExecutionTrader(m_mifid2ExecutionTrader.getText());
+            m_order.mifid2ExecutionAlgo(m_mifid2ExecutionAlgo.getText());
+            m_order.dontUseAutoPriceForHedge(m_dontUseAutoPriceForHedge.isSelected());
         }
         catch( Exception e) {
             Main.inform( this, "Error - " + e);

@@ -1,3 +1,6 @@
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+ * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
+
 package com.samples.testbed;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -25,43 +28,99 @@ public class Testbed {
 		final EClientSocket m_client = wrapper.getClient();
 		final EReaderSignal m_signal = wrapper.getSignal();
 		//! [connect]
-		m_client.eConnect("127.0.0.1", 7497, 0);
+		m_client.eConnect("127.0.0.1", 7497, 2);
 		//! [connect]
 		//! [ereader]
-		final EReader reader = new EReader(m_client, m_signal);        
-                reader.start();
-                new Thread() {
-                    public void run() {
-                        while (m_client.isConnected()) {
-                            m_signal.waitForSignal();
-                            try {
-                                reader.processMsgs();
-                            } catch (Exception e) {
-                                System.out.println("Exception: "+e.getMessage());
-                            }
-                        }
-                    }
-                }.start();
-                //! [ereader]
-                Thread.sleep(1000);
-               
-                //orderOperations(wrapper.getClient(), wrapper.getCurrentOrderId());
-                //contractOperations(wrapper.getClient());
-                //hedgeSample(wrapper.getClient(), wrapper.getCurrentOrderId());
-                //testAlgoSamples(wrapper.getClient(), wrapper.getCurrentOrderId());
-                //bracketSample(wrapper.getClient(), wrapper.getCurrentOrderId());
-                //bulletins(wrapper.getClient());
-                //reutersFundamentals(wrapper.getClient());
-                //marketDataType(wrapper.getClient());
-                //historicalDataRequests(wrapper.getClient());
-                //accountOperations(wrapper.getClient());
-                //newsOperations(wrapper.getClient());
-                marketDepthOperations(wrapper.getClient());
-                
-                Thread.sleep(100000);
-                m_client.eDisconnect();
+		final EReader reader = new EReader(m_client, m_signal);   
+		
+		reader.start();
+		//An additional thread is created in this program design to empty the messaging queue
+		new Thread(() -> {
+		    while (m_client.isConnected()) {
+		        m_signal.waitForSignal();
+		        try {
+		            reader.processMsgs();
+		        } catch (Exception e) {
+		            System.out.println("Exception: "+e.getMessage());
+		        }
+		    }
+		}).start();
+		//! [ereader]
+		// A pause to give the application time to establish the connection
+		// In a production application, it would be best to wait for callbacks to confirm the connection is complete
+		Thread.sleep(1000);
+
+		//tickByTickOperations(wrapper.getClient());
+		//tickDataOperations(wrapper.getClient());
+		//tickOptionComputations(wrapper.getClient());
+		//orderOperations(wrapper.getClient(), wrapper.getCurrentOrderId());
+		//contractOperations(wrapper.getClient());
+		//hedgeSample(wrapper.getClient(), wrapper.getCurrentOrderId());
+		testAlgoSamples(wrapper.getClient(), wrapper.getCurrentOrderId());
+		//bracketSample(wrapper.getClient(), wrapper.getCurrentOrderId());
+		//bulletins(wrapper.getClient());
+		//reutersFundamentals(wrapper.getClient());
+		//marketDataType(wrapper.getClient());
+		//historicalDataRequests(wrapper.getClient());
+		//accountOperations(wrapper.getClient());
+		//newsOperations(wrapper.getClient());
+		//marketDepthOperations(wrapper.getClient());
+		//rerouteCFDOperations(wrapper.getClient());
+		//marketRuleOperations(wrapper.getClient());
+		//tickDataOperations(wrapper.getClient());
+		//pnlSingle(wrapper.getClient());
+		//continuousFuturesOperations(wrapper.getClient());
+		//pnlSingle(wrapper.getClient());
+		//histogram(wrapper.getClient());
+		whatIfSamples(wrapper.getClient(), wrapper.getCurrentOrderId());
+
+		Thread.sleep(100000);
+		m_client.eDisconnect();
+	}
+	
+	private static void histogram(EClientSocket client) {
+	    client.reqHistogramData(4002, ContractSamples.USStock(), false, "3 days");
+        
+        try {
+            Thread.sleep(60000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
-	private static void orderOperations(EClientSocket client, int nextOrderId) throws InterruptedException {
+        
+        client.cancelHistogramData(4002);
+	}
+	
+	private static void historicalTicks(EClientSocket client) {
+		//! [reqhistoricalticks]
+        client.reqHistoricalTicks(18001, ContractSamples.USStockAtSmart(), "20170712 21:39:33", null, 10, "TRADES", 1, true, null);
+        client.reqHistoricalTicks(18002, ContractSamples.USStockAtSmart(), "20170712 21:39:33", null, 10, "BID_ASK", 1, true, null);
+        client.reqHistoricalTicks(18003, ContractSamples.USStockAtSmart(), "20170712 21:39:33", null, 10, "MIDPOINT", 1, true, null);
+		//! [reqhistoricalticks]
+	}
+
+	private static void pnl(EClientSocket client) throws InterruptedException {
+		//! [reqpnl]
+        client.reqPnL(17001, "DUD00029", "");
+		//! [reqpnl]
+        Thread.sleep(1000);
+		//! [cancelpnl]
+        client.cancelPnL(17001);        
+		//! [cancelpnl]
+    }
+	
+    private static void pnlSingle(EClientSocket client) throws InterruptedException
+    {
+		//! [reqpnlsingle]
+        client.reqPnLSingle(17001, "DUD00029", "", 268084);
+		//! [reqpnlsingle]
+        Thread.sleep(1000);
+		//! [cancelpnlsingle]
+        client.cancelPnLSingle(17001);
+		//! [cancelpnlsingle]
+    }
+
+    private static void orderOperations(EClientSocket client, int nextOrderId) throws InterruptedException {
 		
 		/*** Requesting the next valid id ***/
 		//! [reqids]
@@ -116,10 +175,16 @@ public class Testbed {
         //! [faorderprofile]
         Order faOrderProfile = OrderSamples.LimitOrder("BUY", 200, 100);
         faOrderProfile.faProfile("Percent_60_40");
-        int cancelID = nextOrderId;
 		client.placeOrder(nextOrderId++, ContractSamples.EuropeanStock(), faOrderProfile);
         //! [faorderprofile]
         
+		//! [modelorder]
+        Order modelOrder = OrderSamples.LimitOrder("BUY", 200, 100);
+		modelOrder.account("DF12345");  // master FA account number
+		modelOrder.modelCode("Technology"); // model for tech stocks first created in TWS
+		client.placeOrder(nextOrderId++, ContractSamples.USStock(), modelOrder);
+        //! [modelorder]
+		
 		//client.placeOrder(nextOrderId++, ContractSamples.USStock(), OrderSamples.PeggedToMarket("BUY", 10, 0.01));
 		//client.placeOrder(nextOrderId++, ContractSamples.EurGbpFx(), OrderSamples.MarketOrder("BUY", 10));
         //client.placeOrder(nextOrderId++, ContractSamples.USStock(), OrderSamples.Discretionary("SELL", 1, 45, 0.5));
@@ -128,6 +193,7 @@ public class Testbed {
         client.reqExecutions(10001, new ExecutionFilter());
         //! [reqexecutions]
 
+		int cancelID = nextOrderId -1;
 		//! [cancelorder]
 		client.cancelOrder(cancelID);
 		//! [cancelorder]
@@ -173,16 +239,19 @@ public class Testbed {
 		client.reqMktData(1003, ContractSamples.FutureComboContract(), "", true, false, null);
 		//! [reqmktdata_snapshot]
 
-		//! [regulatorysnapshot]
+		/* 
+		//! [regulatorysnapshot] 
 		// Each regulatory snapshot request incurs a 0.01 USD fee
-		// client.reqMktData(1014, ContractSamples.USStock(), "", false, true, null);
+		client.reqMktData(1014, ContractSamples.USStock(), "", false, true, null);
 		//! [regulatorysnapshot]
-
+		*/
+		
 		//! [reqmktdata_genticks]
 		//Requesting RTVolume (Time & Sales), shortable and Fundamental Ratios generic ticks
 		client.reqMktData(1004, ContractSamples.USStock(), "233,236,258", false, false, null);
 		//! [reqmktdata_genticks]
 		//! [reqmktdata_contractnews]
+		// Without the API news subscription this will generate an "invalid tick type" error
 		client.reqMktData(1005, ContractSamples.USStock(), "mdoff,292:BZ", false, false, null);
 		client.reqMktData(1006, ContractSamples.USStock(), "mdoff,292:BT", false, false, null);
 		client.reqMktData(1007, ContractSamples.USStock(), "mdoff,292:FLY", false, false, null);
@@ -198,14 +267,45 @@ public class Testbed {
         //Requesting data for an option contract will return the greek values
         client.reqMktData(1002, ContractSamples.OptionWithLocalSymbol(), "", false, false, null);
         //! [reqoptiondatagenticks]
-		
+		//! [reqfuturesopeninterest]
+        //Requesting data for a futures contract will return the futures open interest
+        client.reqMktData(1014, ContractSamples.SimpleFuture(), "mdoff,588", false, false, null);
+		//! [reqfuturesopeninterest]
+
+		//! [reqmktdata_preopenbidask]
+        //Requesting data for a futures contract will return the pre-open bid/ask flag
+        client.reqMktData(1015, ContractSamples.SimpleFuture(), "", false, false, null);
+        //! [reqmktData_preopenbidask]
+
+        //! [reqavgoptvolume]
+        //Requesting data for a stock will return the average option volume
+        client.reqMktData(1016, ContractSamples.USStockAtSmart(), "mdoff,105", false, false, null);
+        //! [reqavgoptvolume]
+        
 		Thread.sleep(10000);
 		//! [cancelmktdata]
 		client.cancelMktData(1001);
 		client.cancelMktData(1002);
 		client.cancelMktData(1003);
+		client.cancelMktData(1014);
+		client.cancelMktData(1015);
+		client.cancelMktData(1016);
 		//! [cancelmktdata]
 		
+	}
+	
+	private static void tickOptionComputations(EClientSocket client) throws InterruptedException {
+		
+		/*** Requesting real time market data ***/
+		//! [reqmktdata]
+		client.reqMktData(2001, ContractSamples.FuturesOnOptions(), "", false, false, null);
+		//! [reqmktdata]
+		
+		Thread.sleep(10000);
+		
+		//! [cancelmktdata]
+		client.cancelMktData(2001);
+		//! [cancelmktdata]
 	}
 	
 	private static void historicalDataRequests(EClientSocket client) throws InterruptedException {
@@ -216,26 +316,30 @@ public class Testbed {
 		client.reqHeadTimestamp(4003, ContractSamples.USStock(), "TRADES", 1, 1);
 		//! [reqHeadTimeStamp]
 
+		//! [cancelHeadTimestamp]
+		client.cancelHeadTimestamp(4003);
+		//! [cancelHeadTimestamp]
+		
 		//! [reqhistoricaldata]
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.MONTH, -6);
 		SimpleDateFormat form = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
 		String formatted = form.format(cal.getTime());
-		client.reqHistoricalData(4001, ContractSamples.EurGbpFx(), formatted, "1 M", "1 day", "MIDPOINT", 1, 1, null);
-		client.reqHistoricalData(4002, ContractSamples.EuropeanStock(), formatted, "10 D", "1 min", "TRADES", 1, 1, null);
+		client.reqHistoricalData(4001, ContractSamples.EurGbpFx(), formatted, "1 M", "1 day", "MIDPOINT", 1, 1, false, null);
+		client.reqHistoricalData(4002, ContractSamples.EuropeanStock(), formatted, "10 D", "1 min", "TRADES", 1, 1, false, null);
 		Thread.sleep(2000);
 		/*** Canceling historical data requests ***/
 		client.cancelHistoricalData(4001);
         client.cancelHistoricalData(4002);
 		//! [reqhistoricaldata]
-		
+		return;
 		//! [reqHistogramData]
-		client.reqHistogramData(4004, ContractSamples.USStock(), false, "3 days");
+		/*client.reqHistogramData(4004, ContractSamples.USStock(), false, "3 days");
         //! [reqHistogramData]
 		Thread.sleep(5);
 		
 		//! [cancelHistogramData]
-        client.cancelHistogramData(4004);
+        client.cancelHistogramData(4004);*/
 		//! [cancelHistogramData]
 	}
 	
@@ -364,14 +468,14 @@ public class Testbed {
 		
 		/*** Requesting news article ***/
 		//! [reqNewsArticle]
-		client.reqNewsArticle(10002, "BZ", "BZ$04507322");
+		client.reqNewsArticle(10002, "BZ", "BZ$04507322", null);
 		//! [reqNewsArticle]
 
 		Thread.sleep(5000);
 
 		/*** Requesting historical news ***/
 		//! [reqHistoricalNews]
-		client.reqHistoricalNews(10003, 8314, "BZ+FLY", "", "", 10);
+		client.reqHistoricalNews(10003, 8314, "BZ+FLY", "", "", 10, null);
 		//! [reqHistoricalNews]
 	}
 
@@ -407,6 +511,8 @@ public class Testbed {
 		client.reqContractDetails(210, ContractSamples.OptionForQuery());
 		client.reqContractDetails(211, ContractSamples.EurGbpFx());
 		client.reqContractDetails(212, ContractSamples.Bond());
+		client.reqContractDetails(213, ContractSamples.FuturesOnOptions());
+		client.reqContractDetails(214, ContractSamples.SimpleFuture());
 		//! [reqcontractdetails]
 
 		//! [reqmatchingsymbols]
@@ -442,6 +548,14 @@ public class Testbed {
 	
 	private static void testAlgoSamples(EClientSocket client, int nextOrderId) throws InterruptedException {
 		
+		//! [scale_order]
+		Order scaleOrder = OrderSamples.RelativePeggedToPrimary("BUY",  70000,  189,  0.01);
+		AvailableAlgoParams.FillScaleParams(scaleOrder, 2000, 500, true, .02, 189.00, 3600, 2.00, true, 10, 40);
+		client.placeOrder(nextOrderId++, ContractSamples.USStockAtSmart(), scaleOrder);
+		//! [scale_order]
+
+		Thread.sleep(500);
+
 		//! [algo_base_order]
 		Order baseOrder = OrderSamples.LimitOrder("BUY", 1000, 1);
 		//! [algo_base_order]
@@ -524,6 +638,16 @@ public class Testbed {
 		client.placeOrder(nextOrderId++, ContractSamples.USStockAtSmart(), baseOrder);
 		//! [pctvoltm]
                 
+		//! [jeff_vwap_algo]
+		AvailableAlgoParams.FillJefferiesVWAPParams(baseOrder, "10:00:00 EST", "16:00:00 EST", 10, 10, "Exclude_Both", 130, 135, 1, 10, "Patience", false, "Midpoint");
+		client.placeOrder(nextOrderId++, ContractSamples.JefferiesContract(), baseOrder);
+		//! [jeff_vwap_algo]
+
+		//! [csfb_inline_algo]
+		AvailableAlgoParams.FillCSFBInlineParams(baseOrder, "10:00:00 EST", "16:00:00 EST", "Patient", 10, 20, 100, "Default", false, 40, 100, 100, 35 );
+		client.placeOrder(nextOrderId++, ContractSamples.CSFBContract(), baseOrder);
+		//! [csfb_inline_algo]
+
 	}
 	
 	private static void bracketSample(EClientSocket client, int nextOrderId) {
@@ -555,17 +679,17 @@ public class Testbed {
 	private static void reutersFundamentals(EClientSocket client) throws InterruptedException {
 		
 		//! [reqfundamentaldata]
-		client.reqFundamentalData(8001, ContractSamples.USStock(), "ReportsFinSummary");
+		client.reqFundamentalData(8001, ContractSamples.USStock(), "ReportsFinSummary", null);
 		//! [reqfundamentaldata]
 		
 		Thread.sleep(2000);
 		
 		//! [fundamentalexamples]
-		client.reqFundamentalData(8002, ContractSamples.USStock(), "ReportSnapshot"); //for company overview
-		client.reqFundamentalData(8003, ContractSamples.USStock(), "ReportRatios"); //for financial ratios
-		client.reqFundamentalData(8004, ContractSamples.USStock(), "ReportsFinStatements"); //for financial statements
-		client.reqFundamentalData(8005, ContractSamples.USStock(), "RESC"); //for analyst estimates
-		client.reqFundamentalData(8006, ContractSamples.USStock(), "CalendarReport"); //for company calendar
+		client.reqFundamentalData(8002, ContractSamples.USStock(), "ReportSnapshot", null); //for company overview
+		client.reqFundamentalData(8003, ContractSamples.USStock(), "ReportRatios", null); //for financial ratios
+		client.reqFundamentalData(8004, ContractSamples.USStock(), "ReportsFinStatements", null); //for financial statements
+		client.reqFundamentalData(8005, ContractSamples.USStock(), "RESC", null); //for analyst estimates
+		client.reqFundamentalData(8006, ContractSamples.USStock(), "CalendarReport", null); //for company calendar
 		//! [fundamentalexamples]
 		
 		//! [cancelfundamentaldata]
@@ -612,19 +736,19 @@ public class Testbed {
 		
 		/*** Replacing FA information - Fill in with the appropriate XML string. ***/
 		//! [replacefaonegroup]
-		client.replaceFA(FADataType.GROUPS.ordinal(), FAMethodSamples.FaOneGroup);
+		client.replaceFA(FADataType.GROUPS.ordinal(), FAMethodSamples.FA_ONE_GROUP);
 		//! [replacefaonegroup]
 		
 		//! [replacefatwogroups]
-		client.replaceFA(FADataType.GROUPS.ordinal(), FAMethodSamples.FaTwoGroups);
+		client.replaceFA(FADataType.GROUPS.ordinal(), FAMethodSamples.FA_TWO_GROUPS);
 		//! [replacefatwogroups]
 		
 		//! [replacefaoneprofile]
-		client.replaceFA(FADataType.PROFILES.ordinal(), FAMethodSamples.FaOneProfile);
+		client.replaceFA(FADataType.PROFILES.ordinal(), FAMethodSamples.FA_ONE_PROFILE);
 		//! [replacefaoneprofile]
 		
 		//! [replacefatwoprofiles]
-		client.replaceFA(FADataType.PROFILES.ordinal(), FAMethodSamples.FaTwoProfiles);
+		client.replaceFA(FADataType.PROFILES.ordinal(), FAMethodSamples.FA_TWO_PROFILES);
 		//! [replacefatwoprofiles]
 		
                 //! [reqSoftDollarTiers]
@@ -674,14 +798,14 @@ public class Testbed {
 		//! [reqsecdefoptparams]
 		
 		//! [calculateimpliedvolatility]
-		client.calculateImpliedVolatility(5001, ContractSamples.OptionAtBOX(), 5, 85);
+		client.calculateImpliedVolatility(5001, ContractSamples.OptionAtBOX(), 5, 85, null);
 		//! [calculateimpliedvolatility]
 		
 		//** Canceling implied volatility ***
 		client.cancelCalculateImpliedVolatility(5001);
 		
 		//! [calculateoptionprice]
-		client.calculateOptionPrice(5002, ContractSamples.OptionAtBOX(), 0.22, 85);
+		client.calculateOptionPrice(5002, ContractSamples.OptionAtBOX(), 0.22, 85, null);
 		//! [calculateoptionprice]
 		
 		//** Canceling option's price calculation ***
@@ -692,5 +816,99 @@ public class Testbed {
 		client.exerciseOptions(5003, ContractSamples.OptionWithTradingClass(), 1, 1, "", 1);
 		//! [exercise_options]
 	}
+
+	private static void rerouteCFDOperations(EClientSocket client) throws InterruptedException {
+
+		//! [reqmktdatacfd]
+		client.reqMktData(16001, ContractSamples.USStockCFD(), "", false, false, null);
+		Thread.sleep(1000);
+		client.reqMktData(16002, ContractSamples.EuropeanStockCFD(), "", false, false, null);
+		Thread.sleep(1000);
+		client.reqMktData(16003, ContractSamples.CashCFD(), "", false, false, null);
+		Thread.sleep(1000);
+		//! [reqmktdatacfd]
+
+		//! [reqmktdepthcfd]
+		client.reqMktDepth(16004, ContractSamples.USStockCFD(), 10, null);
+		Thread.sleep(1000);
+		client.reqMktDepth(16005, ContractSamples.EuropeanStockCFD(), 10, null);
+		Thread.sleep(1000);
+		client.reqMktDepth(16006, ContractSamples.CashCFD(), 10, null);
+		Thread.sleep(1000);
+		//! [reqmktdepthcfd]
+	}
+
+	private static void marketRuleOperations(EClientSocket client) throws InterruptedException {
+		client.reqContractDetails(17001, ContractSamples.USStock());
+		client.reqContractDetails(17002, ContractSamples.Bond());
+
+		Thread.sleep(2000);
+		
+		//! [reqmarketrule]
+		client.reqMarketRule(26);
+		client.reqMarketRule(240);
+		//! [reqmarketrule]
+	}
+
+	private static void continuousFuturesOperations(EClientSocket client) throws InterruptedException {
+
+		/*** Requesting continuous futures contract details ***/
+		client.reqContractDetails(18001, ContractSamples.ContFut());
+
+		/*** Requesting historical data for continuous futures ***/
+		//! [reqhistoricaldatacontfut]
+		Calendar cal = Calendar.getInstance();
+		SimpleDateFormat form = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+		String formatted = form.format(cal.getTime());
+		client.reqHistoricalData(18002, ContractSamples.ContFut(), formatted, "1 Y", "1 month", "TRADES", 0, 1, false, null);
+		Thread.sleep(10000);
+		/*** Canceling historical data request for continuous futures ***/
+		client.cancelHistoricalData(18002);
+		//! [reqhistoricaldatacontfut]
+	}
 	
+	private static void tickByTickOperations(EClientSocket client) throws InterruptedException {
+		
+		/*** Requesting tick-by-tick data (only refresh) ***/
+		//! [reqtickbytick]
+		client.reqTickByTickData(19001, ContractSamples.USStockAtSmart(), "Last", 0, false);
+		client.reqTickByTickData(19002, ContractSamples.USStockAtSmart(), "AllLast", 0, false);
+		client.reqTickByTickData(19003, ContractSamples.USStockAtSmart(), "BidAsk", 0, true);
+		client.reqTickByTickData(19004, ContractSamples.EurGbpFx(), "MidPoint", 0, false);
+		//! [reqtickbytick]
+
+		Thread.sleep(10000);
+
+		//! [canceltickbytick]
+		client.cancelTickByTickData(19001);
+		client.cancelTickByTickData(19002);
+		client.cancelTickByTickData(19003);
+		client.cancelTickByTickData(19004);
+		//! [canceltickbytick]
+		
+		/*** Requesting tick-by-tick data (refresh + historical ticks) ***/
+		//! [reqtickbytick]
+		client.reqTickByTickData(19005, ContractSamples.EuropeanStock(), "Last", 10, false);
+		client.reqTickByTickData(19006, ContractSamples.EuropeanStock(), "AllLast", 10, false);
+		client.reqTickByTickData(19007, ContractSamples.EuropeanStock(), "BidAsk", 10, false);
+		client.reqTickByTickData(19008, ContractSamples.EurGbpFx(), "MidPoint", 10, true);
+		//! [reqtickbytick]
+
+		Thread.sleep(10000);
+
+		//! [canceltickbytick]
+		client.cancelTickByTickData(19005);
+		client.cancelTickByTickData(19006);
+		client.cancelTickByTickData(19007);
+		client.cancelTickByTickData(19008);
+		//! [canceltickbytick]
+	}
+	
+	private static void whatIfSamples(EClientSocket client, int nextOrderId) throws InterruptedException {
+		
+		/*** Placing what-if order ***/
+		//! [whatiforder]
+		client.placeOrder(nextOrderId++, ContractSamples.USStockAtSmart(), OrderSamples.WhatIfLimitOrder("BUY", 200, 120));
+		//! [whatiforder]
+	}
 }

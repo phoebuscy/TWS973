@@ -430,6 +430,7 @@ public class Symbol
                                        whatToShow,
                                        useRTH,
                                        formatData,
+                                       false,
                                        tagValueList);
             return reqId;
         }
@@ -522,6 +523,7 @@ public class Symbol
                                                    whatToShow,
                                                    useRTH,
                                                    formatData,
+                                                   false,
                                                    tagValueList);
                     }
                 }
@@ -597,6 +599,7 @@ public class Symbol
                                        whatToShow,
                                        useRTH,
                                        formatData,
+                                       false,
                                        tagValueList);
             return reqid;
         }
@@ -667,6 +670,7 @@ public class Symbol
                                            whatToShow,
                                            useRTH,
                                            formatData,
+                                           false,
                                            tagValueList);
 
                 final HistoricDataStorage historicDataStorage = new HistoricDataStorage(reqId);

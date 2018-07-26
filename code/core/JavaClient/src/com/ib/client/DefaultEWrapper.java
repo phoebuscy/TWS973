@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-class DefaultEWrapper implements EWrapper {
+public class DefaultEWrapper implements EWrapper {
 
 	@Override
 	public void tickPrice(int tickerId, int field, double price,
@@ -55,7 +55,7 @@ class DefaultEWrapper implements EWrapper {
 	@Override
 	public void orderStatus(int orderId, String status, double filled,
 			double remaining, double avgFillPrice, int permId, int parentId,
-			double lastFillPrice, int clientId, String whyHeld) {
+			double lastFillPrice, int clientId, String whyHeld, double mktCapPrice) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -170,9 +170,7 @@ class DefaultEWrapper implements EWrapper {
 	}
 
 	@Override
-	public void historicalData(int reqId, String date, double open,
-			double high, double low, double close, int volume, int count,
-			double WAP, boolean hasGaps) {
+	public void historicalData(int reqId, Bar bar) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -217,7 +215,7 @@ class DefaultEWrapper implements EWrapper {
 	}
 
 	@Override
-	public void deltaNeutralValidation(int reqId, DeltaNeutralContract underComp) {
+	public void deltaNeutralValidation(int reqId, DeltaNeutralContract deltaNeutralContract) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -279,7 +277,7 @@ class DefaultEWrapper implements EWrapper {
 	}
 
 	@Override
-	public void verifyAndAuthMessageAPI(String apiData, String xyzChallange) {
+	public void verifyAndAuthMessageAPI(String apiData, String xyzChallenge) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -449,8 +447,80 @@ class DefaultEWrapper implements EWrapper {
 	}
 
 	@Override
-	public void histogramData(int reqId, List<Entry<Double, Long>> items) {
+	public void histogramData(int reqId, List<HistogramEntry> items) {
 		// TODO Auto-generated method stub
 		
 	}
+	
+    @Override
+    public void historicalDataUpdate(int reqId, Bar bar) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void pnl(int reqId, double dailyPnL, double unrealizedPnL, double realizedPnL) {
+        // TODO Auto-generated method stub
+        
+    }
+
+	@Override
+	public void rerouteMktDataReq(int reqId, int conId, String exchange) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void rerouteMktDepthReq(int reqId, int conId, String exchange) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void marketRule(int marketRuleId, PriceIncrement[] priceIncrements) {
+		// TODO Auto-generated method stub
+		
+	}
+
+    @Override
+    public void pnlSingle(int reqId, int pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void historicalTicks(int reqId, List<HistoricalTick> ticks, boolean last) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public void historicalTicksBidAsk(int reqId, List<HistoricalTickBidAsk> ticks, boolean done) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void historicalTicksLast(int reqId, List<HistoricalTickLast> ticks, boolean done) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void tickByTickAllLast(int reqId, int tickType, long time, double price, int size, TickAttr attribs,
+             String exchange, String specialConditions) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, int bidSize, int askSize,
+            TickAttr attribs) {
+        // TODO Auto-generated method stub
+	}
+
+    @Override
+    public void tickByTickMidPoint(int reqId, long time, double midPoint) {
+        // TODO Auto-generated method stub
+    }
 }

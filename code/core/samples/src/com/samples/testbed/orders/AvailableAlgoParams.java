@@ -1,3 +1,6 @@
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+ * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
+
 package com.samples.testbed.orders;
 
 import java.util.ArrayList;
@@ -7,6 +10,29 @@ import com.ib.client.TagValue;
 
 public class AvailableAlgoParams {
 	
+	//! [scale_params]
+	public static void FillScaleParams (Order baseOrder, int scaleInitLevelSize, int scaleSubsLevelSize, boolean scaleRandomPercent, 
+		double scalePriceIncrement, double scalePriceAdjustValue, int scalePriceAdjustInterval, double scaleProfitOffset,
+		boolean scaleAutoReset, int scaleInitPosition, int scaleInitFillQty) {	
+		
+      baseOrder.scaleInitLevelSize(scaleInitLevelSize);   //Initial Component Size
+      baseOrder.scaleSubsLevelSize(scaleSubsLevelSize);    //Subsequent Comp. Size
+      baseOrder.scaleRandomPercent(scaleRandomPercent);   //Randomize size by +/-55%
+      baseOrder.scalePriceIncrement(scalePriceIncrement);   //Price Increment
+
+      /*Auto Price adjustment*/
+      baseOrder.scalePriceAdjustValue(scalePriceAdjustValue);    //starting price by
+      baseOrder.scalePriceAdjustInterval(scalePriceAdjustInterval);   // in seconds
+
+      /*Profit Orders*/
+      baseOrder.scaleProfitOffset(scaleProfitOffset);   //Create profit taking order Profit Offset
+      baseOrder.scaleAutoReset(scaleAutoReset);      //Restore size after taking profit
+      baseOrder.scaleInitPosition(scaleInitPosition);     //Initial Position
+      baseOrder.scaleInitFillQty(scaleInitFillQty);      //Filled initial Component Size
+      
+	}		
+	//! [scale_params]
+
 	//! [arrivalpx_params]
 	public static void FillArrivalPriceParams(Order baseOrder, double maxPctVol, String riskAversion, String startTime, 
 			String endTime, boolean forceCompletion, boolean allowPastTime, double monetaryValue) {
@@ -195,4 +221,74 @@ public class AvailableAlgoParams {
 		baseOrder.algoParams().add(new TagValue("monetaryValue", String.valueOf(monetaryValue)));
 	}
 	//! [pctvoltm_params]
+	
+	//! [csfb_params]
+		public static void FillCSFBParams(Order baseOrder, double startPctVol, double endPctVol, 
+			String startTime, String endTime, boolean noTakeLiq, double monetaryValue){
+        
+		// must be direct-routed to "CSFB"
+		
+		baseOrder.algoStrategy("PctVolTm");
+		baseOrder.algoParams(new ArrayList<>());
+		baseOrder.algoParams().add(new TagValue("startPctVol", String.valueOf(startPctVol)));
+		baseOrder.algoParams().add(new TagValue("endPctVol", String.valueOf(endPctVol)));
+		baseOrder.algoParams().add(new TagValue("startTime", startTime));
+		baseOrder.algoParams().add(new TagValue("endTime", endTime));
+		baseOrder.algoParams().add(new TagValue("noTakeLiq", noTakeLiq ? "1" : "0"));
+		baseOrder.algoParams().add(new TagValue("monetaryValue", String.valueOf(monetaryValue)));
+	}
+	//! [csfb_params]
+	
+	//! [jefferies_vwap_params]
+		public static void FillJefferiesVWAPParams(Order baseOrder, String startTime, String endTime, double relativeLimit, 
+			double maxVolumeRate, String excludeAuctions, double triggerPrice, double wowPrice, int minFillSize, double wowOrderPct, 
+			String wowMode, boolean isBuyBack, String wowReference) {
+
+		// must be direct-routed to "JEFFALGO"	
+		
+		baseOrder.algoStrategy("VWAP");
+		
+		baseOrder.algoParams(new ArrayList<>());
+		baseOrder.algoParams().add(new TagValue("StartTime", startTime));
+		baseOrder.algoParams().add(new TagValue("EndTime", endTime));
+		baseOrder.algoParams().add(new TagValue("RelativeLimit", String.valueOf(relativeLimit)));
+		baseOrder.algoParams().add(new TagValue("MaxVolumeRate", String.valueOf(maxVolumeRate)));
+		baseOrder.algoParams().add(new TagValue("ExcludeAuctions", excludeAuctions));
+		baseOrder.algoParams().add(new TagValue("TriggerPrice", String.valueOf(triggerPrice)));
+		baseOrder.algoParams().add(new TagValue("WowPrice", String.valueOf(wowPrice)));
+		baseOrder.algoParams().add(new TagValue("MinFillSize", String.valueOf(minFillSize)));
+		baseOrder.algoParams().add(new TagValue("WowOrderPct", String.valueOf(wowOrderPct)));
+		baseOrder.algoParams().add(new TagValue("WowMode", wowMode));
+		baseOrder.algoParams().add(new TagValue("IsBuyBack", isBuyBack ? "1" : "0"));
+		baseOrder.algoParams().add(new TagValue("WowReference", wowReference));
+		
+	}
+	//! [jefferies_vwap_params]
+
+	//! [csfb_inline_params]
+	public static void FillCSFBInlineParams(Order baseOrder, String startTime, String endTime, String execStyle, int minPercent,
+											int maxPercent, int displaySize, String auction, boolean blockFinder, double blockPrice,
+											int minBlockSize, int maxBlockSize, double iWouldPrice) {
+
+		// must be direct-routed to "CSFBALGO"
+
+		baseOrder.algoStrategy("INLINE");
+
+		baseOrder.algoParams(new ArrayList<>());
+		baseOrder.algoParams().add(new TagValue("StartTime", startTime));
+		baseOrder.algoParams().add(new TagValue("EndTime", endTime));
+		baseOrder.algoParams().add(new TagValue("ExecStyle", execStyle));
+		baseOrder.algoParams().add(new TagValue("MinPercent", String.valueOf(minPercent)));
+		baseOrder.algoParams().add(new TagValue("MaxPercent", String.valueOf(maxPercent)));
+		baseOrder.algoParams().add(new TagValue("DisplaySize", String.valueOf(displaySize)));
+		baseOrder.algoParams().add(new TagValue("Auction", auction));
+		baseOrder.algoParams().add(new TagValue("BlockFinder", blockFinder ? "1" : "0"));
+		baseOrder.algoParams().add(new TagValue("BlockPrice", String.valueOf(blockPrice)));
+		baseOrder.algoParams().add(new TagValue("MinBlockSize", String.valueOf(minBlockSize)));
+		baseOrder.algoParams().add(new TagValue("MaxBlockSize", String.valueOf(maxBlockSize)));
+		baseOrder.algoParams().add(new TagValue("IWouldPrice", String.valueOf(iWouldPrice)));
+
+	}
+	//! [csfb_inline_params]
+	
 }

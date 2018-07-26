@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -26,7 +26,7 @@ public class EReader extends Thread {
     private static final int IN_BUF_SIZE_DEFAULT = 8192;
     private byte[] m_iBuf = new byte[IN_BUF_SIZE_DEFAULT];
     private int m_iBufLen = 0;
-    private Deque<EMessage> m_msgQueue = new LinkedList<>();
+    private final Deque<EMessage> m_msgQueue = new LinkedList<>();
     
     protected boolean isUseV100Plus() {
 		return m_clientSocket.isUseV100Plus();
@@ -67,6 +67,8 @@ public class EReader extends Thread {
         		else {
         			eWrapper().error( ex);
         		}
+        		
+        		parent().eDisconnect();
         	//}
         } 
         
@@ -95,10 +97,11 @@ public class EReader extends Thread {
     }
 	
     static final int MAX_MSG_LENGTH = 0xffffff;
-    
-    @SuppressWarnings("serial")
+
 	private static class InvalidMessageLengthException extends IOException {
-		public InvalidMessageLengthException(String message) {
+		private static final long serialVersionUID = 1L;
+
+		InvalidMessageLengthException(String message) {
 			super(message);
 		}
     }
@@ -135,14 +138,18 @@ public class EReader extends Thread {
 			m_iBufLen = appendIBuf();
 		}
 				
-		int msgSize = 0;
+		int msgSize;
 		
 		while (true)
 			try {
-				msgSize = m_iBufLen > 0 ? new EDecoder(m_clientSocket.serverVersion(), defaultWrapper)
-						.processMsg(new EMessage(m_iBuf, m_iBufLen)) : 0;
+				msgSize = 0;
+				if (m_iBufLen > 0) {
+				  try (EDecoder decoder = new EDecoder(m_clientSocket.serverVersion(), defaultWrapper)) {
+				    msgSize = decoder.processMsg(new EMessage(m_iBuf, m_iBufLen));
+				  }
+				}
 				break;
-			} catch (Exception e) {
+			} catch (IOException e) {
 				if (m_iBufLen >= m_iBuf.length * 3/4) {
 					byte[] tmp = new byte[m_iBuf.length * 2];
 					

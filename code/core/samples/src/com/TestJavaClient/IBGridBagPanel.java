@@ -1,7 +1,7 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
-package com.TestJavaClient ;
+package com.TestJavaClient;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -16,6 +16,16 @@ class IBGridBagPanel extends JPanel {
 
     IBGridBagPanel() {
         setLayout(m_layout);
+    }
+
+    public void addGBComponent(Component comp,
+            GridBagConstraints gbc, int weightx, int gridwidth)
+    {
+        gbc.weightx = weightx;
+        gbc.gridwidth = gridwidth;
+        
+        setConstraints(comp, gbc);
+        add(comp, gbc);
     }
 
     public void setConstraints(Component comp, GridBagConstraints constraints) {

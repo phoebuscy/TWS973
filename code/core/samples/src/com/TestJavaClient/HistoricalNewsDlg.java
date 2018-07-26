@@ -1,15 +1,15 @@
-/* Copyright (C) 2017 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.TestJavaClient;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -18,6 +18,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import com.ib.client.TagValue;
 
 public class HistoricalNewsDlg extends JDialog {
 
@@ -29,8 +30,7 @@ public class HistoricalNewsDlg extends JDialog {
     private JTextField 	m_startDateTime = new JTextField();
     private JTextField 	m_endDateTime = new JTextField();
     private JTextField 	m_totalResults = new JTextField("10");
-    private JButton 	m_ok = new JButton( "OK");
-    private JButton 	m_cancel = new JButton( "Cancel");
+    private List<TagValue> m_options = new ArrayList<>();
 
     int m_retRequestId;
     int m_retConId;
@@ -39,7 +39,7 @@ public class HistoricalNewsDlg extends JDialog {
     String m_retEndDateTime;
     int m_retTotalResults;
 
-    public HistoricalNewsDlg( JFrame owner) {
+    HistoricalNewsDlg( JFrame owner) {
         super( owner, true);
 
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0");
@@ -51,20 +51,14 @@ public class HistoricalNewsDlg extends JDialog {
 
         // create button panel
         JPanel buttonPanel = new JPanel();
-        buttonPanel.add( m_ok);
-        buttonPanel.add( m_cancel);
+        JButton btnOk = new JButton("OK");
+        buttonPanel.add(btnOk);
+        JButton btnCancel = new JButton("Cancel");
+        buttonPanel.add(btnCancel);
 
         // create action listeners
-        m_ok.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e) {
-                onOk();
-            }
-        });
-        m_cancel.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e) {
-                onCancel();
-            }
-        });
+        btnOk.addActionListener(e -> onOk());
+        btnCancel.addActionListener(e -> onCancel());
 
         // create mid summary panel
         JPanel midPanel = new JPanel( new GridLayout( 0, 1, 5, 5) );
@@ -80,6 +74,11 @@ public class HistoricalNewsDlg extends JDialog {
         midPanel.add( m_endDateTime);
         midPanel.add( new JLabel( "Total Results") );
         midPanel.add( m_totalResults);
+        
+        // misc options button
+        JButton btnOptions = new JButton("Misc Options");
+        midPanel.add(btnOptions);
+        btnOptions.addActionListener(e -> onBtnOptions());
 
         // create dlg box
         getContentPane().add( midPanel, BorderLayout.CENTER);
@@ -88,6 +87,23 @@ public class HistoricalNewsDlg extends JDialog {
         pack();
     }
 
+    void init(List<TagValue> options) {
+    	m_options = options;
+    }
+    
+    void onBtnOptions() {
+    	SmartComboRoutingParamsDlg smartComboRoutingParamsDlg = new SmartComboRoutingParamsDlg("Misc Options", m_options, this);
+
+        // show smart combo routing params dialog
+        smartComboRoutingParamsDlg.setVisible( true);
+        
+        m_options = smartComboRoutingParamsDlg.smartComboRoutingParams();
+    }
+
+    List<TagValue> getOptions() {
+    	return m_options;
+    }
+    
     void onOk() {
         m_rc = false;
 

@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.apidemo;
@@ -11,29 +11,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.ib.client.CommissionReport;
-import com.ib.client.Contract;
-import com.ib.client.ContractDescription;
-import com.ib.client.ContractDetails;
-import com.ib.client.DeltaNeutralContract;
-import com.ib.client.DepthMktDataDescription;
-import com.ib.client.EClientSocket;
-import com.ib.client.EJavaSignal;
-import com.ib.client.EReader;
-import com.ib.client.EWrapper;
-import com.ib.client.EWrapperMsgGenerator;
-import com.ib.client.Execution;
-import com.ib.client.FamilyCode;
-import com.ib.client.NewsProvider;
-import com.ib.client.Order;
-import com.ib.client.OrderState;
-import com.ib.client.SoftDollarTier;
-import com.ib.client.TickAttr;
+import com.ib.client.*;
+import com.ib.client.HistoricalTick;
+import com.ib.client.HistoricalTickBidAsk;
+import com.ib.client.HistoricalTickLast;
+
+import javax.swing.*;
 
 public class Test implements EWrapper {
-	EJavaSignal m_signal = new EJavaSignal();
-	EClientSocket m_s = new EClientSocket(this, m_signal);
-	int NextOrderId = -1;
+	private EJavaSignal m_signal = new EJavaSignal();
+	private EClientSocket m_s = new EClientSocket(this, m_signal);
+	private int NextOrderId = -1;
 
 	public static void main(String[] args) {
 		new Test().run();
@@ -46,28 +34,22 @@ public class Test implements EWrapper {
         
         reader.start();
        
-		new Thread() {
-			public void run() {
-				while (m_s.isConnected()) {
-					m_signal.waitForSignal();
-					try {
-						javax.swing.SwingUtilities
-								.invokeAndWait(new Runnable() {
-									@Override
-									public void run() {
-										try {
-											reader.processMsgs();
-										} catch (IOException e) {
-											error(e);
-										}
-									}
-								});
-					} catch (Exception e) {
-						error(e);
-					}
-				}
-			}
-		}.start();
+		new Thread(() -> {
+            while (m_s.isConnected()) {
+                m_signal.waitForSignal();
+                try {
+                    SwingUtilities.invokeAndWait(() -> {
+                    	try {
+                    		reader.processMsgs();
+                    	} catch (IOException e) {
+                    		error(e);
+                    	}
+                    });
+                } catch (Exception e) {
+                    error(e);
+                }
+            }
+        }).start();
 
 		if (NextOrderId < 0) {
 			sleep(1000);
@@ -130,9 +112,9 @@ public class Test implements EWrapper {
 		System.out.println(EWrapperMsgGenerator.tickEFP( tickerId, tickType, basisPoints, formattedBasisPoints, impliedFuture, holdDays, futureLastTradeDate, dividendImpact, dividendsToLastTradeDate));
 	}
 
-	@Override public void orderStatus(int orderId, String status, double filled, double remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
-		System.out.println(EWrapperMsgGenerator.orderStatus( orderId,  status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld));
-		}
+	@Override public void orderStatus(int orderId, String status, double filled, double remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice) {
+		System.out.println(EWrapperMsgGenerator.orderStatus( orderId,  status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld, mktCapPrice));
+	}
 
 	@Override public void openOrder(int orderId, Contract contract, Order order, OrderState orderState) {
 		System.out.println(EWrapperMsgGenerator.openOrder( orderId, contract, order, orderState));
@@ -198,8 +180,8 @@ public class Test implements EWrapper {
 		System.out.println(EWrapperMsgGenerator.receiveFA( faDataType, xml));
 	}
 
-	@Override public void historicalData(int reqId, String date, double open, double high, double low, double close, int volume, int count, double WAP, boolean hasGaps) {
-		System.out.println(EWrapperMsgGenerator.historicalData( reqId, date, open, high, low, close, volume, count, WAP, hasGaps));
+	@Override public void historicalData(int reqId, Bar bar) {
+		System.out.println(EWrapperMsgGenerator.historicalData( reqId, bar.time(), bar.open(), bar.high(), bar.low(), bar.close(), bar.volume(), bar.count(), bar.wap()));
 	}
 
 	@Override public void scannerParameters(String xml) {
@@ -226,8 +208,8 @@ public class Test implements EWrapper {
 		System.out.println(EWrapperMsgGenerator.fundamentalData( reqId,  data));
 	}
 
-	@Override public void deltaNeutralValidation(int reqId, DeltaNeutralContract underComp) {
-		System.out.println(EWrapperMsgGenerator.deltaNeutralValidation( reqId, underComp));
+	@Override public void deltaNeutralValidation(int reqId, DeltaNeutralContract deltaNeutralContract) {
+		System.out.println(EWrapperMsgGenerator.deltaNeutralValidation( reqId, deltaNeutralContract));
 	}
 
 	@Override public void tickSnapshotEnd(int reqId) {
@@ -373,7 +355,77 @@ public class Test implements EWrapper {
 	}
 
 	@Override
-	public void histogramData(int reqId, List<Entry<Double, Long>> items) {
+	public void histogramData(int reqId, List<HistogramEntry> items) {
 		System.out.println(EWrapperMsgGenerator.histogramData(reqId, items));
 	}
+
+    @Override
+    public void historicalDataUpdate(int reqId, Bar bar) {
+        historicalData(reqId, bar);
+    }
+
+	@Override
+	public void rerouteMktDataReq(int reqId, int conId, String exchange) {
+		System.out.println(EWrapperMsgGenerator.rerouteMktDataReq(reqId, conId, exchange));
+	}
+
+	@Override
+	public void rerouteMktDepthReq(int reqId, int conId, String exchange) {
+		System.out.println(EWrapperMsgGenerator.rerouteMktDepthReq(reqId, conId, exchange));
+	}
+
+	@Override
+	public void marketRule(int marketRuleId, PriceIncrement[] priceIncrements) {
+		System.out.println(EWrapperMsgGenerator.marketRule(marketRuleId, priceIncrements));
+	}
+	
+	@Override
+    public void pnl(int reqId, double dailyPnL, double unrealizedPnL, double realizedPnL) {
+        System.out.println(EWrapperMsgGenerator.pnl(reqId, dailyPnL, unrealizedPnL, realizedPnL));
+    }
+
+    @Override
+    public void pnlSingle(int reqId, int pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value) {
+        System.out.println(EWrapperMsgGenerator.pnlSingle(reqId, pos, dailyPnL, unrealizedPnL, realizedPnL, value));
+    }
+    
+    @Override
+    public void historicalTicks(int reqId, List<HistoricalTick> ticks, boolean done) {
+        for (HistoricalTick tick : ticks) {
+            System.out.println(EWrapperMsgGenerator.historicalTick(reqId, tick.time(), tick.price(), tick.size()));
+        }
+    }
+    
+    @Override
+    public void historicalTicksBidAsk(int reqId, List<HistoricalTickBidAsk> ticks, boolean done) {
+        for (HistoricalTickBidAsk tick : ticks) {
+            System.out.println(EWrapperMsgGenerator.historicalTickBidAsk(reqId, tick.time(), tick.mask(), tick.priceBid(), tick.priceAsk(), tick.sizeBid(),
+                    tick.sizeAsk()));
+        }
+    }   
+    
+    @Override
+    public void historicalTicksLast(int reqId, List<HistoricalTickLast> ticks, boolean done) {
+        for (HistoricalTickLast tick : ticks) {
+            System.out.println(EWrapperMsgGenerator.historicalTickLast(reqId, tick.time(), tick.mask(), tick.price(), tick.size(), tick.exchange(), 
+                tick.specialConditions()));
+        }
+    }
+
+    @Override
+    public void tickByTickAllLast(int reqId, int tickType, long time, double price, int size, TickAttr attribs,
+            String exchange, String specialConditions) {
+        System.out.println(EWrapperMsgGenerator.tickByTickAllLast(reqId, tickType, time, price, size, attribs, exchange, specialConditions));
+    }
+
+    @Override
+    public void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, int bidSize, int askSize,
+            TickAttr attribs) {
+        System.out.println(EWrapperMsgGenerator.tickByTickBidAsk(reqId, time, bidPrice, askPrice, bidSize, askSize, attribs));
+    }
+
+    @Override
+    public void tickByTickMidPoint(int reqId, long time, double midPoint) {
+        System.out.println(EWrapperMsgGenerator.tickByTickMidPoint(reqId, time, midPoint));
+    }
 }

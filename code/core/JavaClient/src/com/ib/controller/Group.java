@@ -1,9 +1,10 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.controller;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import com.ib.client.Types.Method;
@@ -11,11 +12,11 @@ import com.ib.client.Types.Method;
 public class Group {
 	private String m_name;
 	private Method m_defaultMethod;
-	private ArrayList<String> m_accounts = new ArrayList<>();
+	private List<String> m_accounts = new ArrayList<>();
 
 	public String name() 					{ return m_name; }
 	public Method defaultMethod() 			{ return m_defaultMethod; }
-	public ArrayList<String> accounts() 	{ return m_accounts; }
+	public List<String> accounts() 	{ return m_accounts; }
 
 	public void name( String v) 			{ m_name = v; }
 	public void defaultMethod( Method v) 	{ m_defaultMethod = v; }

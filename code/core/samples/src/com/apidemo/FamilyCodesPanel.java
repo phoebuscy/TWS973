@@ -1,10 +1,11 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.apidemo;
 
 import java.awt.BorderLayout;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -65,7 +66,7 @@ public class FamilyCodesPanel extends NewTabPanel {
 	}
 
 	private class FamilyCodesModel extends AbstractTableModel implements IFamilyCodesHandler {
-		ArrayList<FamilyCodeRow> m_list = new ArrayList<>();
+		List<FamilyCodeRow> m_list = new ArrayList<>();
 
 		@Override public void familyCodes(FamilyCode[] familyCodes) {
 			for (FamilyCode familyCode : familyCodes){

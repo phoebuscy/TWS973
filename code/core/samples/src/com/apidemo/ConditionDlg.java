@@ -1,3 +1,6 @@
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+ * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -47,13 +50,12 @@ public class ConditionDlg extends JDialog implements ChangeListener, ActionListe
     private JRadioButton m_rbTime;
     private JRadioButton m_rbTrade;
     private JRadioButton m_rbVolume;
-    private JTabbedPane m_tabbedPane;
     private OrderCondition m_condition;
 	private OnOKPanel m_conditionSubPanel;
 	
 	private ContractLookuper m_lookuper;
     
-    public ConditionDlg(OrderCondition condition, ContractLookuper lookuper) {
+    ConditionDlg(OrderCondition condition, ContractLookuper lookuper) {
         initComponents();
         
         m_condition = condition;
@@ -101,7 +103,7 @@ public class ConditionDlg extends JDialog implements ChangeListener, ActionListe
 
 	private void initComponents() {
 
-        m_tabbedPane = new JTabbedPane();
+        JTabbedPane tabbedPane = new JTabbedPane();
         m_conditionTypePanel = new JPanel();
         m_rbPrice = new JRadioButton();
         m_rbMargin = new JRadioButton();
@@ -173,14 +175,14 @@ public class ConditionDlg extends JDialog implements ChangeListener, ActionListe
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        m_tabbedPane.addTab("Condition type", m_conditionTypePanel);
-        m_tabbedPane.addTab("Condition", m_conditionPanel);
+        tabbedPane.addTab("Condition type", m_conditionTypePanel);
+        tabbedPane.addTab("Condition", m_conditionPanel);
         
         JPanel mainPanel = new JPanel(new BorderLayout());
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         GroupLayout layout = new GroupLayout(getContentPane());
         
-        mainPanel.add(m_tabbedPane);
+        mainPanel.add(tabbedPane);
         buttons.add(
         		new HtmlButton("Apply") {
         	protected void actionPerformed() {
@@ -211,37 +213,37 @@ public class ConditionDlg extends JDialog implements ChangeListener, ActionListe
 		m_conditionPanel.removeAll();
 		
 		if (m_rbMargin.isSelected()) {
-			m_conditionSubPanel = new MarginContidionPanel((MarginCondition)instanciateCondition(MarginCondition.conditionType));					
+			m_conditionSubPanel = new MarginConditionPanel((MarginCondition) instantiateCondition(MarginCondition.conditionType));
 		}
 		
 		if (m_rbPercent.isSelected()) {
-			m_conditionSubPanel = new PercentConditionPanel((PercentChangeCondition)instanciateCondition(PercentChangeCondition.conditionType), m_lookuper);
+			m_conditionSubPanel = new PercentConditionPanel((PercentChangeCondition) instantiateCondition(PercentChangeCondition.conditionType), m_lookuper);
 		}
 		
 		if (m_rbPrice.isSelected()) {
-			m_conditionSubPanel = new PriceConditionPanel((PriceCondition)instanciateCondition(PriceCondition.conditionType), m_lookuper);
+			m_conditionSubPanel = new PriceConditionPanel((PriceCondition) instantiateCondition(PriceCondition.conditionType), m_lookuper);
 		}
 		
 		if (m_rbTime.isSelected()) {
-			m_conditionSubPanel = new TimeConditionPanel((TimeCondition)instanciateCondition(TimeCondition.conditionType));
+			m_conditionSubPanel = new TimeConditionPanel((TimeCondition) instantiateCondition(TimeCondition.conditionType));
 		}
 		
 		if (m_rbTrade.isSelected()) {
-			m_conditionSubPanel = new TradeConditionPanel((ExecutionCondition)instanciateCondition(ExecutionCondition.conditionType));
+			m_conditionSubPanel = new TradeConditionPanel((ExecutionCondition) instantiateCondition(ExecutionCondition.conditionType));
 		}
 		
 		if (m_rbVolume.isSelected()) {
-			m_conditionSubPanel = new VolumeConditionPanel((VolumeCondition)instanciateCondition(VolumeCondition.conditionType), m_lookuper);
+			m_conditionSubPanel = new VolumeConditionPanel((VolumeCondition) instantiateCondition(VolumeCondition.conditionType), m_lookuper);
 		}
 		
 		m_conditionPanel.add(m_conditionSubPanel);
 		pack();
 	}
 	
-	private OrderCondition instanciateCondition(OrderConditionType type) {
-		if (m_condition.type() != type)
-			m_condition = OrderCondition.create(type);
-		
+	private OrderCondition instantiateCondition(OrderConditionType type) {
+		if (m_condition.type() != type) {
+            m_condition = OrderCondition.create(type);
+        }
 		return m_condition;
 	}
 	

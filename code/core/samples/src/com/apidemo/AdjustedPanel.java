@@ -1,3 +1,6 @@
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+ * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
+
 package com.apidemo;
 
 import javax.swing.JDialog;
@@ -16,12 +19,12 @@ public class AdjustedPanel extends OnOKPanel {
 	 */
 	private final JDialog m_parentDlg;
 	private final Order m_order;
-	final TCombo<OrderType> m_adjustedOrderType = new TCombo<>(OrderType.None, OrderType.STP, OrderType.STP_LMT, OrderType.TRAIL, OrderType.TRAIL_LIMIT);
-	final UpperField m_triggerPrice = new UpperField();
-	final UpperField m_adjustedStopPrice = new UpperField();
-	final UpperField m_adjustedStopLimitPrice = new UpperField();
-	final UpperField m_adjustedTrailingAmount = new UpperField();
-	final TCombo<AmntUnit> m_adjustedTrailingAmountUnit = new TCombo<>(AmntUnit.values());
+	private final TCombo<OrderType> m_adjustedOrderType = new TCombo<>(OrderType.None, OrderType.STP, OrderType.STP_LMT, OrderType.TRAIL, OrderType.TRAIL_LIMIT);
+	private final UpperField m_triggerPrice = new UpperField();
+	private final UpperField m_adjustedStopPrice = new UpperField();
+	private final UpperField m_adjustedStopLimitPrice = new UpperField();
+	private final UpperField m_adjustedTrailingAmount = new UpperField();
+	private final TCombo<AmntUnit> m_adjustedTrailingAmountUnit = new TCombo<>(AmntUnit.values());
 	
 	public AdjustedPanel(JDialog parentDlg, Order order) {
 		m_parentDlg = parentDlg;

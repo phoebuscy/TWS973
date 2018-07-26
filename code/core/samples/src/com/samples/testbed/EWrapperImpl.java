@@ -1,29 +1,15 @@
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+ * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
+
 package com.samples.testbed;
 
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.ib.client.CommissionReport;
-import com.ib.client.Contract;
-import com.ib.client.ContractDescription;
-import com.ib.client.ContractDetails;
-import com.ib.client.DeltaNeutralContract;
-import com.ib.client.DepthMktDataDescription;
-import com.ib.client.EClientSocket;
-import com.ib.client.EJavaSignal;
-import com.ib.client.EReaderSignal;
-import com.ib.client.EWrapper;
-import com.ib.client.EWrapperMsgGenerator;
-import com.ib.client.Execution;
-import com.ib.client.FamilyCode;
-import com.ib.client.NewsProvider;
-import com.ib.client.Order;
-import com.ib.client.OrderState;
-import com.ib.client.SoftDollarTier;
-import com.ib.client.TickAttr;
-import com.ib.client.TickType;
+import com.ib.client.*;
 
 //! [ewrapperimpl]
 public class EWrapperImpl implements EWrapper {
@@ -57,7 +43,7 @@ public class EWrapperImpl implements EWrapper {
 	@Override
 	public void tickPrice(int tickerId, int field, double price, TickAttr attribs) {
 		System.out.println("Tick Price. Ticker Id:"+tickerId+", Field: "+field+", Price: "+price+", CanAutoExecute: "+ attribs.canAutoExecute()
-		+ ", pastLimit: " + attribs.pastLimit());
+		+ ", pastLimit: " + attribs.pastLimit() + ", pre-open: " + attribs.preOpen());
 	}
 	//! [tickprice]
 	
@@ -105,10 +91,10 @@ public class EWrapperImpl implements EWrapper {
 	@Override
 	public void orderStatus(int orderId, String status, double filled,
 			double remaining, double avgFillPrice, int permId, int parentId,
-			double lastFillPrice, int clientId, String whyHeld) {
+			double lastFillPrice, int clientId, String whyHeld, double mktCapPrice) {
 		System.out.println("OrderStatus. Id: "+orderId+", Status: "+status+", Filled"+filled+", Remaining: "+remaining
                 +", AvgFillPrice: "+avgFillPrice+", PermId: "+permId+", ParentId: "+parentId+", LastFillPrice: "+lastFillPrice+
-                ", ClientId: "+clientId+", WhyHeld: "+whyHeld);
+                ", ClientId: "+clientId+", WhyHeld: "+whyHeld+", MktCapPrice: "+mktCapPrice);
 	}
 	//! [orderstatus]
 	
@@ -116,8 +102,7 @@ public class EWrapperImpl implements EWrapper {
 	@Override
 	public void openOrder(int orderId, Contract contract, Order order,
 			OrderState orderState) {
-		System.out.println("OpenOrder. ID: "+orderId+", "+contract.symbol()+", "+contract.secType()+" @ "+contract.exchange()+": "+
-			order.action()+", "+order.orderType()+" "+order.totalQuantity()+", "+orderState.status());
+		System.out.println(EWrapperMsgGenerator.openOrder(orderId, contract, order, orderState));
 	}
 	//! [openorder]
 	
@@ -143,7 +128,7 @@ public class EWrapperImpl implements EWrapper {
 			double unrealizedPNL, double realizedPNL, String accountName) {
 		System.out.println("UpdatePortfolio. "+contract.symbol()+", "+contract.secType()+" @ "+contract.exchange()
                 +": Position: "+position+", MarketPrice: "+marketPrice+", MarketValue: "+marketValue+", AverageCost: "+averageCost
-                +", UnrealisedPNL: "+unrealizedPNL+", RealisedPNL: "+realizedPNL+", AccountName: "+accountName);
+                +", UnrealizedPNL: "+unrealizedPNL+", RealizedPNL: "+realizedPNL+", AccountName: "+accountName);
 	}
 	//! [updateportfolio]
 	
@@ -172,12 +157,12 @@ public class EWrapperImpl implements EWrapper {
 	//! [contractdetails]
 	@Override
 	public void contractDetails(int reqId, ContractDetails contractDetails) {
-		System.out.println("ContractDetails. ReqId: ["+reqId+"] - ["+contractDetails.contract().symbol()+"], ["+contractDetails.contract().secType()+"], ConId: ["+contractDetails.contract().conid()+"] @ ["+contractDetails.contract().exchange()+"]");
+		System.out.println(EWrapperMsgGenerator.contractDetails(reqId, contractDetails)); 
 	}
 	//! [contractdetails]
 	@Override
 	public void bondContractDetails(int reqId, ContractDetails contractDetails) {
-		System.out.println("bondContractDetails");
+		System.out.println(EWrapperMsgGenerator.bondContractDetails(reqId, contractDetails)); 
 	}
 	//! [contractdetailsend]
 	@Override
@@ -189,7 +174,8 @@ public class EWrapperImpl implements EWrapper {
 	//! [execdetails]
 	@Override
 	public void execDetails(int reqId, Contract contract, Execution execution) {
-		System.out.println("ExecDetails. "+reqId+" - ["+contract.symbol()+"], ["+contract.secType()+"], ["+contract.currency()+"], ["+execution.execId()+"], ["+execution.orderId()+"], ["+execution.shares()+"]");
+		System.out.println("ExecDetails. "+reqId+" - ["+contract.symbol()+"], ["+contract.secType()+"], ["+contract.currency()+"], ["+execution.execId()+
+		        "], ["+execution.orderId()+"], ["+execution.shares()+"]"  + ", [" + execution.lastLiquidity() + "]");
 	}
 	//! [execdetails]
 	
@@ -234,16 +220,14 @@ public class EWrapperImpl implements EWrapper {
 	//! [receivefa]
 	@Override
 	public void receiveFA(int faDataType, String xml) {
-		System.out.println("Receing FA: "+faDataType+" - "+xml);
+		System.out.println("Receiving FA: "+faDataType+" - "+xml);
 	}
 	//! [receivefa]
 	
 	//! [historicaldata]
 	@Override
-	public void historicalData(int reqId, String date, double open,
-			double high, double low, double close, int volume, int count,
-			double WAP, boolean hasGaps) {
-		System.out.println("HistoricalData. "+reqId+" - Date: "+date+", Open: "+open+", High: "+high+", Low: "+low+", Close: "+close+", Volume: "+volume+", Count: "+count+", WAP: "+WAP+", HasGaps: "+hasGaps);
+	public void historicalData(int reqId, Bar bar) {
+		System.out.println("HistoricalData. "+reqId+" - Date: "+bar.time()+", Open: "+bar.open()+", High: "+bar.high()+", Low: "+bar.low()+", Close: "+bar.close()+", Volume: "+bar.volume()+", Count: "+bar.count()+", WAP: "+bar.wap());
 	}
 	//! [historicaldata]
 	
@@ -297,7 +281,7 @@ public class EWrapperImpl implements EWrapper {
 	}
 	//! [fundamentaldata]
 	@Override
-	public void deltaNeutralValidation(int reqId, DeltaNeutralContract underComp) {
+	public void deltaNeutralValidation(int reqId, DeltaNeutralContract deltaNeutralContract) {
 		System.out.println("deltaNeutralValidation");
 	}
 	//! [ticksnapshotend]
@@ -361,7 +345,7 @@ public class EWrapperImpl implements EWrapper {
 	}
 
 	@Override
-	public void verifyAndAuthMessageAPI(String apiData, String xyzChallange) {
+	public void verifyAndAuthMessageAPI(String apiData, String xyzChallenge) {
 		System.out.println("verifyAndAuthMessageAPI");
 	}
 
@@ -582,8 +566,107 @@ public class EWrapperImpl implements EWrapper {
 	
 	//! [histogramData]
 	@Override
-	public void histogramData(int reqId, List<Entry<Double, Long>> items) {
+	public void histogramData(int reqId, List<HistogramEntry> items) {
 		System.out.println(EWrapperMsgGenerator.histogramData(reqId, items));
 	}
 	//! [histogramData]
+
+	//! [historicalDataUpdate]
+	@Override
+    public void historicalDataUpdate(int reqId, Bar bar) {
+        System.out.println("HistoricalDataUpdate. "+reqId+" - Date: "+bar.time()+", Open: "+bar.open()+", High: "+bar.high()+", Low: "+bar.low()+", Close: "+bar.close()+", Volume: "+bar.volume()+", Count: "+bar.count()+", WAP: "+bar.wap());
+    }
+	//! [historicalDataUpdate]
+	
+	//! [rerouteMktDataReq]
+	@Override
+	public void rerouteMktDataReq(int reqId, int conId, String exchange) {
+		System.out.println(EWrapperMsgGenerator.rerouteMktDataReq(reqId, conId, exchange));
+	}
+	//! [rerouteMktDataReq]
+	
+	//! [rerouteMktDepthReq]
+	@Override
+	public void rerouteMktDepthReq(int reqId, int conId, String exchange) {
+		System.out.println(EWrapperMsgGenerator.rerouteMktDepthReq(reqId, conId, exchange));
+	}
+	//! [rerouteMktDepthReq]
+	
+	//! [marketRule]
+	@Override
+	public void marketRule(int marketRuleId, PriceIncrement[] priceIncrements) {
+		DecimalFormat df = new DecimalFormat("#.#");
+		df.setMaximumFractionDigits(340);
+		System.out.println("Market Rule Id: " + marketRuleId);
+		for (PriceIncrement pi : priceIncrements) {
+			System.out.println("Price Increment. Low Edge: " + df.format(pi.lowEdge()) + ", Increment: " + df.format(pi.increment()));
+		}
+	}
+	//! [marketRule]
+	
+	//! [pnl]
+    @Override
+    public void pnl(int reqId, double dailyPnL, double unrealizedPnL, double realizedPnL) {
+        System.out.println(EWrapperMsgGenerator.pnl(reqId, dailyPnL, unrealizedPnL, realizedPnL));
+    }
+    //! [pnl]
+	
+	//! [pnlsingle]
+    @Override
+    public void pnlSingle(int reqId, int pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value) {
+        System.out.println(EWrapperMsgGenerator.pnlSingle(reqId, pos, dailyPnL, unrealizedPnL, realizedPnL, value));                
+    }
+    //! [pnlsingle]
+	
+	//! [historicalticks]
+    @Override
+    public void historicalTicks(int reqId, List<HistoricalTick> ticks, boolean done) {
+        for (HistoricalTick tick : ticks) {
+            System.out.println(EWrapperMsgGenerator.historicalTick(reqId, tick.time(), tick.price(), tick.size()));
+        }
+    }
+    //! [historicalticks]
+	
+	//! [historicalticksbidask]
+    @Override
+    public void historicalTicksBidAsk(int reqId, List<HistoricalTickBidAsk> ticks, boolean done) {
+        for (HistoricalTickBidAsk tick : ticks) {
+            System.out.println(EWrapperMsgGenerator.historicalTickBidAsk(reqId, tick.time(), tick.mask(), tick.priceBid(), tick.priceAsk(), tick.sizeBid(),
+                    tick.sizeAsk()));
+        }
+    }   
+    //! [historicalticksbidask]
+	
+    @Override
+	//! [historicaltickslast]
+    public void historicalTicksLast(int reqId, List<HistoricalTickLast> ticks, boolean done) {
+        for (HistoricalTickLast tick : ticks) {
+            System.out.println(EWrapperMsgGenerator.historicalTickLast(reqId, tick.time(), tick.mask(), tick.price(), tick.size(), tick.exchange(), 
+                tick.specialConditions()));
+        }
+    }
+    //! [historicaltickslast]
+
+    //! [tickbytickalllast]
+   @Override
+    public void tickByTickAllLast(int reqId, int tickType, long time, double price, int size, TickAttr attribs,
+            String exchange, String specialConditions) {
+        System.out.println(EWrapperMsgGenerator.tickByTickAllLast(reqId, tickType, time, price, size, attribs, exchange, specialConditions));
+    }
+    //! [tickbytickalllast]
+
+    //! [tickbytickbidask]
+    @Override
+    public void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, int bidSize, int askSize,
+            TickAttr attribs) {
+        System.out.println(EWrapperMsgGenerator.tickByTickBidAsk(reqId, time, bidPrice, askPrice, bidSize, askSize, attribs));
+    }
+    //! [tickbytickbidask]
+    
+    //! [tickbytickmidpoint]
+    @Override
+    public void tickByTickMidPoint(int reqId, long time, double midPoint) {
+        System.out.println(EWrapperMsgGenerator.tickByTickMidPoint(reqId, time, midPoint));
+    }
+    //! [tickbytickmidpoint]
 }

@@ -1,9 +1,12 @@
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+ * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
+
 package com.ib.client;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.ArrayList;
+import java.util.List;
 
 public abstract class ContractCondition extends OperatorCondition {
 
@@ -18,8 +21,8 @@ public abstract class ContractCondition extends OperatorCondition {
 		c.conid(conId());
 		c.exchange(exchange());
 		
-		ArrayList<ContractDetails> list = lookuper.lookupContract(c);		
-		String strContract = list.size() > 0 ? 
+		List<ContractDetails> list = lookuper == null ? null : lookuper.lookupContract(c);		
+		String strContract = list != null && !list.isEmpty() ? 
 				list.get(0).contract().symbol() + " " + list.get(0).contract().secType() + " on " + list.get(0).contract().exchange() :
 				conId() + "";
 		

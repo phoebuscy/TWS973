@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.apidemo;
@@ -161,7 +161,7 @@ class TicketDlg extends JDialog {
 				ApiDemo.INSTANCE.controller().removeOrderHandler( this);
 				SwingUtilities.invokeLater(() -> dispose());
 			}
-			@Override public void orderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice, long permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
+			@Override public void orderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice) {
 			}
 			@Override public void handle(int errorCode, final String errorMsg) {
 				m_order.orderId( 0);
@@ -181,7 +181,7 @@ class TicketDlg extends JDialog {
 			@Override public void handle(int errorCode, final String errorMsg) {
 				SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog( TicketDlg.this, errorMsg));
 			}
-			@Override public void orderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice, long permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
+			@Override public void orderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice) {
 			}
 		});
 		
@@ -190,12 +190,21 @@ class TicketDlg extends JDialog {
 	}
 
 	private void displayMargin(OrderState orderState) {
-		String str = String.format( "Equity with loan: %s%n%nInitial margin: %s%nMaintenance margin: %s%n",
-				fmt( Double.parseDouble(orderState.equityWithLoan() ) ),
-				fmt( Double.parseDouble( orderState.initMargin() ) ),
-				fmt( Double.parseDouble(orderState.maintMargin() ) ) );
+		String str = String.format( "Current:%nEquity with loan: %s%nInitial margin: %s%nMaintenance margin: %s%n%n"
+				+ "Change:%nEquity with loan: %s%nInitial margin: %s%nMaintenance margin: %s%n%n"
+				+ "Post-Trade:%nEquity with loan: %s%nInitial margin: %s%nMaintenance margin: %s%n%n",
+				orderState.equityWithLoanBefore() != null ? fmt(Double.parseDouble(orderState.equityWithLoanBefore())) : "",
+				orderState.initMarginBefore() != null ? fmt(Double.parseDouble(orderState.initMarginBefore())) : "",
+				orderState.maintMarginBefore() != null ? fmt(Double.parseDouble(orderState.maintMarginBefore())) : "",
+				orderState.equityWithLoanChange() != null ? fmt(Double.parseDouble(orderState.equityWithLoanChange())) : "",
+				orderState.initMarginChange() != null ? fmt(Double.parseDouble(orderState.initMarginChange())) : "",
+				orderState.maintMarginChange() != null ? fmt(Double.parseDouble(orderState.maintMarginChange())) : "",
+				fmt( Double.parseDouble(orderState.equityWithLoanAfter() ) ),
+				fmt( Double.parseDouble( orderState.initMarginAfter() ) ),
+				fmt( Double.parseDouble(orderState.maintMarginAfter() ) ) 
+				);
 		
-		JOptionPane.showMessageDialog( this, str, "Post-Trade Margin Requirements", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog( this, str, "Margin Requirements", JOptionPane.INFORMATION_MESSAGE);
 	}
 
 	private void scrape() {
@@ -258,6 +267,10 @@ class TicketDlg extends JDialog {
 		final JCheckBox m_nonGuaranteed = new JCheckBox();
 		final UpperField m_lmtPriceOffset = new UpperField();
 		final UpperField m_triggerPrice = new UpperField();
+		final UpperField m_mifid2DecisionMaker = new UpperField();
+        final UpperField m_mifid2DecisionAlgo = new UpperField();
+        final UpperField m_mifid2ExecutionTrader = new UpperField();
+        final UpperField m_mifid2ExecutionAlgo = new UpperField();
 
 		OrderPanel() {
 			m_orderType.removeItemAt( 0); // remove None
@@ -275,20 +288,31 @@ class TicketDlg extends JDialog {
 			m_nonGuaranteed.setSelected( getVal( ComboParam.NonGuaranteed).equals( "1") );
 			m_lmtPriceOffset.setText(m_order.lmtPriceOffset());
 			m_triggerPrice.setText(m_order.triggerPrice());
+			m_mifid2DecisionMaker.setText(m_order.mifid2DecisionMaker());
+			m_mifid2DecisionAlgo.setText(m_order.mifid2DecisionAlgo());
+			m_mifid2ExecutionTrader.setText(m_order.mifid2ExecutionTrader());
+			m_mifid2ExecutionAlgo.setText(m_order.mifid2ExecutionAlgo());
 			
-			add( "Account", m_account);
+			add("Account", m_account);
+			
 			m_modelCode.setColumns(7);
-			add( "Model code", m_modelCode);
-			add( "Action", m_action);
-			add( "Quantity", m_quantity);
-			add( "Cash Qty", m_cashQty);
-			add( "Display size", m_displaySize);
-			add( "Order type", m_orderType);
-			add( "Limit price", m_lmtPrice);
+			
+			add("Model code", m_modelCode);
+			add("Action", m_action);
+			add("Quantity", m_quantity);
+			add("Cash Qty", m_cashQty);
+			add("Display size", m_displaySize);
+			add("Order type", m_orderType);
+			add("Limit price", m_lmtPrice);
 			add("Limit price offset", m_lmtPriceOffset);
 			add("Trigger price", m_triggerPrice);
-			add( "Aux price", m_auxPrice);
-			add( "Time-in-force", m_tif);
+			add("Aux price", m_auxPrice);
+			add("Time-in-force", m_tif);
+            add("MiFID II Decision Maker", m_mifid2DecisionMaker);
+            add("MiFID II Decision Algo", m_mifid2DecisionAlgo);
+            add("MiFID II Execution Trader", m_mifid2ExecutionTrader);
+            add("MiFID II Execution Algo", m_mifid2ExecutionAlgo);
+			
 			if (m_contract.isCombo() ) {
 				add( "Non-guaranteed", m_nonGuaranteed);
 			}
@@ -307,6 +331,10 @@ class TicketDlg extends JDialog {
 			m_order.tif( m_tif.getSelectedItem() );
 			m_order.lmtPriceOffset(m_lmtPriceOffset.getDouble());
 			m_order.triggerPrice(m_triggerPrice.getDouble());
+			m_order.mifid2DecisionMaker(m_mifid2DecisionMaker.getText());
+			m_order.mifid2DecisionAlgo(m_mifid2DecisionAlgo.getText());
+			m_order.mifid2ExecutionTrader(m_mifid2ExecutionTrader.getText());
+			m_order.mifid2ExecutionAlgo(m_mifid2ExecutionAlgo.getText());
 			
 			if (m_contract.isCombo() ) {
 				TagValue tv = new TagValue( ComboParam.NonGuaranteed.toString(), m_nonGuaranteed.isSelected() ? "1" : "0");
@@ -377,6 +405,7 @@ class TicketDlg extends JDialog {
 		final JCheckBox m_eTradeOnly = new JCheckBox();
 		final JCheckBox m_firmQuoteOnly = new JCheckBox();
 		final JCheckBox m_optOutSmartRouting = new JCheckBox();
+		final JCheckBox m_dontUseAutoPriceForHedge = new JCheckBox();
 		
 		
 
@@ -412,6 +441,7 @@ class TicketDlg extends JDialog {
 			right.add( "E-trade only", m_eTradeOnly);
 			right.add( "Firm quote only", m_firmQuoteOnly);
 			right.add( "Opt out SMART routing", m_optOutSmartRouting);
+			right.add( "Don't use auto price for hedge", m_dontUseAutoPriceForHedge);
 			right.add( "Transmit", m_transmit);
 			
 			HorzPanel checks = new HorzPanel();
@@ -453,6 +483,7 @@ class TicketDlg extends JDialog {
 			m_transmit.setSelected( true);
 			m_extOperator.setText(m_order.extOperator());
 			m_softDollarTiers.removeAllItems();
+			m_dontUseAutoPriceForHedge.setSelected( m_order.dontUseAutoPriceForHedge());
 			
 			ApiDemo.INSTANCE.controller().reqSoftDollarTiers(tiers -> {
                 m_softDollarTiers.invalidate();
@@ -495,6 +526,7 @@ class TicketDlg extends JDialog {
 			m_order.transmit( m_transmit.isSelected() );
 			m_order.extOperator(m_extOperator .getText());
 			m_order.softDollarTier(m_softDollarTiers.getSelectedItem());
+			m_order.dontUseAutoPriceForHedge( m_dontUseAutoPriceForHedge.isSelected() );
 		}
 	}
 	

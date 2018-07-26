@@ -6,24 +6,7 @@ import com.commdata.mbassadorObj.MBAHistoricalDataEnd;
 import com.commdata.mbassadorObj.MBAPortFolio;
 import com.commdata.mbassadorObj.MBAtickPrice;
 import com.database.DbManager;
-import com.ib.client.CommissionReport;
-import com.ib.client.Contract;
-import com.ib.client.ContractDescription;
-import com.ib.client.ContractDetails;
-import com.ib.client.DeltaNeutralContract;
-import com.ib.client.DepthMktDataDescription;
-import com.ib.client.EClientSocket;
-import com.ib.client.EJavaSignal;
-import com.ib.client.EReader;
-import com.ib.client.EWrapper;
-import com.ib.client.Execution;
-import com.ib.client.FamilyCode;
-import com.ib.client.NewsProvider;
-import com.ib.client.Order;
-import com.ib.client.OrderState;
-import com.ib.client.SoftDollarTier;
-import com.ib.client.TickAttr;
-import com.ib.client.TickType;
+import com.ib.client.*;
 import com.utils.TMbassadorSingleton;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -182,16 +165,7 @@ public class SDataManager implements EWrapper
     }
 
     @Override
-    public void tickOptionComputation(int tickerId,
-                                      int field,
-                                      double impliedVol,
-                                      double delta,
-                                      double optPrice,
-                                      double pvDividend,
-                                      double gamma,
-                                      double vega,
-                                      double theta,
-                                      double undPrice)
+    public void tickOptionComputation(int tickerId, int field, double impliedVol, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice)
     {
         TickType tickType = TickType.get(field);
         if (tickType == TickType.OPEN)
@@ -223,30 +197,13 @@ public class SDataManager implements EWrapper
     }
 
     @Override
-    public void tickEFP(int tickerId,
-                        int tickType,
-                        double basisPoints,
-                        String formattedBasisPoints,
-                        double impliedFuture,
-                        int holdDays,
-                        String futureLastTradeDate,
-                        double dividendImpact,
-                        double dividendsToLastTradeDate)
+    public void tickEFP(int tickerId, int tickType, double basisPoints, String formattedBasisPoints, double impliedFuture, int holdDays, String futureLastTradeDate, double dividendImpact, double dividendsToLastTradeDate)
     {
         int a = 1;
     }
 
     @Override
-    public void orderStatus(int orderId,
-                            String status,
-                            double filled,
-                            double remaining,
-                            double avgFillPrice,
-                            int permId,
-                            int parentId,
-                            double lastFillPrice,
-                            int clientId,
-                            String whyHeld)
+    public void orderStatus(int orderId, String status, double filled, double remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice)
     {
 
     }
@@ -264,22 +221,21 @@ public class SDataManager implements EWrapper
     }
 
 
-
     /**
      * 这个方法仅在已经调用EClientSocket对象的reqAccountUpdates()方法时调用
-     参数	描述
-     * @param key
-                 表示一种账户值类型的字符串。 有很多可被发送的可用的标签，这里仅列出几个样本：
-
-                 CashBalance - 账户现金余额
-                 DayTradesRemaining - 剩余交易日
-                 EquityWithLoanValue - 含借贷值股权
-                 InitMarginReq - 当前初始保证金要求
-                 MaintMarginReq - 当前维持保证金
-                 NetLiquidation - 净清算值
-     * @param value	与标签相关的值。
-     * @param currency	在值为货币类型的情况下，定义货币类型。
-     * @param accountName	说明信息应用的账户。适用于金融顾问子账户信息。
+     * 参数	描述
+     *
+     * @param key         表示一种账户值类型的字符串。 有很多可被发送的可用的标签，这里仅列出几个样本：
+     *                    <p>
+     *                    CashBalance - 账户现金余额
+     *                    DayTradesRemaining - 剩余交易日
+     *                    EquityWithLoanValue - 含借贷值股权
+     *                    InitMarginReq - 当前初始保证金要求
+     *                    MaintMarginReq - 当前维持保证金
+     *                    NetLiquidation - 净清算值
+     * @param value       与标签相关的值。
+     * @param currency    在值为货币类型的情况下，定义货币类型。
+     * @param accountName 说明信息应用的账户。适用于金融顾问子账户信息。
      */
     @Override
     public void updateAccountValue(String key, String value, String currency, String accountName)
@@ -290,43 +246,32 @@ public class SDataManager implements EWrapper
 
 
     /**
-     *  这个方法仅在已经调用EClientSocket对象的reqAccountUpdates()方法时调用。
-     参数	描述
-     * @param contract	该结构包括交易合约的描述。 合约的交易所区域没有为投资组合更新而设置。
-     * @param position	该整数表示合约头寸。 如果头寸为0，表示头寸刚被平仓。
-     * @param marketPrice	产品的单位价格。
-     * @param marketValue	产品的总市值。
-     * @param averageCost	每股的平均成本的计算是用你头寸的数量除以你的成本（执行价格＋佣金）。
-     * @param unrealizedPNL	你未平仓头寸的当前市值和平均成本或平均成本值的差。
-     * @param realizedPNL	显示平仓头寸的利润，为你的建仓执行成本（执行价格＋建仓佣金）和平仓执行成本（执行价格＋平仓头寸佣金）的差。
-     * @param accountName	信息应用于的账户名称。适用于金融顾问子账户信息。
+     * 这个方法仅在已经调用EClientSocket对象的reqAccountUpdates()方法时调用。
+     * 参数	描述
+     *
+     * @param contract      该结构包括交易合约的描述。 合约的交易所区域没有为投资组合更新而设置。
+     * @param position      该整数表示合约头寸。 如果头寸为0，表示头寸刚被平仓。
+     * @param marketPrice   产品的单位价格。
+     * @param marketValue   产品的总市值。
+     * @param averageCost   每股的平均成本的计算是用你头寸的数量除以你的成本（执行价格＋佣金）。
+     * @param unrealizedPNL 你未平仓头寸的当前市值和平均成本或平均成本值的差。
+     * @param realizedPNL   显示平仓头寸的利润，为你的建仓执行成本（执行价格＋建仓佣金）和平仓执行成本（执行价格＋平仓头寸佣金）的差。
+     * @param accountName   信息应用于的账户名称。适用于金融顾问子账户信息。
      */
     @Override
-    public void updatePortfolio(Contract contract,
-                                double position,
-                                double marketPrice,
-                                double marketValue,
-                                double averageCost,
-                                double unrealizedPNL,
-                                double realizedPNL,
-                                String accountName)
+    public void updatePortfolio(Contract contract, double position, double marketPrice, double marketValue, double averageCost, double unrealizedPNL, double realizedPNL, String accountName)
     {
-        MBAPortFolio mbaPortFolio = new MBAPortFolio(contract,
-                                                     position,
-                                                     marketPrice,
-                                                     marketValue,
-                                                     averageCost,
-                                                     unrealizedPNL,
-                                                     realizedPNL,
-                                                     accountName);
+        MBAPortFolio mbaPortFolio = new MBAPortFolio(contract, position, marketPrice, marketValue, averageCost,
+                                                     unrealizedPNL, realizedPNL, accountName);
 
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(mbaPortFolio);
     }
 
 
-
-    /** 这个方法仅在已经调用EClientSocket对象的reqAccountUpdates()方法时调用。
+    /**
+     * 这个方法仅在已经调用EClientSocket对象的reqAccountUpdates()方法时调用。
      * 参数	描述
+     *
      * @param timeStamp 表示账户信息的最后更新时间。
      */
     @Override
@@ -366,8 +311,8 @@ public class SDataManager implements EWrapper
     @Override
     public void contractDetailsEnd(int reqId)
     {
-        TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(makeAKmsg(AK_CONTRACT_DETAIL_END,
-                                                                          String.valueOf(reqId)));
+        TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(
+                makeAKmsg(AK_CONTRACT_DETAIL_END, String.valueOf(reqId)));
     }
 
     @Override
@@ -389,13 +334,7 @@ public class SDataManager implements EWrapper
     }
 
     @Override
-    public void updateMktDepthL2(int tickerId,
-                                 int position,
-                                 String marketMaker,
-                                 int operation,
-                                 int side,
-                                 double price,
-                                 int size)
+    public void updateMktDepthL2(int tickerId, int position, String marketMaker, int operation, int side, double price, int size)
     {
         int a = 1;
     }
@@ -419,34 +358,17 @@ public class SDataManager implements EWrapper
     @Override
     public void receiveFA(int faDataType, String xml)
     {
-
     }
 
     @Override
-    public void historicalData(int reqId,
-                               String date,
-                               double open,
-                               double high,
-                               double low,
-                               double close,
-                               int volume,
-                               int count,
-                               double WAP,
-                               boolean hasGaps)
+    public void historicalData(int reqId, Bar bar)
     {
-        MBAHistoricalData mbaHistoricalData = new MBAHistoricalData(reqId,
-                                                                    date,
-                                                                    open,
-                                                                    high,
-                                                                    low,
-                                                                    close,
-                                                                    volume,
-                                                                    count,
-                                                                    WAP,
-                                                                    hasGaps);
+        MBAHistoricalData mbaHistoricalData = new MBAHistoricalData(reqId, bar.time(), bar.open(), bar.high(),
+                                                                    bar.low(), bar.close(), bar.volume(), bar.count(),
+                                                                    bar.wap(), false);
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(mbaHistoricalData);
-
     }
+
 
     @Override
     public void scannerParameters(String xml)
@@ -455,13 +377,7 @@ public class SDataManager implements EWrapper
     }
 
     @Override
-    public void scannerData(int reqId,
-                            int rank,
-                            ContractDetails contractDetails,
-                            String distance,
-                            String benchmark,
-                            String projection,
-                            String legsStr)
+    public void scannerData(int reqId, int rank, ContractDetails contractDetails, String distance, String benchmark, String projection, String legsStr)
     {
 
     }
@@ -473,15 +389,7 @@ public class SDataManager implements EWrapper
     }
 
     @Override
-    public void realtimeBar(int reqId,
-                            long time,
-                            double open,
-                            double high,
-                            double low,
-                            double close,
-                            long volume,
-                            double wap,
-                            int count)
+    public void realtimeBar(int reqId, long time, double open, double high, double low, double close, long volume, double wap, int count)
     {
         int a = 1;
     }
@@ -629,12 +537,7 @@ public class SDataManager implements EWrapper
     }
 
     @Override
-    public void positionMulti(int reqId,
-                              String account,
-                              String modelCode,
-                              Contract contract,
-                              double pos,
-                              double avgCost)
+    public void positionMulti(int reqId, String account, String modelCode, Contract contract, double pos, double avgCost)
     {
 
     }
@@ -646,12 +549,7 @@ public class SDataManager implements EWrapper
     }
 
     @Override
-    public void accountUpdateMulti(int reqId,
-                                   String account,
-                                   String modelCode,
-                                   String key,
-                                   String value,
-                                   String currency)
+    public void accountUpdateMulti(int reqId, String account, String modelCode, String key, String value, String currency)
     {
 
     }
@@ -663,13 +561,7 @@ public class SDataManager implements EWrapper
     }
 
     @Override
-    public void securityDefinitionOptionalParameter(int reqId,
-                                                    String exchange,
-                                                    int underlyingConId,
-                                                    String tradingClass,
-                                                    String multiplier,
-                                                    Set<String> expirations,
-                                                    Set<Double> strikes)
+    public void securityDefinitionOptionalParameter(int reqId, String exchange, int underlyingConId, String tradingClass, String multiplier, Set<String> expirations, Set<Double> strikes)
     {
 
     }
@@ -712,12 +604,7 @@ public class SDataManager implements EWrapper
     }
 
     @Override
-    public void tickNews(int tickerId,
-                         long timeStamp,
-                         String providerCode,
-                         String articleId,
-                         String headline,
-                         String extraData)
+    public void tickNews(int tickerId, long timeStamp, String providerCode, String articleId, String headline, String extraData)
     {
 
     }
@@ -761,15 +648,84 @@ public class SDataManager implements EWrapper
     @Override
     public void headTimestamp(int reqId, String headTimestamp)
     {
-
     }
 
     @Override
-    public void histogramData(int reqId, List<Map.Entry<Double, Long>> items)
+    public void histogramData(int reqId, List<HistogramEntry> items)
+    {
+    }
+
+    @Override
+    public void historicalDataUpdate(int reqId, Bar bar)
     {
 
     }
 
+    @Override
+    public void rerouteMktDataReq(int reqId, int conId, String exchange)
+    {
+
+    }
+
+    @Override
+    public void rerouteMktDepthReq(int reqId, int conId, String exchange)
+    {
+
+    }
+
+    @Override
+    public void marketRule(int marketRuleId, PriceIncrement[] priceIncrements)
+    {
+
+    }
+
+    @Override
+    public void pnl(int reqId, double dailyPnL, double unrealizedPnL, double realizedPnL)
+    {
+
+    }
+
+    @Override
+    public void pnlSingle(int reqId, int pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value)
+    {
+
+    }
+
+    @Override
+    public void historicalTicks(int reqId, List<HistoricalTick> ticks, boolean done)
+    {
+
+    }
+
+    @Override
+    public void historicalTicksBidAsk(int reqId, List<HistoricalTickBidAsk> ticks, boolean done)
+    {
+
+    }
+
+    @Override
+    public void historicalTicksLast(int reqId, List<HistoricalTickLast> ticks, boolean done)
+    {
+
+    }
+
+    @Override
+    public void tickByTickAllLast(int reqId, int tickType, long time, double price, int size, TickAttr attribs, String exchange, String specialConditions)
+    {
+
+    }
+
+    @Override
+    public void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, int bidSize, int askSize, TickAttr attribs)
+    {
+
+    }
+
+    @Override
+    public void tickByTickMidPoint(int reqId, long time, double midPoint)
+    {
+
+    }
 
     public EClientSocket getM_client()
     {

@@ -1,3 +1,6 @@
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+ * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
+
 package com.samples.testbed.orders;
 
 import java.util.ArrayList;
@@ -209,6 +212,23 @@ public class OrderSamples {
 		return order;
 	}
 	
+	// Forex orders can be placed in denomination of second currency in pair using cashQty field
+	// Requires TWS or IBG 963+
+	// https://www.interactivebrokers.com/en/index.php?f=23876#963-02
+	
+	public static Order LimitOrderWithCashQty(String action, double quantity, double limitPrice, double cashQty) {
+		// ! [limitorderwithcashqty]
+		Order order = new Order();
+		order.action(action);
+		order.orderType("LMT");
+		order.totalQuantity(quantity);
+		order.lmtPrice(limitPrice);
+		order.cashQty(cashQty);
+		// ! [limitorderwithcashqty]
+		return order;
+	}
+	
+	
 	public static Order LimitIfTouched(String action, double quantity, double limitPrice, double triggerPrice) {
 		// ! [limitiftouched]
 		Order order = new Order();
@@ -255,13 +275,14 @@ public class OrderSamples {
 		return order;
 	}
 	
-	public static Order PeggedToMidpoint(String action, double quantity, double offset) {
+	public static Order PeggedToMidpoint(String action, double quantity, double offset, double limitPrice) {
 		// ! [pegged_midpoint]
 		Order order = new Order();
 		order.action(action);
 		order.orderType("PEG MID");
 		order.totalQuantity(quantity);
 		order.auxPrice(offset);
+		order.lmtPrice(limitPrice);
 		// ! [pegged_midpoint]
 		return order;
 	}
@@ -397,8 +418,7 @@ public class OrderSamples {
 		order.totalQuantity(quantity);
 		if (nonGuaranteed)
 		{
-			List<TagValue> smartComboRoutingParams = new ArrayList<>();
-			smartComboRoutingParams.add(new TagValue("NonGuaranteed", "1"));
+			order.smartComboRoutingParams().add(new TagValue("NonGuaranteed", "1"));
 		}
 		// ! [combolimit]
 		return order;
@@ -412,8 +432,7 @@ public class OrderSamples {
 		order.totalQuantity(quantity);
 		if (nonGuaranteed)
 		{
-			List<TagValue> smartComboRoutingParams = new ArrayList<>();
-			smartComboRoutingParams.add(new TagValue("NonGuaranteed", "1"));
+			order.smartComboRoutingParams().add(new TagValue("NonGuaranteed", "1"));
 		}
 		// ! [combomarket]
 		return order;
@@ -435,8 +454,7 @@ public class OrderSamples {
 		
 		if (nonGuaranteed)
 		{
-			List<TagValue> smartComboRoutingParams = new ArrayList<>();
-			smartComboRoutingParams.add(new TagValue("NonGuaranteed", "1"));
+			order.smartComboRoutingParams().add(new TagValue("NonGuaranteed", "1"));
 		}
 		// ! [limitordercombolegprices]
 		return order;
@@ -449,10 +467,10 @@ public class OrderSamples {
 		order.orderType("REL + LMT");
 		order.totalQuantity(quantity);
 		order.lmtPrice(limitPrice);
+
 		if (nonGuaranteed)
 		{
-			List<TagValue> smartComboRoutingParams = new ArrayList<>();
-			smartComboRoutingParams.add(new TagValue("NonGuaranteed", "1"));
+			order.smartComboRoutingParams().add(new TagValue("NonGuaranteed", "1"));
 		}
 		// ! [relativelimitcombo]
 		return order;
@@ -466,8 +484,7 @@ public class OrderSamples {
 		order.totalQuantity(quantity);
 		if (nonGuaranteed)
 		{
-			List<TagValue> smartComboRoutingParams = new ArrayList<>();
-			smartComboRoutingParams.add(new TagValue("NonGuaranteed", "1"));
+			order.smartComboRoutingParams().add(new TagValue("NonGuaranteed", "1"));
 		}
 		// ! [relativemarketcombo]
 		return order;
@@ -588,14 +605,14 @@ public class OrderSamples {
         order.adjustedOrderType(OrderType.TRAIL);
         //With a stop price of...
         order.adjustedStopPrice(adjustStopPrice);
-        //traling by and amount (0) or a percent (1)...
+        //trailing by and amount (0) or a percent (1)...
         order.adjustableTrailingUnit(trailUnit);
         //of...
         order.adjustedTrailingAmount(adjustedTrailAmount);
         //! [adjustable_trail]
         return order;
     }
-    
+    	
     public static PriceCondition PriceCondition(int conId, String exchange, double price, boolean isMore, boolean isConjunction) {
     	//! [price_condition]
     	//Conditions have to be created via the OrderCondition.Create
@@ -688,5 +705,13 @@ public class OrderSamples {
     	//! [volume_condition]
         return volCon;
     }
-	
+
+    public static Order WhatIfLimitOrder(String action, double quantity, double limitPrice) {
+        // ! [whatiflimitorder]
+        Order order = LimitOrder(action, quantity, limitPrice);
+        order.whatIf(true);
+        // ! [whatiflimitorder]
+        return order;
+    }
+
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.apidemo;
@@ -8,6 +8,7 @@ import static com.ib.controller.Formats.fmtPct;
 import static com.ib.controller.Formats.fmtTime;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -19,18 +20,23 @@ import com.ib.controller.ApiController.TopMktDataAdapter;
 import com.ib.controller.Formats;
 
 class TopModel extends AbstractTableModel {
-	private ArrayList<TopRow> m_rows = new ArrayList<>();
-	MarketDataPanel m_parentPanel;
-	private final int CANCEL_CHBX_COL_INDEX = 21;
+	private List<TopRow> m_rows = new ArrayList<>();
+	private MarketDataPanel m_parentPanel;
+	private static final int CANCEL_CHBX_COL_INDEX = 25;
+	String m_genericTicks = "";
 
 	TopModel(MarketDataPanel parentPanel) {
 		m_parentPanel = parentPanel;
 	}
 
+	void setGenericTicks(String genericTicks) {
+		m_genericTicks = genericTicks;
+	}
+
 	void addRow( Contract contract) {
 		TopRow row = new TopRow( this, contract.description(), m_parentPanel );
 		m_rows.add( row);
-		ApiDemo.INSTANCE.controller().reqTopMktData(contract, "", false, false, row);
+		ApiDemo.INSTANCE.controller().reqTopMktData(contract, m_genericTicks, false, false, row);
 		fireTableRowsInserted( m_rows.size() - 1, m_rows.size() - 1);
 	}
 
@@ -73,7 +79,7 @@ class TopModel extends AbstractTableModel {
 	}
 	
 	@Override public int getColumnCount() {
-		return 22;
+		return 26;
 	}
 	
 	@Override public String getColumnName(int col) {
@@ -84,21 +90,25 @@ class TopModel extends AbstractTableModel {
 			case 3: return "Bid Mask";
 			case 4: return "Bid Can Auto Execute";
 			case 5: return "Bid Past Limit";
-			case 6: return "Ask";
-			case 7: return "Ask Size";
-			case 8: return "Ask Mask";
-			case 9: return "Ask Can Auto Execute";
-			case 10: return "Ask Past Limit";
-			case 11: return "Last";
-			case 12: return "Time";
-			case 13: return "Change";
-			case 14: return "Volume";
-			case 15: return "Min Tick";
-			case 16: return "BBO Exchange";
-			case 17: return "Snapshot Permissions";
-			case 18: return "Close";
-			case 19: return "Open";
-			case 20: return "Market Data Type";
+			case 6: return "Pre Open Bid";
+			case 7: return "Ask";
+			case 8: return "Ask Size";
+			case 9: return "Ask Mask";
+			case 10: return "Ask Can Auto Execute";
+			case 11: return "Ask Past Limit";
+			case 12: return "Pre Open Ask";
+			case 13: return "Last";
+			case 14: return "Time";
+			case 15: return "Change";
+			case 16: return "Volume";
+			case 17: return "Min Tick";
+			case 18: return "BBO Exchange";
+			case 19: return "Snapshot Permissions";
+			case 20: return "Close";
+			case 21: return "Open";
+			case 22: return "Market Data Type";
+			case 23: return "Futures Open Interest";
+			case 24: return "Avg Opt Volume";
 			case CANCEL_CHBX_COL_INDEX: return "Cancel";
 
 			default: return null;
@@ -114,21 +124,25 @@ class TopModel extends AbstractTableModel {
 			case 3: return row.m_bidMask;
 			case 4: return row.m_bidCanAutoExecute;
 			case 5: return row.m_bidPastLimit;
-			case 6: return fmt( row.m_ask);
-			case 7: return row.m_askSize;
-			case 8: return row.m_askMask;
-			case 9: return row.m_askCanAutoExecute;
-			case 10: return row.m_askPastLimit;
-			case 11: return fmt( row.m_last);
-			case 12: return fmtTime( row.m_lastTime);
-			case 13: return row.change();
-			case 14: return Formats.fmt0( row.m_volume);
-			case 15: return row.m_minTick;
-			case 16: return row.m_bboExch;
-			case 17: return row.m_snapshotPermissions;
-			case 18: return fmt( row.m_close);
-			case 19: return fmt( row.m_open);
-			case 20: return row.m_marketDataType;
+			case 6: return row.m_preOpenBid;
+			case 7: return fmt( row.m_ask);
+			case 8: return row.m_askSize;
+			case 9: return row.m_askMask;
+			case 10: return row.m_askCanAutoExecute;
+			case 11: return row.m_askPastLimit;
+			case 12: return row.m_preOpenAsk;
+			case 13: return fmt( row.m_last);
+			case 14: return fmtTime( row.m_lastTime);
+			case 15: return row.change();
+			case 16: return Formats.fmt0( row.m_volume);
+			case 17: return row.m_minTick;
+			case 18: return row.m_bboExch;
+			case 19: return row.m_snapshotPermissions;
+			case 20: return fmt( row.m_close);
+			case 21: return fmt( row.m_open);
+			case 22: return row.m_marketDataType;
+			case 23: return row.m_futuresOpenInterest;
+			case 24: return row.m_avgOptVolume;
 			case CANCEL_CHBX_COL_INDEX: return row.m_cancel;
 			default: return null;
 		}
@@ -167,10 +181,13 @@ class TopModel extends AbstractTableModel {
 		boolean m_frozen;
 		boolean m_bidCanAutoExecute, m_askCanAutoExecute;
 		boolean m_bidPastLimit, m_askPastLimit;
+		boolean m_preOpenBid, m_preOpenAsk;
 		double m_minTick;
 		String m_bboExch;
 		int m_snapshotPermissions;
 		int m_bidMask, m_askMask;
+		int m_futuresOpenInterest;
+		int m_avgOptVolume;
 		
 		TopRow( AbstractTableModel model, String description, MarketDataPanel parentPanel) {
 			m_model = model;
@@ -198,12 +215,14 @@ class TopModel extends AbstractTableModel {
 					m_bid = price;
 					m_bidCanAutoExecute = attribs.canAutoExecute();
 					m_bidPastLimit = attribs.pastLimit();
+					m_preOpenBid = attribs.preOpen();
 					break;
 				case ASK:
 				case DELAYED_ASK:
 					m_ask = price;
 					m_askCanAutoExecute = attribs.canAutoExecute();
 					m_askPastLimit = attribs.pastLimit();
+					m_preOpenAsk = attribs.preOpen();
 					break;
 				case LAST:
 				case DELAYED_LAST:
@@ -243,6 +262,12 @@ class TopModel extends AbstractTableModel {
 				case DELAYED_VOLUME:
 					m_volume = size;
 					break;
+				case FUTURES_OPEN_INTEREST:
+					m_futuresOpenInterest = size;
+					break;
+				case AVG_OPT_VOLUME:
+					m_avgOptVolume = size;
+					break;
                 default: break; 
 			}
 			m_model.fireTableDataChanged();
@@ -251,6 +276,7 @@ class TopModel extends AbstractTableModel {
 		@Override public void tickString(TickType tickType, String value) {
 			switch( tickType) {
 				case LAST_TIMESTAMP:
+				case DELAYED_LAST_TIMESTAMP:
 					m_lastTime = Long.parseLong( value) * 1000;
 					break;
                 default: break; 

@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.TestJavaClient;
@@ -6,12 +6,7 @@ package com.TestJavaClient;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
+import java.util.*;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -36,40 +31,28 @@ import com.apidemo.OnOKPanel;
 import com.apidemo.PegBenchPanel;
 
 public class OrderDlg extends JDialog {
-    final static String ALL_GENERIC_TICK_TAGS = "100,101,104,105,106,107,165,221,225,233,236,258,293,294,295,318";
-    final static int OPERATION_INSERT = 0;
-    final static int OPERATION_UPDATE = 1;
-    final static int OPERATION_DELETE = 2;
+    private static final String ALL_GENERIC_TICK_TAGS = "100,101,104,105,106,107,165,221,225,233,236,258,293,294,295,318";
+    private static final int OPERATION_INSERT = 0;
+    private static final int OPERATION_UPDATE = 1;
+    private static final int OPERATION_DELETE = 2;
 
-    final static int SIDE_ASK = 0;
-    final static int SIDE_BID = 1;
+    private static final int SIDE_ASK = 0;
+    private static final int SIDE_BID = 1;
 
     public boolean 		m_rc;
-    public int 			m_id;
-    public String       m_backfillEndTime;
-    public String		m_backfillDuration;
-    public String       m_barSizeSetting;
-    public int          m_useRTH;
-    public int          m_formatDate;
+    private int 			m_id;
     public int          m_marketDepthRows;
-    public String       m_whatToShow;
-    public Contract 	m_contract = new Contract();
+    private Contract 	m_contract = new Contract();
     public Order 		m_order = new Order();
-    public DeltaNeutralContract	m_underComp = new DeltaNeutralContract();
+    public DeltaNeutralContract	m_deltaNeutralContract = new DeltaNeutralContract();
     public int          m_exerciseAction;
     public int          m_exerciseQuantity;
     public int          m_override;
     public int          m_marketDataType;
     private String      m_optionsDlgTitle;
-    private ArrayList<TagValue> m_options = new ArrayList<>();
+    private List<TagValue> m_options = new ArrayList<>();
 
     private JTextField	m_Id = new JTextField( "0");
-    private JTextField	m_BackfillEndTime = new JTextField(22);
-    private JTextField	m_BackfillDuration = new JTextField( "1 M");
-    private JTextField  m_BarSizeSetting = new JTextField("1 day");
-    private JTextField	m_UseRTH = new JTextField( "1");
-    private JTextField	m_FormatDate = new JTextField( "1");
-    private JTextField	m_WhatToShow = new JTextField( "TRADES");
     private JTextField 	m_conId = new JTextField();
     private JTextField 	m_symbol = new JTextField( "QQQQ");
     private JTextField 	m_secType = new JTextField( "STK");
@@ -104,13 +87,15 @@ public class OrderDlg extends JDialog {
 
     private JButton	    m_sharesAlloc = new JButton("FA Allocation Info...");
     private JButton 	m_comboLegs = new JButton( "Combo Legs");
-    private JButton 	m_btnUnderComp = new JButton( "Delta Neutral");
+    private JButton 	m_btnDeltaNeutralContract = new JButton( "Delta Neutral");
     private JButton 	m_btnAlgoParams = new JButton( "Algo Params");
     private JButton 	m_btnSmartComboRoutingParams = new JButton( "Smart Combo Routing Params");
     private JButton 	m_btnOptions = new JButton( "Options");
     private JButton		m_btnConditions = new JButton("Conditions");
     private JButton		m_btnPeg2Bench = new JButton("Pegged to benchmark");
     private JButton		m_btnAdjStop = new JButton("Adjustable stops");
+    private JButton     m_btnHistoricalData = new JButton("Historical Data Query");
+    private HistoricalDataDlg m_historicalDataDlg = new HistoricalDataDlg(this);
 
     private JButton 	m_ok = new JButton( "OK");
     private JButton 	m_cancel = new JButton( "Cancel");
@@ -131,16 +116,7 @@ public class OrderDlg extends JDialog {
     public void faMethod(String s) { m_faMethod = s;}
     public void faPercentage(String s) { m_faPercentage = s; }
 
-    private static void addGBComponent(IBGridBagPanel panel, Component comp,
-                                       GridBagConstraints gbc, int weightx, int gridwidth)
-    {
-      gbc.weightx = weightx;
-      gbc.gridwidth = gridwidth;
-      panel.setConstraints(comp, gbc);
-      panel.add(comp, gbc);
-    }
-
-    public OrderDlg( SampleFrame owner) {
+    OrderDlg( SampleFrame owner) {
         super( owner, true);
 
         m_parent = owner;
@@ -156,120 +132,93 @@ public class OrderDlg extends JDialog {
         IBGridBagPanel pId = new IBGridBagPanel();
         pId.setBorder( BorderFactory.createTitledBorder( "Message Id") );
 
-        addGBComponent(pId, new JLabel( "Id"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
-        addGBComponent(pId, m_Id, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
+        pId.addGBComponent(new JLabel( "Id"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
+        pId.addGBComponent(m_Id, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
 
         // create contract panel
         IBGridBagPanel pContractDetails = new IBGridBagPanel();
         pContractDetails.setBorder( BorderFactory.createTitledBorder( "Contract Info") );
-        addGBComponent(pContractDetails, new JLabel( "Contract Id"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pContractDetails, m_conId, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pContractDetails, new JLabel( "Symbol"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pContractDetails, m_symbol, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pContractDetails, new JLabel( "Security Type"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pContractDetails, m_secType, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pContractDetails, new JLabel( "Last trade date or contract month"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pContractDetails, m_lastTradeDateOrContractMonth, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pContractDetails, new JLabel( "Strike"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pContractDetails, m_strike, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pContractDetails, new JLabel( "Put/Call"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pContractDetails, m_right, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pContractDetails, new JLabel( "Option Multiplier"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pContractDetails, m_multiplier, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pContractDetails, new JLabel( "Exchange"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pContractDetails, m_exchange, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pContractDetails, new JLabel( "Primary Exchange"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pContractDetails, m_primaryExch, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pContractDetails, new JLabel( "Currency"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pContractDetails, m_currency, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pContractDetails, new JLabel( "Local Symbol"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pContractDetails, m_localSymbol, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pContractDetails, new JLabel( "Trading Class"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pContractDetails, m_tradingClass, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pContractDetails, new JLabel( "Include Expired"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pContractDetails, m_includeExpired, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pContractDetails, new JLabel( "Sec Id Type"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pContractDetails, m_secIdType, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pContractDetails, new JLabel( "Sec Id"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pContractDetails, m_secId, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pContractDetails.addGBComponent(new JLabel( "Contract Id"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pContractDetails.addGBComponent(m_conId, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pContractDetails.addGBComponent(new JLabel( "Symbol"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pContractDetails.addGBComponent(m_symbol, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pContractDetails.addGBComponent(new JLabel( "Security Type"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pContractDetails.addGBComponent(m_secType, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pContractDetails.addGBComponent(new JLabel( "Last trade date or contract month"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pContractDetails.addGBComponent(m_lastTradeDateOrContractMonth, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pContractDetails.addGBComponent(new JLabel( "Strike"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pContractDetails.addGBComponent(m_strike, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pContractDetails.addGBComponent(new JLabel( "Put/Call"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pContractDetails.addGBComponent(m_right, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pContractDetails.addGBComponent(new JLabel( "Option Multiplier"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pContractDetails.addGBComponent(m_multiplier, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pContractDetails.addGBComponent(new JLabel( "Exchange"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pContractDetails.addGBComponent(m_exchange, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pContractDetails.addGBComponent(new JLabel( "Primary Exchange"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pContractDetails.addGBComponent(m_primaryExch, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pContractDetails.addGBComponent(new JLabel( "Currency"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pContractDetails.addGBComponent(m_currency, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pContractDetails.addGBComponent(new JLabel( "Local Symbol"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pContractDetails.addGBComponent(m_localSymbol, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pContractDetails.addGBComponent(new JLabel( "Trading Class"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pContractDetails.addGBComponent(m_tradingClass, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pContractDetails.addGBComponent(new JLabel( "Include Expired"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pContractDetails.addGBComponent(m_includeExpired, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pContractDetails.addGBComponent(new JLabel( "Sec Id Type"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pContractDetails.addGBComponent(m_secIdType, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pContractDetails.addGBComponent(new JLabel( "Sec Id"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pContractDetails.addGBComponent(m_secId, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
 
         // create order panel
         IBGridBagPanel pOrderDetails = new IBGridBagPanel();
         pOrderDetails.setBorder( BorderFactory.createTitledBorder( "Order Info") );
-        addGBComponent(pOrderDetails, new JLabel( "Action"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pOrderDetails, m_action, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pOrderDetails, new JLabel( "Total Order Size"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pOrderDetails, m_totalQuantity, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pOrderDetails, new JLabel( "Order Type"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pOrderDetails, m_orderType, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pOrderDetails, new JLabel( "Lmt Price / Option Price / Stop Price / Volatility"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pOrderDetails, m_lmtPrice, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pOrderDetails, new JLabel( "Aux Price / Underlying Price"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pOrderDetails, m_auxPrice, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pOrderDetails, new JLabel( "Good After Time"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pOrderDetails, m_goodAfterTime, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pOrderDetails, new JLabel( "Good Till Date"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pOrderDetails, m_goodTillDate, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
-        addGBComponent(pOrderDetails, new JLabel( "Cash Quantity"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
-        addGBComponent(pOrderDetails, m_cashQty, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pOrderDetails.addGBComponent(new JLabel( "Action"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pOrderDetails.addGBComponent(m_action, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pOrderDetails.addGBComponent(new JLabel( "Total Order Size"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pOrderDetails.addGBComponent(m_totalQuantity, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pOrderDetails.addGBComponent(new JLabel( "Order Type"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pOrderDetails.addGBComponent(m_orderType, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pOrderDetails.addGBComponent(new JLabel( "Lmt Price / Option Price / Stop Price / Volatility"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pOrderDetails.addGBComponent(m_lmtPrice, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pOrderDetails.addGBComponent(new JLabel( "Aux Price / Underlying Price"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pOrderDetails.addGBComponent(m_auxPrice, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pOrderDetails.addGBComponent(new JLabel( "Good After Time"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pOrderDetails.addGBComponent(m_goodAfterTime, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pOrderDetails.addGBComponent(new JLabel( "Good Till Date"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pOrderDetails.addGBComponent(m_goodTillDate, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
+        pOrderDetails.addGBComponent(new JLabel( "Cash Quantity"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE );
+        pOrderDetails.addGBComponent(m_cashQty, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER);
 
         // create marketDepth panel
         IBGridBagPanel pMarketDepth = new IBGridBagPanel();
         pMarketDepth.setBorder( BorderFactory.createTitledBorder( "Market Depth") );
-        addGBComponent(pMarketDepth, new JLabel( "Number of Rows"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
-        addGBComponent(pMarketDepth, m_marketDepthRowTextField, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
+        pMarketDepth.addGBComponent(new JLabel( "Number of Rows"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
+        pMarketDepth.addGBComponent(m_marketDepthRowTextField, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
 
         // create marketData panel
         IBGridBagPanel pMarketData = new IBGridBagPanel();
         pMarketData.setBorder( BorderFactory.createTitledBorder( "Market Data") );
-        addGBComponent(pMarketData, new JLabel( "Generic Tick Tags"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
-        addGBComponent(pMarketData, m_genericTicksTextField, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
-        addGBComponent(pMarketData, m_snapshotMktDataTextField, gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
-        addGBComponent(pMarketData, m_regSnapshotMktDataTextField, gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
+        pMarketData.addGBComponent(new JLabel( "Generic Tick Tags"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
+        pMarketData.addGBComponent(m_genericTicksTextField, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
+        pMarketData.addGBComponent(m_snapshotMktDataTextField, gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
+        pMarketData.addGBComponent(m_regSnapshotMktDataTextField, gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
         
         // create options exercise panel
         IBGridBagPanel pOptionsExercise= new IBGridBagPanel();
         pOptionsExercise.setBorder( BorderFactory.createTitledBorder( "Options Exercise") );
-        addGBComponent(pOptionsExercise, new JLabel( "Action (1 or 2)"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
-        addGBComponent(pOptionsExercise, m_exerciseActionTextField, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
-        addGBComponent(pOptionsExercise, new JLabel( "Number of Contracts"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
-        addGBComponent(pOptionsExercise, m_exerciseQuantityTextField, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
-        addGBComponent(pOptionsExercise, new JLabel( "Override (0 or 1)"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
-        addGBComponent(pOptionsExercise, m_overrideTextField, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
+        pOptionsExercise.addGBComponent(new JLabel( "Action (1 or 2)"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
+        pOptionsExercise.addGBComponent(m_exerciseActionTextField, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
+        pOptionsExercise.addGBComponent(new JLabel( "Number of Contracts"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
+        pOptionsExercise.addGBComponent(m_exerciseQuantityTextField, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
+        pOptionsExercise.addGBComponent(new JLabel( "Override (0 or 1)"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
+        pOptionsExercise.addGBComponent(m_overrideTextField, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
 
-        // create historical data panel
-        IBGridBagPanel pBackfill = new IBGridBagPanel();
-        pBackfill.setBorder( BorderFactory.createTitledBorder( "Historical Data Query") );
-        GregorianCalendar gc = new GregorianCalendar();
-        gc.setTimeZone(TimeZone.getTimeZone("GMT"));
-        String dateTime = "" +
-            gc.get(Calendar.YEAR) +
-            pad(gc.get(Calendar.MONTH) + 1) +
-            pad(gc.get(Calendar.DAY_OF_MONTH)) + " " +
-            pad(gc.get(Calendar.HOUR_OF_DAY)) + ":" +
-            pad(gc.get(Calendar.MINUTE)) + ":" +
-            pad(gc.get(Calendar.SECOND)) + " " +
-            gc.getTimeZone().getDisplayName( false, TimeZone.SHORT);
-
-        m_BackfillEndTime.setText(dateTime);
-        addGBComponent(pBackfill, new JLabel( "End Date/Time"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
-        addGBComponent(pBackfill, m_BackfillEndTime, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
-        addGBComponent(pBackfill, new JLabel( "Duration"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
-        addGBComponent(pBackfill, m_BackfillDuration, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
-        addGBComponent(pBackfill, new JLabel( "Bar Size Setting (1 to 11)"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
-        addGBComponent(pBackfill, m_BarSizeSetting, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
-        addGBComponent(pBackfill, new JLabel( "What to Show"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
-        addGBComponent(pBackfill, m_WhatToShow, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
-        addGBComponent(pBackfill, new JLabel( "Regular Trading Hours (1 or 0)"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
-        addGBComponent(pBackfill, m_UseRTH, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
-        addGBComponent(pBackfill, new JLabel( "Date Format Style (1 or 2)"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
-        addGBComponent(pBackfill, m_FormatDate, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
 
         // create marketDataType panel
         IBGridBagPanel pMarketDataType = new IBGridBagPanel();
         pMarketDataType.setBorder( BorderFactory.createTitledBorder( "Market Data Type") );
-        addGBComponent(pMarketDataType, new JLabel( "Market Data Type"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
-        addGBComponent(pMarketDataType, m_marketDataTypeCombo, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
+        pMarketDataType.addGBComponent(new JLabel( "Market Data Type"), gbc, COL1_WIDTH, GridBagConstraints.RELATIVE) ;
+        pMarketDataType.addGBComponent(m_marketDataTypeCombo, gbc, COL2_WIDTH, GridBagConstraints.REMAINDER) ;
 
         // create mid Panel
         JPanel pMidPanel = new JPanel();
@@ -279,92 +228,46 @@ public class OrderDlg extends JDialog {
         pMidPanel.add( pMarketDepth, BorderLayout.CENTER);
         pMidPanel.add( pMarketData, BorderLayout.CENTER);
         pMidPanel.add( pOptionsExercise, BorderLayout.CENTER);
-        pMidPanel.add( pBackfill, BorderLayout.CENTER);
         pMidPanel.add( pMarketDataType, BorderLayout.CENTER);
 
         // create order button panel
         JPanel pOrderButtonPanel = new JPanel();
         pOrderButtonPanel.add( m_sharesAlloc);
         pOrderButtonPanel.add( m_comboLegs);
-        pOrderButtonPanel.add( m_btnUnderComp);
+        pOrderButtonPanel.add( m_btnDeltaNeutralContract);
         pOrderButtonPanel.add( m_btnAlgoParams);
         pOrderButtonPanel.add( m_btnSmartComboRoutingParams);
 
         pMidPanel.add( pOrderButtonPanel, BorderLayout.CENTER);
         
         JPanel pOrderButtonPanel2 = new JPanel();
-        pOrderButtonPanel2.add( m_btnOptions);
-        pOrderButtonPanel2.add( m_btnConditions);
-        pOrderButtonPanel2.add( m_btnPeg2Bench);
-        pOrderButtonPanel2.add( m_btnAdjStop);
+        pOrderButtonPanel2.add(m_btnOptions);
+        pOrderButtonPanel2.add(m_btnConditions);
+        pOrderButtonPanel2.add(m_btnPeg2Bench);
+        pOrderButtonPanel2.add(m_btnAdjStop);
+        pOrderButtonPanel2.add(m_btnHistoricalData);
 
-        pMidPanel.add( pOrderButtonPanel2, BorderLayout.CENTER);
+        pMidPanel.add(pOrderButtonPanel2, BorderLayout.CENTER);
 
         // create button panel
         JPanel buttonPanel = new JPanel();
-        buttonPanel.add( m_ok);
-        buttonPanel.add( m_cancel);
+        buttonPanel.add(m_ok);
+        buttonPanel.add(m_cancel);
 
         // create action listeners
-        m_btnPeg2Bench.addActionListener(new ActionListener() {			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				onBtnPeg2Bench();
-			}
-		});
-        m_btnAdjStop.addActionListener(new ActionListener() {			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				onBtnAdjStop();
-			}
-		});
-        m_btnConditions.addActionListener(new ActionListener() {			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				onBtnConditions();
-			}
-		});
-        m_sharesAlloc.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e) {
-                onSharesAlloc();
-            }
-        });
+        m_btnHistoricalData.addActionListener(e -> onHistoricalData());
+        m_btnPeg2Bench.addActionListener(e -> onBtnPeg2Bench());
+        m_btnAdjStop.addActionListener(e -> onBtnAdjStop());
+        m_btnConditions.addActionListener(e -> onBtnConditions());
+        m_sharesAlloc.addActionListener(e -> onSharesAlloc());
 
-        m_comboLegs.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e) {
-                onAddComboLegs();
-            }
-        });
-        m_btnUnderComp.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e) {
-                onBtnUnderComp();
-            }
-        });
-        m_btnAlgoParams.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e) {
-                onBtnAlgoParams();
-            }
-        });
-        m_btnSmartComboRoutingParams.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e) {
-                onBtnSmartComboRoutingParams();
-            }
-        });
-        m_btnOptions.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e) {
-                onBtnOptions();
-            }
-        });
-        m_ok.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e) {
-                onOk();
-            }
-        });
-        m_cancel.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e) {
-                onCancel();
-            }
-        });
+        m_comboLegs.addActionListener(e -> onAddComboLegs());
+        m_btnDeltaNeutralContract.addActionListener(e -> onBtnDeltaNeutralContract());
+        m_btnAlgoParams.addActionListener(e -> onBtnAlgoParams());
+        m_btnSmartComboRoutingParams.addActionListener(e -> onBtnSmartComboRoutingParams());
+        m_btnOptions.addActionListener(e -> onBtnOptions());
+        m_ok.addActionListener(e -> onOk());
+        m_cancel.addActionListener(e -> onCancel());
 
         // create top panel
         JPanel topPanel = new JPanel();
@@ -382,15 +285,15 @@ public class OrderDlg extends JDialog {
         pack();
     }
 
-    protected void onBtnAdjStop() {
-		showModalPanelDialog(new CallableWithParam() {@Override
-			public Object call(Object param) {
-				return new AdjustedPanel((JDialog)param, m_order);
-			} 
-		});
+    private void onHistoricalData() {
+        m_historicalDataDlg.setVisible(true);
+        
+    }
+    void onBtnAdjStop() {
+		showModalPanelDialog(param -> new AdjustedPanel((JDialog)param, m_order));
 	}
     
-	protected void onBtnPeg2Bench() {
+	void onBtnPeg2Bench() {
 		showModalPanelDialog(param -> new PegBenchPanel((JDialog)param, m_order,
                 contract -> {
                     try {
@@ -404,7 +307,7 @@ public class OrderDlg extends JDialog {
 	}
 
 	
-	protected void onBtnConditions() {
+	void onBtnConditions() {
 		showModalPanelDialog(param -> new ConditionsPanel((JDialog)param, m_order,
                 contract -> {
                   try {
@@ -455,16 +358,16 @@ public class OrderDlg extends JDialog {
         comboLegDlg.setVisible( true);
     }
 
-    void onBtnUnderComp() {
-        UnderCompDlg underCompDlg = new UnderCompDlg(m_underComp, this);
+    void onBtnDeltaNeutralContract() {
+        DeltaNeutralContractDlg deltaNeutralContractDlg = new DeltaNeutralContractDlg(m_deltaNeutralContract, this);
 
         // show delta neutral dialog
-        underCompDlg.setVisible( true);
-        if (underCompDlg.ok()) {
-        	m_contract.underComp(m_underComp);
+        deltaNeutralContractDlg.setVisible( true);
+        if (deltaNeutralContractDlg.ok()) {
+        	m_contract.deltaNeutralContract(m_deltaNeutralContract);
         }
-        else if (underCompDlg.reset()) {
-        	m_contract.underComp(null);
+        else if (deltaNeutralContractDlg.reset()) {
+        	m_contract.deltaNeutralContract(null);
         }
     }
 
@@ -537,12 +440,6 @@ public class OrderDlg extends JDialog {
             m_order.faPercentage(m_faPercentage);
 
             // set historical data fields
-            m_backfillEndTime = m_BackfillEndTime.getText();
-            m_backfillDuration = m_BackfillDuration.getText();
-            m_barSizeSetting = m_BarSizeSetting.getText();
-            m_useRTH = Integer.parseInt( m_UseRTH.getText() );
-            m_whatToShow = m_WhatToShow.getText();
-            m_formatDate = Integer.parseInt( m_FormatDate.getText() );
             m_exerciseAction = Integer.parseInt( m_exerciseActionTextField.getText() );
             m_exerciseQuantity = Integer.parseInt( m_exerciseQuantityTextField.getText() );
             m_override = Integer.parseInt( m_overrideTextField.getText() );
@@ -569,9 +466,12 @@ public class OrderDlg extends JDialog {
         setVisible( false);
     }
 
-    public void show() {
-        m_rc = false;
-        super.show();
+    @Override
+    public void setVisible(boolean b) {
+        if (b) {
+            m_rc = false;
+        }
+        super.setVisible(b);
     }
 
     void setIdAtLeast( int id) {
@@ -612,36 +512,72 @@ public class OrderDlg extends JDialog {
         return Double.parseDouble(value);
     }
     
-//    void setOptionsDlgTitle(String title){
-//    	m_optionsDlgTitle = title;
-//    }
-  
-    void init(String btnText, boolean btnEnabled, String dlgTitle, ArrayList<TagValue> options) {
+    void init(String btnText, boolean btnEnabled, String dlgTitle, List<TagValue> options) {
     	init(btnText, btnEnabled);
     	m_options = options;
     	m_optionsDlgTitle = dlgTitle;
+    	
+    	pack();
     }
     void init(String btnText, boolean btnEnabled) {
     	m_btnOptions.setText(btnText);
     	m_btnOptions.setEnabled(btnEnabled);
     }
-//    void setOptions(Vector<TagValue> options) {
-//    	m_options = options;
-//    }
     
-//    void setOptionsBtnName(String name){
-//    	m_btnOptions.setText(name);
-//    }
-    
-    ArrayList<TagValue> getOptions() {
+    List<TagValue> options() {
     	return m_options;
     }
-//    void disableBtnOptions(){
-  //      m_btnOptions.setText("Options");
-//        m_btnOptions.setEnabled(false);
-  //  }
-//    void enableBtnOptions(){
-  //  	m_btnOptions.setEnabled(true);
-//    }
+
+    public boolean ignoreSize() {        
+        return m_historicalDataDlg.ignoreSize();
+    }
+    
+    public int numberOfTicks() {        
+        return m_historicalDataDlg.numberOfTicks();
+    }
+    
+    public String startDateTime() {
+        return m_historicalDataDlg.startTime();
+    }
+
+    String backfillEndTime() {
+        return m_historicalDataDlg.backfillEndTime();
+    }
+    
+    String backfillDuration() {
+        return m_historicalDataDlg.backfillDuration();
+    }
+    
+    String barSizeSetting() {
+        return m_historicalDataDlg.barSizeSetting();
+    }
+
+    int useRTH() {
+        return m_historicalDataDlg.useRTH() ? 1 : 0;
+    }
+
+    int formatDate() {
+        return m_historicalDataDlg.formatDate();
+    }
+
+    String whatToShow() {
+        return m_historicalDataDlg.whatToshow();
+    }
+ 
+    boolean keepUpToDate() {
+        return m_historicalDataDlg.keepUpToDate();
+    }
+    
+    public Contract contract() {
+        return m_contract;
+    }    
+    
+    public int id() {
+        return m_id;
+    }        
+
+    String tickByTickType() {
+        return m_historicalDataDlg.tickByTickType();
+    }
     
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -27,6 +27,10 @@ import static com.ib.client.Types.AlgoParam.useOddLots;
 import static com.ib.client.Types.AlgoParam.waitForFill;
 
 public class Types {
+	public enum TickByTickType {
+		None, Last, AllLast, BidAsk, MidPoint,
+	}
+	
 	public enum ComboParam {
 		NonGuaranteed, PriceCondConid, CondPriceMax, CondPriceMin, ChangeToMktTime1, ChangeToMktTime2, DiscretionaryPct, DontLeginNext, LeginPrio, MaxSegSize,
 	}
@@ -156,7 +160,7 @@ public class Types {
 	}
 
 	public enum Rule80A implements IApiEnum {
-		None(""), IndivArb("J"), IndivBigNonArb("K"), IndivSmallNonArb("I"), INST_ARB("U"), InstBigNonArb("Y"), InstSmallNonArb("A");
+		None(""), Individual("I"), Agency("A"), AgentOtherMember("W"), IndividualPTIA("J"), AgencyPTIA("U"), AgentOtherMemberPTIA("M"), IndividualPT("K"), AgencyPT("Y"), AgentOtherMemberPT("N");
 
 		private String m_apiString;
 
@@ -227,7 +231,7 @@ public class Types {
 
 	public enum WhatToShow {
 		TRADES, MIDPOINT, BID, ASK, // << only these are valid for real-time bars
-        BID_ASK, HISTORICAL_VOLATILITY, OPTION_IMPLIED_VOLATILITY, YIELD_ASK, YIELD_BID, YIELD_BID_ASK, YIELD_LAST
+        BID_ASK, HISTORICAL_VOLATILITY, OPTION_IMPLIED_VOLATILITY, YIELD_ASK, YIELD_BID, YIELD_BID_ASK, YIELD_LAST, ADJUSTED_LAST
 	}
 
 	public enum BarSize {
@@ -246,8 +250,9 @@ public class Types {
 		_30_mins("30 mins"),
 		_1_hour("1 hour"),
 		_4_hours("4 hours"),
-		_1_day("1_day"),
-		_1_week("1 week");
+		_1_day("1 day"),
+		_1_week("1 week"),
+		_1_month("1 month");
 
 		private final String description;
 
@@ -310,7 +315,7 @@ public class Types {
 	}
 
 	public enum SecType implements IApiEnum {
-		None, STK, OPT, FUT, CASH, BOND, CFD, FOP, WAR, IOPT, FWD, BAG, IND, BILL, FUND, FIXED, SLB, NEWS, CMDTY, BSK, ICU, ICS;
+		None, STK, OPT, FUT, CONTFUT, CASH, BOND, CFD, FOP, WAR, IOPT, FWD, BAG, IND, BILL, FUND, FIXED, SLB, NEWS, CMDTY, BSK, ICU, ICS;
 
         public static SecType get(String str) {
             return getValueOf(str, values(), None);

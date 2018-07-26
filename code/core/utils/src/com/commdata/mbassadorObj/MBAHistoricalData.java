@@ -12,7 +12,7 @@ public class MBAHistoricalData implements Cloneable
     public double high;
     public double low;
     public double close;
-    public int volume;
+    public long volume;
     public int count;
     public double WAP;
     public boolean hasGaps;
@@ -23,7 +23,7 @@ public class MBAHistoricalData implements Cloneable
                              double high,
                              double low,
                              double close,
-                             int volume,
+                             long volume,
                              int count,
                              double WAP,
                              boolean hasGaps)
