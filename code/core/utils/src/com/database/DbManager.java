@@ -16,6 +16,7 @@ import static com.utils.TStringUtil.trimStr;
 public class DbManager
 {
     private static Logger LogApp = LogManager.getLogger("applog");
+    private final String MYSQL_DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
     private final String dbname = "twsdb";
     private String userName = "root";
     private String password = "@try258TRY";
@@ -115,10 +116,10 @@ public class DbManager
     private Connection connectDB(String dbname, String userName, String password)
     {
         Connection connection = null;
-        String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC";
+        String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC" + "&useSSL=false";
         try
         {
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName(MYSQL_DRIVER_CLASS);
         }
         catch (ClassNotFoundException e)
         {
@@ -149,10 +150,10 @@ public class DbManager
     private Connection connectMySql(String userName, String password)
     {
         Connection conn = null;
-        String url = "jdbc:mysql://localhost:3306/mysql?serverTimezone=UTC";
+        String url = "jdbc:mysql://localhost:3306/mysql?serverTimezone=UTC" + "&useSSL=false";
         try
         {
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName(MYSQL_DRIVER_CLASS);
         }
         catch (ClassNotFoundException e)
         {
@@ -189,9 +190,9 @@ public class DbManager
             try
             {
                 //加载驱动
-                Class.forName("com.mysql.jdbc.Driver");
+                Class.forName(MYSQL_DRIVER_CLASS);
                 //链接到数据库
-                String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC";
+                String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC" + "&useSSL=false";
                 //获取对象
                 Statement stmt = connection.createStatement();
                 String delTableSqlStr = "drop table if exists queryidtable;";
@@ -305,9 +306,9 @@ public class DbManager
             try
             {
                 //加载驱动
-                Class.forName("com.mysql.jdbc.Driver");
+                Class.forName(MYSQL_DRIVER_CLASS);
                 //链接到数据库
-                String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC";
+                String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC" + "&useSSL=false";
                 //获取对象
                 Statement stmt = connection.createStatement();
                 String tableName = "hisdata" + trimStr(barSize.toString());
