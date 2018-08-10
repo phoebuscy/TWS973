@@ -65,8 +65,12 @@ public class MBAHistoricalData implements Cloneable
     public String toString()
     {
         LocalDateTime dateTime = getLocalDateTimeByEpochSecond(date);
-        return "reqId: " +  reqId + ", Time: " + dateTime.toString() + ", open: " + open + ", high: " + high + ", low: " + low + ", " +
-                "close: " + close;
+        return "reqId: "  +  reqId +
+               ", Time: " + dateTime.toString() +
+               ", open: " + open +
+               ", high: " + high +
+               ", low: "  + low +
+               ", close: " + close;
     }
 
 
