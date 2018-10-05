@@ -9,22 +9,22 @@ import javax.swing.JTable;
 import static com.utils.TFileUtil.getConfigValue;
 
 /**
- * ÂòÂôÆÚÈ¨¼ÇÂ¼±í
+ * ä¹°å–æœŸæƒè®°å½•è¡¨
  */
 
 
 public class SOperateStatisticTable extends JTable
 {
 
-    private static String symbol = getConfigValue("symbol", TConst.CONFIG_I18N_FILE); // ±êµÄ
-    private static String currentPrice = getConfigValue("current.price", TConst.CONFIG_I18N_FILE); //×îĞÂ¼Û
-    private static String averageBuyPrice = getConfigValue("average.buy.price", TConst.CONFIG_I18N_FILE); // ³Ö²Ö¼Û
-    private static String count = getConfigValue("count", TConst.CONFIG_I18N_FILE); // ÊıÁ¿
-    private static String marketValue = getConfigValue("market.value", TConst.CONFIG_I18N_FILE); // ÊĞÖµ
-    private static String zdf = getConfigValue("zdf", TConst.CONFIG_I18N_FILE); //ÕÇµø·ù
-    private static String saleprice = getConfigValue("sale.price", TConst.CONFIG_I18N_FILE); // Âô¼Û
-    private static String yinorkui = getConfigValue("yin.or.kui", TConst.CONFIG_I18N_FILE); // Ó¯¿÷/
-    private static String time = getConfigValue("time", TConst.CONFIG_I18N_FILE); // Ê±¼ä
+    private static String symbol = getConfigValue("symbol", TConst.CONFIG_I18N_FILE); // æ ‡çš„
+    private static String currentPrice = getConfigValue("current.price", TConst.CONFIG_I18N_FILE); //æœ€æ–°ä»·
+    private static String averageBuyPrice = getConfigValue("average.buy.price", TConst.CONFIG_I18N_FILE); // æŒä»“ä»·
+    private static String count = getConfigValue("count", TConst.CONFIG_I18N_FILE); // æ•°é‡
+    private static String marketValue = getConfigValue("market.value", TConst.CONFIG_I18N_FILE); // å¸‚å€¼
+    private static String zdf = getConfigValue("zdf", TConst.CONFIG_I18N_FILE); //æ¶¨è·Œå¹…
+    private static String saleprice = getConfigValue("sale.price", TConst.CONFIG_I18N_FILE); // å–ä»·
+    private static String yinorkui = getConfigValue("yin.or.kui", TConst.CONFIG_I18N_FILE); // ç›ˆäº/
+    private static String time = getConfigValue("time", TConst.CONFIG_I18N_FILE); // æ—¶é—´
 
     String[] columnNames = {symbol, currentPrice, averageBuyPrice, count, marketValue, zdf, saleprice, yinorkui, time};
 

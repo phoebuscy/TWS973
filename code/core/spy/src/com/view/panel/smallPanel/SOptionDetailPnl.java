@@ -46,7 +46,7 @@ public class SOptionDetailPnl extends JPanel
         setDimension();
         buildGUI();
 
-        // ¶©ÔÄÏûÏ¢×ÜÏßÃû³ÆÎª DATAMAAGER_BUS µÄ ÏûÏ¢
+        // è®¢é˜…æ¶ˆæ¯æ€»çº¿åç§°ä¸º DATAMAAGER_BUS çš„ æ¶ˆæ¯
         TMbassadorSingleton.getInstance(SYMBOL_BUS).subscribe(this);
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
         TMbassadorSingleton.getInstance(REALTIMEPRICEMGR_BUS).subscribe(this);
@@ -65,7 +65,7 @@ public class SOptionDetailPnl extends JPanel
         add(putInfoPnl, new GBC(1, 0).setAnchor(GBC.EAST).setIpad(50, 5).setWeight(10, 10).setFill(GBC.BOTH));
     }
 
-    // ½ÓÊÕË«»÷ÆÚÈ¨ÊµÊ±ĞÅÏ¢tableµÄĞĞĞÅÏ¢¹ıÂË·½·¨
+    // æ¥æ”¶åŒå‡»æœŸæƒå®æ—¶ä¿¡æ¯tableçš„è¡Œä¿¡æ¯è¿‡æ»¤æ–¹æ³•
     static public class recvOptRealTimePriceTableDoubleClickInfo implements IMessageFilter<MBAReqIDContractDetails>
     {
         @Override
@@ -75,7 +75,7 @@ public class SOptionDetailPnl extends JPanel
         }
     }
 
-    // ´¦ÀíË«»÷ÆÚÈ¨±íµÃµ½µÄÆÚÈ¨ĞÅÏ¢
+    // å¤„ç†åŒå‡»æœŸæƒè¡¨å¾—åˆ°çš„æœŸæƒä¿¡æ¯
     @Handler(filters = {@Filter(recvOptRealTimePriceTableDoubleClickInfo.class)})
     private void processDoubleClickOptTableInfo(MBAReqIDContractDetails msg)
     {
@@ -98,7 +98,7 @@ public class SOptionDetailPnl extends JPanel
         }
     }
 
-    // symbolContract ÊµÊ±¼Û¸ñ¹ıÂËÆ÷
+    // symbolContract å®æ—¶ä»·æ ¼è¿‡æ»¤å™¨
     public static class rcvContractRealTimePriceFilter implements IMessageFilter<ContractRealTimeInfo>
     {
         @Override

@@ -14,23 +14,23 @@ import java.awt.event.ActionEvent;
 import static com.utils.TFileUtil.getConfigValue;
 
 /*
-±¾dialogµÄ×÷ÓÃÊÇ´´½¨Êı¾İ¿â¼°´´½¨±í
-1£º ´´½¨Êı¾İ¿â  £º
+æœ¬dialogçš„ä½œç”¨æ˜¯åˆ›å»ºæ•°æ®åº“åŠåˆ›å»ºè¡¨
+1ï¼š åˆ›å»ºæ•°æ®åº“  ï¼š
     twsdb
 
-2£º ´´½¨±í£º
-    thirtysec      // 30Ãë¼ÇÂ¼Êı¾İ±í
-    oneminute      // 1·Ö±í
-    twominute      // 2 ·Ö±í
-    fiveminute     // 5·Ö±í
-    fifteenminute  // 15·Ö±í
-    thirtyminute   // 30·Ö±í
-    onehour        // 1Ğ¡Ê±±í
+2ï¼š åˆ›å»ºè¡¨ï¼š
+    thirtysec      // 30ç§’è®°å½•æ•°æ®è¡¨
+    oneminute      // 1åˆ†è¡¨
+    twominute      // 2 åˆ†è¡¨
+    fiveminute     // 5åˆ†è¡¨
+    fifteenminute  // 15åˆ†è¡¨
+    thirtyminute   // 30åˆ†è¡¨
+    onehour        // 1å°æ—¶è¡¨
     oneday         //
 
     ///////
-    reqid          // Ã¿´Î²Ù×÷id±í
-    operrecord     // ²Ù×÷¼ÇÂ¼±í
+    reqid          // æ¯æ¬¡æ“ä½œidè¡¨
+    operrecord     // æ“ä½œè®°å½•è¡¨
 
  */
 
@@ -88,9 +88,9 @@ public class SInitDatabaseDlg extends JFrame
     private void initdatabase()
     {
         String delDatabaseInfo = getConfigValue("del.database.if.confirm", TConst.CONFIG_I18N_FILE);
-        String ifcontinue = getConfigValue("if.continue", TConst.CONFIG_I18N_FILE); // "ÊÇ·ñ¼ÌĞø"
+        String ifcontinue = getConfigValue("if.continue", TConst.CONFIG_I18N_FILE); // "æ˜¯å¦ç»§ç»­"
         int ret = JOptionPane.showConfirmDialog(null, delDatabaseInfo, ifcontinue, JOptionPane.YES_NO_OPTION);
-        if (ret == 0) // 0ÎªYES
+        if (ret == 0) // 0ä¸ºYES
         {
             String userName = userTextField.getText().trim();
             String password = pwTextField.getText().trim();

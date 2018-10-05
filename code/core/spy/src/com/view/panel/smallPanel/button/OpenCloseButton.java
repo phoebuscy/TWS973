@@ -19,22 +19,22 @@ import static com.utils.TIconUtil.getProjIcon;
 
 
 /**
- * Call ºÍ Put µÄ¿ª²ÖÆ½²Ö°´Å¥
+ * Call å’Œ Put çš„å¼€ä»“å¹³ä»“æŒ‰é’®
  */
 public class OpenCloseButton extends JButton
 {
     private Types.Right right;
-    private Contract openContract; // ÒÑ¾­¿ª²ÖµÄcontract
-    private Contract prepareContract; // ×¼±¸¿ª²Öcontract
-    private SOpenState openState = SOpenState.NO_OPEN; // ¿ª²Ö×´Ì¬
+    private Contract openContract; // å·²ç»å¼€ä»“çš„contract
+    private Contract prepareContract; // å‡†å¤‡å¼€ä»“contract
+    private SOpenState openState = SOpenState.NO_OPEN; // å¼€ä»“çŠ¶æ€
     private int operateCount = 0;
 
-    private Icon waitIco; // »¹Ã»¿ª²ÖÍ¼±ê
-    private Icon middleIco; // ÊÕÒæÎª0Í¼±ê
-    private Icon gainLittle; // Ó¯Àû
-    private Icon gainMore; // ¸üÓ¯Àû
-    private Icon lossLittle;  // ¿÷ËğÒ»µã
-    private Icon lossMore;    // ¿÷Ëğ½Ï¶à
+    private Icon waitIco; // è¿˜æ²¡å¼€ä»“å›¾æ ‡
+    private Icon middleIco; // æ”¶ç›Šä¸º0å›¾æ ‡
+    private Icon gainLittle; // ç›ˆåˆ©
+    private Icon gainMore; // æ›´ç›ˆåˆ©
+    private Icon lossLittle;  // äºæŸä¸€ç‚¹
+    private Icon lossMore;    // äºæŸè¾ƒå¤š
 
     private Symbol symbol = SDataManager.getInstance().getSymbol();
 
@@ -61,7 +61,7 @@ public class OpenCloseButton extends JButton
         this.right = openContract != null ? openContract.right() : Types.Right.None;
     }
 
-    // ³õÊ¼»¯¿ª²Ö×´Ì¬, ÔÚÁ¬½ÓÊ±ºò£¬¸ù¾İprofitĞÅÏ¢³õÊ¼»¯¸Ã×´Ì¬
+    // åˆå§‹åŒ–å¼€ä»“çŠ¶æ€, åœ¨è¿æ¥æ—¶å€™ï¼Œæ ¹æ®profitä¿¡æ¯åˆå§‹åŒ–è¯¥çŠ¶æ€
     public void setOpenState(SOpenState openState)
     {
         this.openState = openState;
@@ -74,17 +74,17 @@ public class OpenCloseButton extends JButton
 
     public void placeOrder()
     {
-        if (openState.isOpened())  // ¿ª²Ö×´Ì¬
+        if (openState.isOpened())  // å¼€ä»“çŠ¶æ€
         {
-            doPingCang();  // Æ½²Ö£º Âô »òÕß Âò
+            doPingCang();  // å¹³ä»“ï¼š å– æˆ–è€… ä¹°
         }
         else if(openState.isNoOpen())
         {
-            doKaiCang();       // Âò
+            doKaiCang();       // ä¹°
         }
     }
 
-    // Æ½²Ö : Èç¹ûÊÇ²ÖÎ»ÊÇ¸ºÊı£¬ÔòÊÇÂòÈë²Ù×÷£¬Èç¹ûÊÇÕıÊı£¬ÔòÂô³ö²Ù×÷
+    // å¹³ä»“ : å¦‚æœæ˜¯ä»“ä½æ˜¯è´Ÿæ•°ï¼Œåˆ™æ˜¯ä¹°å…¥æ“ä½œï¼Œå¦‚æœæ˜¯æ­£æ•°ï¼Œåˆ™å–å‡ºæ“ä½œ
     private void doPingCang()
     {
         if (openContract != null && operateCount != 0)
@@ -96,7 +96,7 @@ public class OpenCloseButton extends JButton
         }
     }
 
-    // ¿ª²Ö
+    // å¼€ä»“
     private int doKaiCang()
     {
         if (prepareContract != null)
@@ -122,13 +122,13 @@ public class OpenCloseButton extends JButton
 
     public void init()
     {
-        waitIco = getProjIcon("img5");     // »¹Ã»¿ª²ÖÍ¼±ê
-        middleIco = getProjIcon("img2");    // ÊÕÒæÎª0Í¼±ê
-        gainLittle = getProjIcon("img3");   // Ó¯Àû
-        gainMore = getProjIcon("img4");     // ¸üÓ¯Àû
-        lossLittle = getProjIcon("img1");   // ¿÷ËğÒ»µã
-        lossMore = getProjIcon("img0");     // ¿÷Ëğ½Ï¶à
-        // ¡°dialog¡±´ú±í×ÖÌå£¬1´ú±íÑùÊ½(1ÊÇ´ÖÌå£¬0ÊÇÆ½³£µÄ£©15ÊÇ×ÖºÅÉèÖÃ×ÖÌå
+        waitIco = getProjIcon("img5");     // è¿˜æ²¡å¼€ä»“å›¾æ ‡
+        middleIco = getProjIcon("img2");    // æ”¶ç›Šä¸º0å›¾æ ‡
+        gainLittle = getProjIcon("img3");   // ç›ˆåˆ©
+        gainMore = getProjIcon("img4");     // æ›´ç›ˆåˆ©
+        lossLittle = getProjIcon("img1");   // äºæŸä¸€ç‚¹
+        lossMore = getProjIcon("img0");     // äºæŸè¾ƒå¤š
+        // â€œdialogâ€ä»£è¡¨å­—ä½“ï¼Œ1ä»£è¡¨æ ·å¼(1æ˜¯ç²—ä½“ï¼Œ0æ˜¯å¹³å¸¸çš„ï¼‰15æ˜¯å­—å·è®¾ç½®å­—ä½“
         //price.setFont(new java.awt.Font("Dialog",   1,   15));
         setPreferredSize(new Dimension(100, 15));
         setFont(new java.awt.Font("Dialog", 1, 15));
@@ -169,7 +169,7 @@ public class OpenCloseButton extends JButton
         }
         setFaceIcon(percent);
         setForeground(color);
-        String beginClose = getConfigValue("begin.close", TConst.CONFIG_I18N_FILE); // Æ½
+        String beginClose = getConfigValue("begin.close", TConst.CONFIG_I18N_FILE); // å¹³
         String txt = String.format("%.2f  %.2f%% %s", realAdd, percent, beginClose);
         setText(txt);
     }

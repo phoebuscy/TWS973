@@ -42,7 +42,7 @@ public class SExpireDatePnl extends JPanel
     private JLabel expireDate = new JLabel("ExpireDate:");
     private JComboBox expireDataComb = new JComboBox();
     private JButton queryOptionbtn = new JButton(getConfigValue("query.option.chain",
-                                                                TConst.CONFIG_I18N_FILE)); // ²éÑ¯ÆÚÈ¨Á´
+                                                                TConst.CONFIG_I18N_FILE)); // æŸ¥è¯¢æœŸæƒé“¾
 
 
     public SExpireDatePnl(Component parentWin)
@@ -55,7 +55,7 @@ public class SExpireDatePnl extends JPanel
         buildGUI();
         addActionListener();
 
-        // ¶©ÔÄÏûÏ¢×ÜÏßÃû³ÆÎª DATAMAAGER_BUS µÄ ÏûÏ¢
+        // è®¢é˜…æ¶ˆæ¯æ€»çº¿åç§°ä¸º DATAMAAGER_BUS çš„ æ¶ˆæ¯
         TMbassadorSingleton.getInstance(SYMBOL_BUS).subscribe(this);
     }
 
@@ -63,7 +63,7 @@ public class SExpireDatePnl extends JPanel
     {
         queryOptionbtn.addActionListener(e -> {
             expireDataComb.removeAllItems();
-            SDataManager.getInstance().getSymbol().queryOptionChain();  // ²éÑ¯ÆÚÈ¨Á´
+            SDataManager.getInstance().getSymbol().queryOptionChain();  // æŸ¥è¯¢æœŸæƒé“¾
         });
 
         expireDataComb.addItemListener(e -> {
@@ -74,7 +74,7 @@ public class SExpireDatePnl extends JPanel
 
     private void onExpireDateChanged(ItemEvent e)
     {
-        // ¸ù¾İÑ¡ÔñµÄÈÕÆÚ²éÑ¯³öµ±Ç°¼Û¸ñÉÏÏÂ5¸öµãÖ®¼äµÄÆÚÈ¨Á´
+        // æ ¹æ®é€‰æ‹©çš„æ—¥æœŸæŸ¥è¯¢å‡ºå½“å‰ä»·æ ¼ä¸Šä¸‹5ä¸ªç‚¹ä¹‹é—´çš„æœŸæƒé“¾
         if (e.getStateChange() == SELECTED)
         {
             Object selecteddate = expireDataComb.getSelectedItem();
@@ -82,12 +82,12 @@ public class SExpireDatePnl extends JPanel
             {
                 String expireDay = (String) selecteddate;
 
-                // »ñÈ¡Ö¸¶¨ÊıÁ¿ÆÚÈ¨
+                // è·å–æŒ‡å®šæ•°é‡æœŸæƒ
                 Map<Double, List<ContractDetails>> strike2ContractDtalsLst = SDataManager.getInstance().getSymbol()
                                                                                          .getStrike2ContractDtalsLst(
                                                                                                  expireDay,
                                                                                                  8);
-                // ·¢ËÍ¹¹ÔìºÃµÄµ±Ç°ÆÚÈ¨Á´µÄÏûÏ¢
+                // å‘é€æ„é€ å¥½çš„å½“å‰æœŸæƒé“¾çš„æ¶ˆæ¯
                 TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(new MBAOptionChainMap(strike2ContractDtalsLst));
             }
         }
@@ -116,7 +116,7 @@ public class SExpireDatePnl extends JPanel
     }
 
     /////////////////////////////
-    // ½ÓÊÕÆÚÈ¨Á´µ½ÆÚÈÕÆÚµÄ¹ıÂËÆ÷
+    // æ¥æ”¶æœŸæƒé“¾åˆ°æœŸæ—¥æœŸçš„è¿‡æ»¤å™¨
     static public class optionExpireDayFilter implements IMessageFilter<MBAOptionExpireDayList>
     {
         @Override
@@ -126,7 +126,7 @@ public class SExpireDatePnl extends JPanel
         }
     }
 
-    // ´¦ÀíÆÚÈ¨µ½ÆÚÈÕµÄ´¦ÀíÆ÷
+    // å¤„ç†æœŸæƒåˆ°æœŸæ—¥çš„å¤„ç†å™¨
     @Handler(filters = {@Filter(optionExpireDayFilter.class)})
     private void proccessOptionExpireDays(MBAOptionExpireDayList msg)
     {

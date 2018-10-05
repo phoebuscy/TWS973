@@ -45,9 +45,9 @@ import static com.utils.TConst.SYMBOL_BUS;
 import static com.utils.TPubUtil.notNullAndEmptyCollection;
 
 /**
- * ¸ÃÀà¸ºÔğ¼ÆËãÂòÂôµã£¬Ìá¹©ÂòÂô±êµÄ£¬·¢Í¨Öª¸ø BuyOrSaleÄ£¿é½øĞĞÂòÂô
+ * è¯¥ç±»è´Ÿè´£è®¡ç®—ä¹°å–ç‚¹ï¼Œæä¾›ä¹°å–æ ‡çš„ï¼Œå‘é€šçŸ¥ç»™ BuyOrSaleæ¨¡å—è¿›è¡Œä¹°å–
  * <p>
- * Í¨¹ı·¢ËÍÏûÏ¢·½Ê½½øĞĞÍ¨Öª
+ * é€šè¿‡å‘é€æ¶ˆæ¯æ–¹å¼è¿›è¡Œé€šçŸ¥
  */
 
 public class Caculate
@@ -59,21 +59,21 @@ public class Caculate
     private static Contract symbolContract = null;
 
     private List<MBAHistoricalData> historicalDataList = new ArrayList<>();
-    private Double[] realTimePriceArry = new Double[23400];  // ¿ªÊĞÊ±¼ä9.30 µ½ ÏÂÎç4µã µÄÃëÊı£º  6.5 * 3600 = 23400 Ãë
+    private Double[] realTimePriceArry = new Double[23400];  // å¼€å¸‚æ—¶é—´9.30 åˆ° ä¸‹åˆ4ç‚¹ çš„ç§’æ•°ï¼š  6.5 * 3600 = 23400 ç§’
 
     ScheduledExecutorService timer = Executors.newSingleThreadScheduledExecutor();
 
     private Caculate()
     {
 
-        // ¶©ÔÄÏûÏ¢×ÜÏßÃû³ÆÎª SYMBOL_BUS µÄ ÏûÏ¢
+        // è®¢é˜…æ¶ˆæ¯æ€»çº¿åç§°ä¸º SYMBOL_BUS çš„ æ¶ˆæ¯
         TMbassadorSingleton.getInstance(SYMBOL_BUS).subscribe(this);
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
         TMbassadorSingleton.getInstance(REALTIMEPRICEMGR_BUS).subscribe(this);
 
-        TimerTask timerTask = new TimerTask(2000); // ÈÎÎñĞèÒª 2000 ms ²ÅÄÜÖ´ĞĞÍê±Ï
-        System.out.printf("ÆğÊ¼Ê±¼ä£º%s\n\n", new SimpleDateFormat("HH:mm:ss").format(new Date()));
-        // ÑÓÊ± 1 Ãëºó£¬°´ 3 ÃëµÄÖÜÆÚÖ´ĞĞÈÎÎñ
+        TimerTask timerTask = new TimerTask(2000); // ä»»åŠ¡éœ€è¦ 2000 ms æ‰èƒ½æ‰§è¡Œå®Œæ¯•
+        System.out.printf("èµ·å§‹æ—¶é—´ï¼š%s\n\n", new SimpleDateFormat("HH:mm:ss").format(new Date()));
+        // å»¶æ—¶ 1 ç§’åï¼ŒæŒ‰ 3 ç§’çš„å‘¨æœŸæ‰§è¡Œä»»åŠ¡
         timer.scheduleAtFixedRate(timerTask, 1000, 3000, TimeUnit.MILLISECONDS);
     }
 
@@ -90,7 +90,7 @@ public class Caculate
         getHistoricData();
     }
 
-    // Í£Ö¹¼ÆËã
+    // åœæ­¢è®¡ç®—
     public void stop()
     {
         isRuning = false;
@@ -98,15 +98,15 @@ public class Caculate
 
     }
 
-    // ·¢²¼ÂòÈëÍ¨Öª
+    // å‘å¸ƒä¹°å…¥é€šçŸ¥
     public void publishBuyNotice(Types.Right right)
     {
-        // ·¢²¼ÂòÈëÍ¨Öª
+        // å‘å¸ƒä¹°å…¥é€šçŸ¥
         TMbassadorSingleton.getInstance(CALCULATE_BUS).publish(new MBACalculateBuyOrSaleNotice(Types.Action.BUY,
                                                                                                right));
     }
 
-    // ·¢²¼Âô³öÍ¨Öª
+    // å‘å¸ƒå–å‡ºé€šçŸ¥
     public void publishSaleNotice(Types.Right right)
     {
         TMbassadorSingleton.getInstance(CALCULATE_BUS).publish(new MBACalculateBuyOrSaleNotice(Types.Action.SELL,
@@ -128,12 +128,12 @@ public class Caculate
             if (Caculate.isRuning)
             {
                 TMbassadorSingleton.getInstance(CALCULATE_BUS).publish(new MBACaculateTxtInfo(
-                        "ÈÎÎñ¿ªÊ¼£¬µ±Ç°Ê±¼ä£º" + dateFormat.format(new Date())));
+                        "ä»»åŠ¡å¼€å§‹ï¼Œå½“å‰æ—¶é—´ï¼š" + dateFormat.format(new Date())));
             }
             else
             {
                 TMbassadorSingleton.getInstance(CALCULATE_BUS).publish(new MBACaculateTxtInfo(
-                        "ÈÎÎñÎ´¿ªÊ¼£¬µ±Ç°Ê±¼ä£º" + dateFormat.format(new Date())));
+                        "ä»»åŠ¡æœªå¼€å§‹ï¼Œå½“å‰æ—¶é—´ï¼š" + dateFormat.format(new Date())));
             }
 
         }
@@ -141,16 +141,16 @@ public class Caculate
 
     private void getHistoricData()
     {
-        // ²éÑ¯symbolµÄÀúÊ·Êı¾İ £¨µ±Ç° »òÇ°Ò»½»Ò×ÈÕµÄ 5Ãë ÀúÊ·Êı¾İ£©
+        // æŸ¥è¯¢symbolçš„å†å²æ•°æ® ï¼ˆå½“å‰ æˆ–å‰ä¸€äº¤æ˜“æ—¥çš„ 5ç§’ å†å²æ•°æ®ï¼‰
         if (symbol != null)
         {
-            // ¼ÆËãµ±Ç°Ê±¼äµ½¿ªÅÌÊ±¼äµÄÊ±¼ä¼ä¸ô, µ¥Î»Ãë
+            // è®¡ç®—å½“å‰æ—¶é—´åˆ°å¼€ç›˜æ—¶é—´çš„æ—¶é—´é—´éš”, å•ä½ç§’
             long duration = -1;
             String locatime = null;
 
             LocalDateTime curUsaOpenDateTime = getCurrentDayUSAOpenDateTime();
             LocalDateTime curUsaLocalDateTime = getCurrentAmericaLocalDateTime();
-            // Èç¹ûÏÖÔÚÊÇ¿ªÅÌÊ±¼ä£¬ÔòÈ¡µ±Ç°Ê±¼ä
+            // å¦‚æœç°åœ¨æ˜¯å¼€ç›˜æ—¶é—´ï¼Œåˆ™å–å½“å‰æ—¶é—´
             LocalDateTime openUsaDateTime;
             LocalDateTime closeUsaDateTime;
             Types.BarSize barSize;
@@ -164,9 +164,9 @@ public class Caculate
                 barSize = getBarSizebyDurationSeconds(duration);
                 locatime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
             }
-            else // Èç¹û²»ÊÇ¿ªÅÌÊ±¼ä£¬ÔòÈ¡ÉÏÒ»ÌìµÄ¿ªÅÌÊ±¼ä/
+            else // å¦‚æœä¸æ˜¯å¼€ç›˜æ—¶é—´ï¼Œåˆ™å–ä¸Šä¸€å¤©çš„å¼€ç›˜æ—¶é—´/
             {
-                // »ñÈ¡Ö¸¶¨ÌìÊıÖ®Ç°µÄ¿ªÅÌµÄ±¾µØÊ±¼ä, ²ÎÊı lastDay ÊÇ±íÊ¾Ö®Ç°¶àÉÙÌì
+                // è·å–æŒ‡å®šå¤©æ•°ä¹‹å‰çš„å¼€ç›˜çš„æœ¬åœ°æ—¶é—´, å‚æ•° lastDay æ˜¯è¡¨ç¤ºä¹‹å‰å¤šå°‘å¤©
                 Pair<LocalDateTime, LocalDateTime> lastUsaOpenCloseTime = getLastDayUSAOpenDateTime();
                 LocalDateTime usaCurDateTime = getCurrentAmericaLocalDateTime();
                 if (usaCurDateTime.isBefore(lastUsaOpenCloseTime.getKey()))
@@ -183,7 +183,7 @@ public class Caculate
             }
 
 
-            // ×¢Òâ£º²éÑ¯ÀúÊ·Êı¾İĞèÒªÓÃ±¾µØÊ±¼ä
+            // æ³¨æ„ï¼šæŸ¥è¯¢å†å²æ•°æ®éœ€è¦ç”¨æœ¬åœ°æ—¶é—´
             symbol.getHistoricDatasAndProcess(symbolContract,
                                               locatime,
                                               duration,
@@ -196,7 +196,7 @@ public class Caculate
     }
 
 
-    // °ÑÀúÊ·Êı¾İ±ä³ÉÊµÊ±Êı¾İ
+    // æŠŠå†å²æ•°æ®å˜æˆå®æ—¶æ•°æ®
     private ProcessInAWT getDataFinishProcess()
     {
         ProcessInAWT processInAWT = new ProcessInAWT()
@@ -205,7 +205,7 @@ public class Caculate
             public void successInAWT(Object param)
             {
                 historicalDataList = (List) param;
-                // ¸ù¾İBarSizeÀ´»ñÈ¡ ¡° ¿ª¼Û£¬×î¸ß¼Û£¬×îµÍ¼Û£¬ÊÕ¼Û¡¯µÄÊ±¼ä¼ä¸ô
+                // æ ¹æ®BarSizeæ¥è·å– â€œ å¼€ä»·ï¼Œæœ€é«˜ä»·ï¼Œæœ€ä½ä»·ï¼Œæ”¶ä»·â€™çš„æ—¶é—´é—´éš”
                 Types.BarSize barSize = getBarSizeByHistoricData(historicalDataList);
                 if (barSize == null)
                 {
@@ -301,7 +301,7 @@ public class Caculate
     }
 
 
-    // ¸ù¾İBarSizeÀ´»ñÈ¡ ¡° ¿ª¼Û£¬×î¸ß¼Û£¬×îµÍ¼Û£¬ÊÕ¼Û¡¯µÄÊ±¼ä¼ä¸ô
+    // æ ¹æ®BarSizeæ¥è·å– â€œ å¼€ä»·ï¼Œæœ€é«˜ä»·ï¼Œæœ€ä½ä»·ï¼Œæ”¶ä»·â€™çš„æ—¶é—´é—´éš”
     private int getStepSecond(Types.BarSize barSize)
     {
         int stepSec = 1;
@@ -325,7 +325,7 @@ public class Caculate
     }
 
 
-    // symbolContract ÊµÊ±¼Û¸ñ¹ıÂËÆ÷
+    // symbolContract å®æ—¶ä»·æ ¼è¿‡æ»¤å™¨
     public static class rcvContractRealTimePriceFilter implements IMessageFilter<ContractRealTimeInfo>
     {
         @Override
@@ -341,7 +341,7 @@ public class Caculate
     {
         if (msg != null)
         {
-            double lastPrice = msg.lastPrice;  // µ±Ç°ÊµÊ±¼Û¸ñ
+            double lastPrice = msg.lastPrice;  // å½“å‰å®æ—¶ä»·æ ¼
         }
     }
 

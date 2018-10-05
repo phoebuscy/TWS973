@@ -77,7 +77,7 @@ public class SRealTimePicturePnl extends JPanel
         parentDimension = parentWin.getSize();
         setDimension();
 
-        // ¶©ÔÄÏûÏ¢×ÜÏßÃû³ÆÎª DATAMAAGER_BUS µÄ ÏûÏ¢
+        // è®¢é˜…æ¶ˆæ¯æ€»çº¿åç§°ä¸º DATAMAAGER_BUS çš„ æ¶ˆæ¯
         TMbassadorSingleton.getInstance(SYMBOL_BUS).subscribe(this);
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
         TMbassadorSingleton.getInstance(REALTIMEPRICEMGR_BUS).subscribe(this);
@@ -97,7 +97,7 @@ public class SRealTimePicturePnl extends JPanel
         }
     }
 
-    // ½ÓÊÕ¿ªÊ¼²éÑ¯symbolµÄÏûÏ¢
+    // æ¥æ”¶å¼€å§‹æŸ¥è¯¢symbolçš„æ¶ˆæ¯
     static public class beginQuerySymbolFilter implements IMessageFilter<MBABeginQuerySymbol>
     {
         @Override
@@ -107,11 +107,11 @@ public class SRealTimePicturePnl extends JPanel
         }
     }
 
-    // ´¦ÀíÊ¼²éÑ¯symbolÏûÏ¢
+    // å¤„ç†å§‹æŸ¥è¯¢symbolæ¶ˆæ¯
     @Handler(filters = {@Filter(beginQuerySymbolFilter.class)})
     private void processBeginQuerySymbol(MBABeginQuerySymbol msg)
     {
-        // ²éÑ¯symbolµÄÀúÊ·Êı¾İ £¨µ±Ç° »òÇ°Ò»½»Ò×ÈÕµÄ 5Ãë ÀúÊ·Êı¾İ£©
+        // æŸ¥è¯¢symbolçš„å†å²æ•°æ® ï¼ˆå½“å‰ æˆ–å‰ä¸€äº¤æ˜“æ—¥çš„ 5ç§’ å†å²æ•°æ®ï¼‰
         if (symbol != null && msg != null)
         {
             oldContract = (curContract != null) ? curContract.clone() : null;
@@ -120,13 +120,13 @@ public class SRealTimePicturePnl extends JPanel
 
             sSpyRealTimePnl.clearAllData();
 
-            // ¼ÆËãµ±Ç°Ê±¼äµ½¿ªÅÌÊ±¼äµÄÊ±¼ä¼ä¸ô, µ¥Î»Ãë
+            // è®¡ç®—å½“å‰æ—¶é—´åˆ°å¼€ç›˜æ—¶é—´çš„æ—¶é—´é—´éš”, å•ä½ç§’
             long duration = -1;
             String locatime = null;
 
             LocalDateTime curUsaOpenDateTime = getCurrentDayUSAOpenDateTime();
             LocalDateTime curUsaLocalDateTime = getCurrentAmericaLocalDateTime();
-            // Èç¹ûÏÖÔÚÊÇ¿ªÅÌÊ±¼ä£¬ÔòÈ¡µ±Ç°Ê±¼ä
+            // å¦‚æœç°åœ¨æ˜¯å¼€ç›˜æ—¶é—´ï¼Œåˆ™å–å½“å‰æ—¶é—´
             if (ifNowIsOpenTime() || (curUsaOpenDateTime != null && curUsaLocalDateTime.isBefore(curUsaOpenDateTime) &&
                                       curUsaLocalDateTime.plusMinutes(10).isAfter(curUsaOpenDateTime)))
             {
@@ -137,9 +137,9 @@ public class SRealTimePicturePnl extends JPanel
                 barSize = getBarSizebyDurationSeconds(duration);
                 locatime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
             }
-            else // Èç¹û²»ÊÇ¿ªÅÌÊ±¼ä£¬ÔòÈ¡ÉÏÒ»ÌìµÄ¿ªÅÌÊ±¼ä/
+            else // å¦‚æœä¸æ˜¯å¼€ç›˜æ—¶é—´ï¼Œåˆ™å–ä¸Šä¸€å¤©çš„å¼€ç›˜æ—¶é—´/
             {
-                // »ñÈ¡Ö¸¶¨ÌìÊıÖ®Ç°µÄ¿ªÅÌµÄ±¾µØÊ±¼ä, ²ÎÊı lastDay ÊÇ±íÊ¾Ö®Ç°¶àÉÙÌì
+                // è·å–æŒ‡å®šå¤©æ•°ä¹‹å‰çš„å¼€ç›˜çš„æœ¬åœ°æ—¶é—´, å‚æ•° lastDay æ˜¯è¡¨ç¤ºä¹‹å‰å¤šå°‘å¤©
                 Pair<LocalDateTime, LocalDateTime> lastUsaOpenCloseTime = getLastDayUSAOpenDateTime();
                 LocalDateTime usaCurDateTime = getCurrentAmericaLocalDateTime();
                 if (usaCurDateTime.isBefore(lastUsaOpenCloseTime.getKey()))
@@ -154,10 +154,10 @@ public class SRealTimePicturePnl extends JPanel
                 barSize = Types.BarSize._30_secs;
                 locatime = localCloseDateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
             }
-            // ×¢Òâ£ºÉèÖÃXÖáĞèÒªÓÃÃÀ¹úÊ±¼ä
+            // æ³¨æ„ï¼šè®¾ç½®Xè½´éœ€è¦ç”¨ç¾å›½æ—¶é—´
             setXRange(openUsaDateTime, closeUsaDateTime);
 
-            // ×¢Òâ£º²éÑ¯ÀúÊ·Êı¾İĞèÒªÓÃ±¾µØÊ±¼ä
+            // æ³¨æ„ï¼šæŸ¥è¯¢å†å²æ•°æ®éœ€è¦ç”¨æœ¬åœ°æ—¶é—´
             symbol.getHistoricDatasAndProcess(curContract,
                                               locatime,
                                               duration,
@@ -178,10 +178,10 @@ public class SRealTimePicturePnl extends JPanel
             public void successInAWT(Object param)
             {
                 historicalDataList = (List) param;
-                // ¸ù¾İBarSizeÀ´»ñÈ¡ ¡° ¿ª¼Û£¬×î¸ß¼Û£¬×îµÍ¼Û£¬ÊÕ¼Û¡¯µÄÊ±¼ä¼ä¸ô
+                // æ ¹æ®BarSizeæ¥è·å– â€œ å¼€ä»·ï¼Œæœ€é«˜ä»·ï¼Œæœ€ä½ä»·ï¼Œæ”¶ä»·â€™çš„æ—¶é—´é—´éš”
                 int stepSec = getStepSecond(barSize);
 
-                // »ñÈ¡ÀúÊ·Êı¾İÖĞ×îµÍºÍ×î¸ßÖµ
+                // è·å–å†å²æ•°æ®ä¸­æœ€ä½å’Œæœ€é«˜å€¼
                 Pair lowHighPair = getLowHighPair(historicalDataList);
                 if (lowHighPair != null)
                 {
@@ -220,7 +220,7 @@ public class SRealTimePicturePnl extends JPanel
     }
 
 
-    // symbolContract ÊµÊ±¼Û¸ñ¹ıÂËÆ÷
+    // symbolContract å®æ—¶ä»·æ ¼è¿‡æ»¤å™¨
     public static class rcvContractRealTimePriceFilter implements IMessageFilter<ContractRealTimeInfo>
     {
         @Override
@@ -259,7 +259,7 @@ public class SRealTimePicturePnl extends JPanel
         }
     }
 
-    // ¸ù¾İBarSizeÀ´»ñÈ¡ ¡° ¿ª¼Û£¬×î¸ß¼Û£¬×îµÍ¼Û£¬ÊÕ¼Û¡¯µÄÊ±¼ä¼ä¸ô
+    // æ ¹æ®BarSizeæ¥è·å– â€œ å¼€ä»·ï¼Œæœ€é«˜ä»·ï¼Œæœ€ä½ä»·ï¼Œæ”¶ä»·â€™çš„æ—¶é—´é—´éš”
     private int getStepSecond(Types.BarSize barSize)
     {
         int stepSec = 1;

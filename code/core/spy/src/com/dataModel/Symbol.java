@@ -53,7 +53,7 @@ import static com.utils.TPubUtil.nullOrEmptyMap;
 import static com.utils.TStringUtil.notNullAndEmptyStr;
 
 /**
- * ¶ÔÏóÀà,ÈçSPY
+ * å¯¹è±¡ç±»,å¦‚SPY
  */
 
 
@@ -62,26 +62,26 @@ public class Symbol
     private static Logger LogApp = LogManager.getLogger("applog");
     private static Logger LogMsg = LogManager.getLogger("datamsg");
 
-    private String symbolVal = "";                 // ¶ÔÏóÃû³Æ
-    private Contract symbolContract;               // ¶ÔÏóµÄContract £¬ÓësymbolValÖ¸µÄÊÇÍ¬Ò»¸ö¶ÔÏó
-    private double onceOperateMoney = 1000D;       // Ò»´Î²Ù×÷½ğ¶î£¨ÃÀÔª£©
-    private static int querySymbolRealPriceTickid = -1;   // ²éÑ¯symbolÊµÊ±¼Û¸ñµÄtickid£¬ÓÃÓÚ½ÓÊÕÊµÊ±Êı¾İºÍÈ¡Ïû¶©ÔÄÖ®ÓÃ
+    private String symbolVal = "";                 // å¯¹è±¡åç§°
+    private Contract symbolContract;               // å¯¹è±¡çš„Contract ï¼Œä¸symbolValæŒ‡çš„æ˜¯åŒä¸€ä¸ªå¯¹è±¡
+    private double onceOperateMoney = 1000D;       // ä¸€æ¬¡æ“ä½œé‡‘é¢ï¼ˆç¾å…ƒï¼‰
+    private static int querySymbolRealPriceTickid = -1;   // æŸ¥è¯¢symbolå®æ—¶ä»·æ ¼çš„tickidï¼Œç”¨äºæ¥æ”¶å®æ—¶æ•°æ®å’Œå–æ¶ˆè®¢é˜…ä¹‹ç”¨
     private SDataManager dataManager;
     private RealTimePriceMgr realTimePriceMgr;
-    private double symbolRealPrice = 0D;          // symbolµÄÊµÊ±¼Û¸ñ
-    private double symbolTodayOpenPrice = 0D;   // symbol ½ñ¿ª¼Û¸ñ
-    private double symbolYesterdayClosePrice = 0D;  // symbol ×òÊÕ¼Û¸ñ
-    private static int queryOptionChainReqId = -1; // ²éÑ¯ÆÚÈ¨Á´µÄreqid
+    private double symbolRealPrice = 0D;          // symbolçš„å®æ—¶ä»·æ ¼
+    private double symbolTodayOpenPrice = 0D;   // symbol ä»Šå¼€ä»·æ ¼
+    private double symbolYesterdayClosePrice = 0D;  // symbol æ˜¨æ”¶ä»·æ ¼
+    private static int queryOptionChainReqId = -1; // æŸ¥è¯¢æœŸæƒé“¾çš„reqid
     private List<ContractDetails> contractDetailsList = new ArrayList<>();
     private Map<String, List<ContractDetails>> day2CtrdMap = new HashMap<>();
-    private List<String> optionExpireDayLst = new ArrayList<>();   // ÅÅĞòµÄÆÚÈ¨½áÊøÈÕÆÚ
+    private List<String> optionExpireDayLst = new ArrayList<>();   // æ’åºçš„æœŸæƒç»“æŸæ—¥æœŸ
 
-    // ±£´æ²éÑ¯ÀúÊ·Êı¾İµÄ²ÎÊı (ÓÃÓÚºóÃæµÄÍ¨¹ıÏß³ÌÀ´ÏÂ·¢£¬×¢Òâ£¬Õâ¸öÊ¹ÓÃµÄÊÇÏß³Ì°²È« Queue)
+    // ä¿å­˜æŸ¥è¯¢å†å²æ•°æ®çš„å‚æ•° (ç”¨äºåé¢çš„é€šè¿‡çº¿ç¨‹æ¥ä¸‹å‘ï¼Œæ³¨æ„ï¼Œè¿™ä¸ªä½¿ç”¨çš„æ˜¯çº¿ç¨‹å®‰å…¨ Queue)
     private OptHisDataReqParamStorage optHisDataReqParamStorage = new OptHisDataReqParamStorage();
     private reqOptHisDataThread reqOptHisDataThread = new reqOptHisDataThread(optHisDataReqParamStorage);
-    private boolean reqOptHisDataThreadStartFlg = false;  // reqOptHisDataThread Ïß³ÌÒÑÆô¶¯±êÖ¾
+    private boolean reqOptHisDataThreadStartFlg = false;  // reqOptHisDataThread çº¿ç¨‹å·²å¯åŠ¨æ ‡å¿—
 
-    //²éÑ¯ÀúÊ·Êı¾İÏà¹Ø±äÁ¿
+    //æŸ¥è¯¢å†å²æ•°æ®ç›¸å…³å˜é‡
     private static Map<Integer, HistoricDataStorage> reqid2HistoricDataStorageMap = new ConcurrentHashMap<>();
 
 
@@ -90,7 +90,7 @@ public class Symbol
         this.dataManager = dataManager;
         this.realTimePriceMgr = new RealTimePriceMgr(dataManager, this);
 
-        // ¶©ÔÄÏûÏ¢×ÜÏßÃû³ÆÎª DATAMAAGER_BUS µÄ ÏûÏ¢
+        // è®¢é˜…æ¶ˆæ¯æ€»çº¿åç§°ä¸º DATAMAAGER_BUS çš„ æ¶ˆæ¯
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
     }
 
@@ -272,7 +272,7 @@ public class Symbol
         }
     }
 
-    // ²éÑ¯ÆÚÈ¨Á´
+    // æŸ¥è¯¢æœŸæƒé“¾
     public void queryOptionChain()
     {
         if (notNullAndEmptyStr(symbolVal))
@@ -281,7 +281,7 @@ public class Symbol
             contract.conid(0);
             contract.symbol(symbolVal);
             contract.secType("OPT");
-            contract.lastTradeDateOrContractMonth(getSysYear());  // »ñÈ¡µ±Ç°Äê·İ Èç£º2017
+            contract.lastTradeDateOrContractMonth(getSysYear());  // è·å–å½“å‰å¹´ä»½ å¦‚ï¼š2017
             contract.strike(0.0);
             contract.exchange("SMART");
             contract.currency("USD");
@@ -295,7 +295,7 @@ public class Symbol
         }
     }
 
-    // »ñÈ¡Óëµ±Ç°¼Û¸ñ×î½üµÄcontractdetails, °üÀ¨ call ºÍput, ×¢Òâ £º pairCount ÊÇ±íÊ¾È¥¶àÉÙ×é
+    // è·å–ä¸å½“å‰ä»·æ ¼æœ€è¿‘çš„contractdetails, åŒ…æ‹¬ call å’Œput, æ³¨æ„ ï¼š pairCount æ˜¯è¡¨ç¤ºå»å¤šå°‘ç»„
     private Map<Double, List<ContractDetails>> getNearestPriceCtrDetails(List<ContractDetails> crtdLst,
                                                                          double curPrice,
                                                                          int pairCount)
@@ -308,7 +308,7 @@ public class Symbol
             for (int i = 0; i < pairCount; i++)
             {
                 List<ContractDetails> retCrtLst = new ArrayList<>();
-                // »ñÈ¡call×î½Ó½üµÄstrike
+                // è·å–callæœ€æ¥è¿‘çš„strike
                 double minAbs = Double.MAX_VALUE;
                 ContractDetails retStrick = null;
                 for (ContractDetails crt : crtdLst)
@@ -330,7 +330,7 @@ public class Symbol
                     retCrtLst.add(retStrick);
                     conidSet.add(retStrick.conid());
                 }
-                // »ñÈ¡ÏàÍ¬¼Û¸ñµÄput
+                // è·å–ç›¸åŒä»·æ ¼çš„put
                 if (notNullAndEmptyCollection(retCrtLst))
                 {
                     ContractDetails callCrt = retCrtLst.get(0);
@@ -358,13 +358,13 @@ public class Symbol
     }
 
 
-    // »ñÈ¡Ö¸¶¨ÈÕÆÚµÄÆÚÈ¨ ¼° ÊıÁ¿£¬¸ÃÆÚÈ¨ÒÔµ±Ç°symbolµÄ¼Û¸ñÎªÖĞĞÄµÄÆÚÈ¨
+    // è·å–æŒ‡å®šæ—¥æœŸçš„æœŸæƒ åŠ æ•°é‡ï¼Œè¯¥æœŸæƒä»¥å½“å‰symbolçš„ä»·æ ¼ä¸ºä¸­å¿ƒçš„æœŸæƒ
     public Map<Double, List<ContractDetails>> getStrike2ContractDtalsLst(String expireDay, int strickCount)
     {
         Map<Double, List<ContractDetails>> strike2ContractDtalsLst = new HashMap<>();
-        double curSymbolRealPrice = getSymbolRealPrice();  // ĞèÒªÓÃÒ»¸ö·½·¨»ñÈ¡µ±Ç°symbolµÄ¼Û¸ñ
+        double curSymbolRealPrice = getSymbolRealPrice();  // éœ€è¦ç”¨ä¸€ä¸ªæ–¹æ³•è·å–å½“å‰symbolçš„ä»·æ ¼
         List<ContractDetails> ctrdetailLst = day2CtrdMap.get(expireDay);
-        // »ñÈ¡Àëµ±Ç°¼Û¸ñ×î½üµÄ ContractDetails,3¶Ô
+        // è·å–ç¦»å½“å‰ä»·æ ¼æœ€è¿‘çš„ ContractDetails,3å¯¹
         strike2ContractDtalsLst = getNearestPriceCtrDetails(ctrdetailLst, curSymbolRealPrice, strickCount);
         if (nullOrEmptyMap(strike2ContractDtalsLst))
         {
@@ -374,8 +374,8 @@ public class Symbol
     }
 
     /**
-     * »ñÈ¡ÆÚÈ¨µÄÀúÊ·Êı¾İ £¨µ±µ¥Î»Ñ¡ Ãë Ê±£¬×îĞ¡Ê±¼äbarÎª5Ãë£©
-     * ÀıÈç£º²éÑ¯ spy option  µÄÀúÊ·Êı¾İ £¬Æä Contract ÈçÏÂ(¼´²éÑ¯»ØÀ´µÄContract)
+     * è·å–æœŸæƒçš„å†å²æ•°æ® ï¼ˆå½“å•ä½é€‰ ç§’ æ—¶ï¼Œæœ€å°æ—¶é—´barä¸º5ç§’ï¼‰
+     * ä¾‹å¦‚ï¼šæŸ¥è¯¢ spy option  çš„å†å²æ•°æ® ï¼Œå…¶ Contract å¦‚ä¸‹(å³æŸ¥è¯¢å›æ¥çš„Contract)
      * Contract optCtr = new Contract();
      * optCtr.conid(289715299);
      * optCtr.symbol("SPY");
@@ -389,14 +389,14 @@ public class Symbol
      * optCtr.localSymbol("SPY  171006C00253500");
      * optCtr.tradingClass("SPY");
      * optCtr.includeExpired(false);
-     * ×¢Òâ£º m_client.reqHistoricalData µÄ²ÎÊıÖĞ
-     * endDateTime ¸ñÊ½Îª£º20171006 23:59:00
-     * durationStr ¸ñÊ½Îª£º10000 S
-     * barSize  ¸ñÊ½Îª£º10 secs
-     * whatToShow ¸ñÊ½Îª£ºTRADES
-     * useRTH  ¸ñÊ½Îª£º rthOnly ? 1 : 0
-     * formatDate ¸ñÊ½Îª£º2
-     * chartOptions ¸ñÊ½Îª£º Collections.emptyList()
+     * æ³¨æ„ï¼š m_client.reqHistoricalData çš„å‚æ•°ä¸­
+     * endDateTime æ ¼å¼ä¸ºï¼š20171006 23:59:00
+     * durationStr æ ¼å¼ä¸ºï¼š10000 S
+     * barSize  æ ¼å¼ä¸ºï¼š10 secs
+     * whatToShow æ ¼å¼ä¸ºï¼šTRADES
+     * useRTH  æ ¼å¼ä¸ºï¼š rthOnly ? 1 : 0
+     * formatDate æ ¼å¼ä¸ºï¼š2
+     * chartOptions æ ¼å¼ä¸ºï¼š Collections.emptyList()
      *
      * @param endDateTime
      * @param duration
@@ -436,7 +436,7 @@ public class Symbol
         return -1;
     }
 
-    // ¸Ã·½·¨½ö½öÊÇ°Ñ½ÓÊÕµ½µÄÊı¾İ±£´æµ½»º´æÁĞ±íÖĞ£¬ºóĞøÖ´ĞĞĞèÒªĞÂÆğÏß³ÌÖ´ĞĞ£¬ÎªÁË¿ØÖÆ2ÃëÖ®ÄÚ²»ÄÜ³¬³ö6¸ö²éÑ¯ÇëÇó
+    // è¯¥æ–¹æ³•ä»…ä»…æ˜¯æŠŠæ¥æ”¶åˆ°çš„æ•°æ®ä¿å­˜åˆ°ç¼“å­˜åˆ—è¡¨ä¸­ï¼Œåç»­æ‰§è¡Œéœ€è¦æ–°èµ·çº¿ç¨‹æ‰§è¡Œï¼Œä¸ºäº†æ§åˆ¶2ç§’ä¹‹å†…ä¸èƒ½è¶…å‡º6ä¸ªæŸ¥è¯¢è¯·æ±‚
     public int reqOptionHistoricDatas_pub(Contract contract,
                                           String endDateTime,
                                           long duration,
@@ -487,7 +487,7 @@ public class Symbol
             }
         }
 
-        // µ÷ÓÃ²Ö¿âStorageµÄÉú²úº¯Êı
+        // è°ƒç”¨ä»“åº“Storageçš„ç”Ÿäº§å‡½æ•°
         public void consume()
         {
             EClientSocket m_client = dataManager != null ? dataManager.getM_client() : null;
@@ -531,8 +531,8 @@ public class Symbol
 
 
     /**
-     * »ñÈ¡ÀúÊ·Êı¾İ £¨µ±µ¥Î»Ñ¡ Ãë Ê±£¬×îĞ¡Ê±¼äbarÎª5Ãë£©
-     * ÀıÈç£º²éÑ¯ spy option  µÄÀúÊ·Êı¾İ £¬Æä Contract ÈçÏÂ(¼´²éÑ¯»ØÀ´µÄContract)
+     * è·å–å†å²æ•°æ® ï¼ˆå½“å•ä½é€‰ ç§’ æ—¶ï¼Œæœ€å°æ—¶é—´barä¸º5ç§’ï¼‰
+     * ä¾‹å¦‚ï¼šæŸ¥è¯¢ spy option  çš„å†å²æ•°æ® ï¼Œå…¶ Contract å¦‚ä¸‹(å³æŸ¥è¯¢å›æ¥çš„Contract)
      * Contract optCtr = new Contract();
      * optCtr.conid(289715299);
      * optCtr.symbol("SPY");
@@ -546,14 +546,14 @@ public class Symbol
      * optCtr.localSymbol("SPY  171006C00253500");
      * optCtr.tradingClass("SPY");
      * optCtr.includeExpired(false);
-     * ×¢Òâ£º m_client.reqHistoricalData µÄ²ÎÊıÖĞ
-     * endDateTime ¸ñÊ½Îª£º20171006 23:59:00
-     * durationStr ¸ñÊ½Îª£º10000 S
-     * barSize  ¸ñÊ½Îª£º10 secs
-     * whatToShow ¸ñÊ½Îª£ºTRADES
-     * useRTH  ¸ñÊ½Îª£º rthOnly ? 1 : 0
-     * formatDate ¸ñÊ½Îª£º2
-     * chartOptions ¸ñÊ½Îª£º Collections.emptyList()
+     * æ³¨æ„ï¼š m_client.reqHistoricalData çš„å‚æ•°ä¸­
+     * endDateTime æ ¼å¼ä¸ºï¼š20171006 23:59:00
+     * durationStr æ ¼å¼ä¸ºï¼š10000 S
+     * barSize  æ ¼å¼ä¸ºï¼š10 secs
+     * whatToShow æ ¼å¼ä¸ºï¼šTRADES
+     * useRTH  æ ¼å¼ä¸ºï¼š rthOnly ? 1 : 0
+     * formatDate æ ¼å¼ä¸ºï¼š2
+     * chartOptions æ ¼å¼ä¸ºï¼š Collections.emptyList()
      *
      * @param symbol
      * @param endDateTime
@@ -631,7 +631,7 @@ public class Symbol
     }
 
 
-    // ²éÑ¯ÀúÊ·Êı¾İ²¢´¦Àí
+    // æŸ¥è¯¢å†å²æ•°æ®å¹¶å¤„ç†
     public void getHistoricDatasAndProcess(Contract contract,
                                            String endDateTime,
                                            long duration,
@@ -718,10 +718,10 @@ public class Symbol
     }
 
 
-    //------------------------------ ÒÔÏÂÊÇ´¦Àí¶¯Ì¬·µ»ØµÄÊı¾İ-------------------------------
+    //------------------------------ ä»¥ä¸‹æ˜¯å¤„ç†åŠ¨æ€è¿”å›çš„æ•°æ®-------------------------------
 
 
-    // ½ÓÊÕÀúÊ·Êı¾İÏûÏ¢¹ıÂËÆ÷
+    // æ¥æ”¶å†å²æ•°æ®æ¶ˆæ¯è¿‡æ»¤å™¨
     static public class historicDataFilter implements IMessageFilter<MBAHistoricalData>
     {
         @Override
@@ -745,7 +745,7 @@ public class Symbol
         LogMsg.info("HistoricalData: " + msg.toString());
     }
 
-    // ½ÓÊÕÀúÊ·Êı¾İÏûÏ¢½áÊø
+    // æ¥æ”¶å†å²æ•°æ®æ¶ˆæ¯ç»“æŸ
     static public class historicDataEndFilter implements IMessageFilter<MBAHistoricalDataEnd>
     {
         @Override
@@ -755,11 +755,11 @@ public class Symbol
         }
     }
 
-    // ½ÓÊÕÀúÊ·Êı¾İ½áÊøºóµÄ´¦Àí£ºÈ¡³ö¿ªÅÌÊ±¼äµÄ¿ªÅÌ¼Û¸ñ,ÌîÈëµ½±í¸ñÖĞ
+    // æ¥æ”¶å†å²æ•°æ®ç»“æŸåçš„å¤„ç†ï¼šå–å‡ºå¼€ç›˜æ—¶é—´çš„å¼€ç›˜ä»·æ ¼,å¡«å…¥åˆ°è¡¨æ ¼ä¸­
     @Handler(filters = {@Filter(historicDataEndFilter.class)})
     private void processHistoricDataEnd(MBAHistoricalDataEnd msg)
     {
-        // È¡Ïû»ñÈ¡ÀúÊ·Êı¾İÉêÇë
+        // å–æ¶ˆè·å–å†å²æ•°æ®ç”³è¯·
         cancelReqHistoricalData(msg.reqId);
         HistoricDataStorage historicDataStorage = reqid2HistoricDataStorageMap.get(msg.reqId);
         if (historicDataStorage != null)
@@ -772,7 +772,7 @@ public class Symbol
     //--------------
 
 
-    // ½ÓÊÕ²éÑ¯symbolµÄÊµÊ±¼Û¸ñµÄÏûÏ¢¹ıÂËÆ÷
+    // æ¥æ”¶æŸ¥è¯¢symbolçš„å®æ—¶ä»·æ ¼çš„æ¶ˆæ¯è¿‡æ»¤å™¨
     static public class recvSymbolRealPriceFilter implements IMessageFilter<MBAtickPrice>
     {
         @Override
@@ -782,15 +782,15 @@ public class Symbol
         }
     }
 
-    // ÊµÊ±¼Û¸ñÏûÏ¢´¦ÀíÆ÷
+    // å®æ—¶ä»·æ ¼æ¶ˆæ¯å¤„ç†å™¨
     @Handler(filters = {@Filter(recvSymbolRealPriceFilter.class)})
     private void getSymbolRealPrice(MBAtickPrice msg)
     {
-        //   1 = Âò¼Û   2 = Âô¼Û   4 = ×îºó¼Û  6 = ×î¸ß¼Û   7 = ×îµÍ¼Û      9 = ÊÕÅÌ¼Û
+        //   1 = ä¹°ä»·   2 = å–ä»·   4 = æœ€åä»·  6 = æœ€é«˜ä»·   7 = æœ€ä½ä»·      9 = æ”¶ç›˜ä»·
         if (msg.field == TickType.LAST.index())
         {
             symbolRealPrice = msg.price;
-            // Symbol·¢²¼Êı¾İ
+            // Symbolå‘å¸ƒæ•°æ®
             TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBASymbolRealPrice(symbolRealPrice));
         }
         else if (msg.field == TickType.OPEN.index())
@@ -804,7 +804,7 @@ public class Symbol
     }
 
 
-    // ½ÓÊÕÆÚÈ¨Á´ÏûÏ¢¹ıÂËÆ÷
+    // æ¥æ”¶æœŸæƒé“¾æ¶ˆæ¯è¿‡æ»¤å™¨
     static public class optionChainFilter implements IMessageFilter<AnswerObj>
     {
         @Override
@@ -814,7 +814,7 @@ public class Symbol
         }
     }
 
-    // ½ÓÊÕÆÚÈ¨Á´ÏûÏ¢´¦ÀíÆ÷
+    // æ¥æ”¶æœŸæƒé“¾æ¶ˆæ¯å¤„ç†å™¨
     @Handler(filters = {@Filter(optionChainFilter.class)})
     private void getOptionChain(AnswerObj msg)
     {
@@ -824,7 +824,7 @@ public class Symbol
             contractDetailsList.add((ContractDetails) obj);
         }
 
-        // Æô¶¯Ò»ÏÂÏÂ·¢²éÑ¯ÆÚÈ¨ÀúÊ·Êı¾İÏß³Ì
+        // å¯åŠ¨ä¸€ä¸‹ä¸‹å‘æŸ¥è¯¢æœŸæƒå†å²æ•°æ®çº¿ç¨‹
         if (!reqOptHisDataThreadStartFlg)
         {
             reqOptHisDataThreadStartFlg = true;
@@ -832,7 +832,7 @@ public class Symbol
         }
     }
 
-    // ½ÓÊÕ²éÑ¯contractDetailÍê±ÏµÄ¹ıÂËÆ÷
+    // æ¥æ”¶æŸ¥è¯¢contractDetailå®Œæ¯•çš„è¿‡æ»¤å™¨
     static public class contractDetailEndFilter implements IMessageFilter<String>
     {
         @Override
@@ -880,7 +880,7 @@ public class Symbol
         {
             optionExpireDayLst = new ArrayList<>(day2CtrdMap.keySet());
             Collections.sort(optionExpireDayLst);
-            // Symbol·¢²¼Êı¾İ
+            // Symbolå‘å¸ƒæ•°æ®
             TMbassadorSingleton.getInstance(SYMBOL_BUS).publish(new MBAOptionExpireDayList(optionExpireDayLst));
         }
         int a = 1;

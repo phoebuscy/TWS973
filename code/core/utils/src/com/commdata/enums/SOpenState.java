@@ -1,14 +1,14 @@
 package com.commdata.enums;
 
 /**
- * ����״̬�� δ���֣����ڿ��֣��ѿ��֣�����ƽ��
+ * 开仓状态： 未开仓，正在开仓，已开仓，正在平仓
  */
 public enum SOpenState
 {
-    NO_OPEN(1),  // δ����
-    OPEN_ING(2), //  ���ڿ���
-    OPENED(3),     //  �ѿ���
-    CLOSE_ING(4); // ����ƽ��
+    NO_OPEN(1),  // 未开仓
+    OPEN_ING(2), //  正在开仓
+    OPENED(3),     //  已开仓
+    CLOSE_ING(4); // 正在平仓
 
 
     private int val;

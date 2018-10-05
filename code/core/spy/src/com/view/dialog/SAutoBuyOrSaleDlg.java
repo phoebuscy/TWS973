@@ -45,7 +45,7 @@ public class SAutoBuyOrSaleDlg extends JFrame
     public SAutoBuyOrSaleDlg()
     {
         initFrame();
-        // ¶©ÔÄÏûÏ¢×ÜÏßÃû³ÆÎª CALCULATE_BUS µÄ ÏûÏ¢
+        // è®¢é˜…æ¶ˆæ¯æ€»çº¿åç§°ä¸º CALCULATE_BUS çš„ æ¶ˆæ¯
         TMbassadorSingleton.getInstance(CALCULATE_BUS).subscribe(this);
     }
 
@@ -75,7 +75,7 @@ public class SAutoBuyOrSaleDlg extends JFrame
         JPanel showInfoPnl = new JPanel(new BorderLayout());
         JScrollPane js = new JScrollPane(infoTextArea);
         js.setBounds(13, 10, 350, 340);
-        //Ä¬ÈÏµÄÉèÖÃÊÇ³¬¹ıÎÄ±¾¿ò²Å»áÏÔÊ¾¹ö¶¯Ìõ£¬ÒÔÏÂÉèÖÃÈÃ¹ö¶¯ÌõÒ»Ö±ÏÔÊ¾
+        //é»˜è®¤çš„è®¾ç½®æ˜¯è¶…è¿‡æ–‡æœ¬æ¡†æ‰ä¼šæ˜¾ç¤ºæ»šåŠ¨æ¡ï¼Œä»¥ä¸‹è®¾ç½®è®©æ»šåŠ¨æ¡ä¸€ç›´æ˜¾ç¤º
         js.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         showInfoPnl.add(js, BorderLayout.CENTER);
         return showInfoPnl;
@@ -110,7 +110,7 @@ public class SAutoBuyOrSaleDlg extends JFrame
     }
 
 
-    // Caculate ÈÕÖ¾ĞÅÏ¢¹ıÂËÆ÷
+    // Caculate æ—¥å¿—ä¿¡æ¯è¿‡æ»¤å™¨
     public static class rcvCaculateInfoFilter implements IMessageFilter<MBACaculateTxtInfo>
     {
         @Override
@@ -120,7 +120,7 @@ public class SAutoBuyOrSaleDlg extends JFrame
         }
     }
 
-    // ÏÔÊ¾caculate ´«À´µÄĞÅÏ¢
+    // æ˜¾ç¤ºcaculate ä¼ æ¥çš„ä¿¡æ¯
     @Handler(filters = {@Filter(rcvCaculateInfoFilter.class)})
     private void processContractRealTimePrice(MBACaculateTxtInfo msg)
     {

@@ -64,7 +64,7 @@ public class SInitHistoricDataDlg extends JFrame
         JPanel showInfoPnl = new JPanel(new BorderLayout());
         JScrollPane js = new JScrollPane(infoTextArea);
         js.setBounds(13, 10, 350, 340);
-        //Ä¬ÈÏµÄÉèÖÃÊÇ³¬¹ıÎÄ±¾¿ò²Å»áÏÔÊ¾¹ö¶¯Ìõ£¬ÒÔÏÂÉèÖÃÈÃ¹ö¶¯ÌõÒ»Ö±ÏÔÊ¾
+        //é»˜è®¤çš„è®¾ç½®æ˜¯è¶…è¿‡æ–‡æœ¬æ¡†æ‰ä¼šæ˜¾ç¤ºæ»šåŠ¨æ¡ï¼Œä»¥ä¸‹è®¾ç½®è®©æ»šåŠ¨æ¡ä¸€ç›´æ˜¾ç¤º
         js.setVerticalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         showInfoPnl.add(js, BorderLayout.CENTER);
         return showInfoPnl;

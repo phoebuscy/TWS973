@@ -13,7 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * ÀúÊ·Êı¾İ²Ö¿â
+ * å†å²æ•°æ®ä»“åº“
  */
 
 public class HistoricDataStorage
@@ -24,9 +24,9 @@ public class HistoricDataStorage
     private int reqID;
     private List<MBAHistoricalData> historicalDataList = new ArrayList<>();
 
-    // Ëø
+    // é”
     private final Lock lock = new ReentrantLock();
-    // ²Ö¿â¿ÕµÄÌõ¼ş±äÁ¿
+    // ä»“åº“ç©ºçš„æ¡ä»¶å˜é‡
     private final Condition getDatafinished = lock.newCondition();
 
     public HistoricDataStorage(int reqID)
@@ -41,7 +41,7 @@ public class HistoricDataStorage
         lock.unlock();
     }
 
-    // Éú²únum¸ö²úÆ·
+    // ç”Ÿäº§numä¸ªäº§å“
     public void produce(MBAHistoricalData historicalData)
     {
         if (historicalData != null)
@@ -50,14 +50,14 @@ public class HistoricDataStorage
         }
     }
 
-    // Ïû·Ñ1¸ö²úÆ·
+    // æ¶ˆè´¹1ä¸ªäº§å“
     public List<MBAHistoricalData> consume()
     {
-        // »ñµÃËø
+        // è·å¾—é”
         lock.lock();
         try
         {
-            // ÓÉÓÚÌõ¼ş²»Âú×ã£¬Ïû·Ñ×èÈû
+            // ç”±äºæ¡ä»¶ä¸æ»¡è¶³ï¼Œæ¶ˆè´¹é˜»å¡
             getDatafinished.await(1,TimeUnit.MINUTES);
         }
         catch (InterruptedException e)

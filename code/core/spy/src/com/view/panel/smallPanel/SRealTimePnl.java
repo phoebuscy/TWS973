@@ -45,10 +45,10 @@ public class SRealTimePnl extends JPanel
     {
         if (jfreechart != null && begin != null && end != null)
         {
-            // X×ø±êÉè¶¨
+            // Xåæ ‡è®¾å®š
             XYPlot xyplot = jfreechart.getXYPlot();
             ValueAxis xAxis = xyplot.getDomainAxis();
-            // ×Ô¶¯ÉèÖÃÊı¾İÖáÊı¾İ·¶Î§
+            // è‡ªåŠ¨è®¾ç½®æ•°æ®è½´æ•°æ®èŒƒå›´
             xAxis.setAutoRange(false);
             xAxis.setRange(begin.getTime(), end.getTime());
         }
@@ -58,7 +58,7 @@ public class SRealTimePnl extends JPanel
     {
         if (jfreechart != null)
         {
-            // X×ø±êÉè¶¨
+            // Xåæ ‡è®¾å®š
             XYPlot xyplot = jfreechart.getXYPlot();
             ValueAxis xAxis = xyplot.getDomainAxis();
             return xAxis.getRange();
@@ -71,12 +71,12 @@ public class SRealTimePnl extends JPanel
         if (jfreechart != null && lower != null && upper != null)
         {
             XYPlot xyplot = jfreechart.getXYPlot();
-            // ÉèÖÃYÖá·¶Î§
+            // è®¾ç½®Yè½´èŒƒå›´
             ValueAxis yAxis = xyplot.getRangeAxis();
             yAxis.setRange(lower, upper);
             yAxis.setAutoRange(true);
-            // xyplot.getRangeAxis().setUpperMargin(1.1);// ÉèÖÃ¶¥²¿Y×ø±êÖá¼ä¾à,·ÀÖ¹Êı¾İÎŞ·¨ÏÔÊ¾
-            //  xyplot.getRangeAxis().setLowerMargin(1.1);// ÉèÖÃµ×²¿Y×ø±êÖá¼ä¾à
+            // xyplot.getRangeAxis().setUpperMargin(1.1);// è®¾ç½®é¡¶éƒ¨Yåæ ‡è½´é—´è·,é˜²æ­¢æ•°æ®æ— æ³•æ˜¾ç¤º
+            //  xyplot.getRangeAxis().setLowerMargin(1.1);// è®¾ç½®åº•éƒ¨Yåæ ‡è½´é—´è·
         }
     }
 
@@ -94,7 +94,7 @@ public class SRealTimePnl extends JPanel
     private JFreeChart createChart(String chartContent, String title, String yaxisName)
     {
         // TODO Auto-generated method stub
-        // ´´½¨Ê±ĞòÍ¼¶ÔÏó
+        // åˆ›å»ºæ—¶åºå›¾å¯¹è±¡
         timeSeries = new TimeSeries(chartContent);
         TimeSeriesCollection timeseriescollection = new TimeSeriesCollection(timeSeries);
         jfreechart = ChartFactory.createTimeSeriesChart(title,
@@ -107,30 +107,30 @@ public class SRealTimePnl extends JPanel
         /*
         XYPlot xyplot = jfreechart.getXYPlot();
 
-        // X×ø±êÉè¶¨
+        // Xåæ ‡è®¾å®š
         ValueAxis xAxis = xyplot.getDomainAxis();
-        // ×Ô¶¯ÉèÖÃÊı¾İÖáÊı¾İ·¶Î§
+        // è‡ªåŠ¨è®¾ç½®æ•°æ®è½´æ•°æ®èŒƒå›´
         xAxis.setAutoRange(false);
-        // Êı¾İÖá¹Ì¶¨Êı¾İ·¶Î§ 300s
+        // æ•°æ®è½´å›ºå®šæ•°æ®èŒƒå›´ 300s
         // valueaxis.setFixedAutoRange(300000D);
         List<Date> dateList = getBeginEndDate();
         xAxis.setRange(dateList.get(0).getTime(), dateList.get(1).getTime());
 
-        // ÉèÖÃYÖá·¶Î§
+        // è®¾ç½®Yè½´èŒƒå›´
         ValueAxis yAxis = xyplot.getRangeAxis();
         yAxis.setRange(255.50, 257.55);
         // rangeAxis.setAutoRange(true);
-        xyplot.getRangeAxis().setUpperMargin(1.1);// ÉèÖÃ¶¥²¿Y×ø±êÖá¼ä¾à,·ÀÖ¹Êı¾İÎŞ·¨ÏÔÊ¾
-        xyplot.getRangeAxis().setLowerMargin(1.1);// ÉèÖÃµ×²¿Y×ø±êÖá¼ä¾à
+        xyplot.getRangeAxis().setUpperMargin(1.1);// è®¾ç½®é¡¶éƒ¨Yåæ ‡è½´é—´è·,é˜²æ­¢æ•°æ®æ— æ³•æ˜¾ç¤º
+        xyplot.getRangeAxis().setLowerMargin(1.1);// è®¾ç½®åº•éƒ¨Yåæ ‡è½´é—´è·
         */
 
         /*
-        //ÉèÖÃÇúÏßÏÔÊ¾¸÷Êı¾İµãµÄÖµ
+        //è®¾ç½®æ›²çº¿æ˜¾ç¤ºå„æ•°æ®ç‚¹çš„å€¼
         XYItemRenderer xyitem = xyplot.getRenderer();
         xyitem.setBaseItemLabelsVisible(true);
         xyitem.setBasePositiveItemLabelPosition(new ItemLabelPosition(ItemLabelAnchor.OUTSIDE12, TextAnchor
         .BASELINE_LEFT));
-        //ÏÂÃæÈı¾äÊÇ¶ÔÉèÖÃÕÛÏßÍ¼Êı¾İ±êÊ¾µÄ¹Ø¼ü´úÂë
+        //ä¸‹é¢ä¸‰å¥æ˜¯å¯¹è®¾ç½®æŠ˜çº¿å›¾æ•°æ®æ ‡ç¤ºçš„å…³é”®ä»£ç 
         xyitem.setBaseItemLabelGenerator(new StandardXYItemLabelGenerator());
         xyitem.setBaseItemLabelFont(new Font("Dialog", 1, 14));
         xyplot.setRenderer(xyitem);

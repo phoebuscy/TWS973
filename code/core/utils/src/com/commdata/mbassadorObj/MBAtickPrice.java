@@ -4,7 +4,7 @@ package com.commdata.mbassadorObj;
 import com.ib.client.TickAttr;
 
 /**
- * ÓÃÓÚ½ÓÊÕsymbolÊµÊ±¼Û¸ñµÄÀàĞÍ
+ * ç”¨äºæ¥æ”¶symbolå®æ—¶ä»·æ ¼çš„ç±»å‹
  */
 
 public class MBAtickPrice

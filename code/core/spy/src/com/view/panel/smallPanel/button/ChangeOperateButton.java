@@ -7,7 +7,7 @@ import static com.utils.TFileUtil.getConfigValue;
 import static com.utils.TIconUtil.getProjIcon;
 
 /**
- * ÖĞ¼äµÄ Æ½/·´ °´Å¥
+ * ä¸­é—´çš„ å¹³/å æŒ‰é’®
  */
 public class ChangeOperateButton extends JButton
 {
@@ -21,7 +21,7 @@ public class ChangeOperateButton extends JButton
         this.callBtn = callBtn;
         this.putBtn = putBtn;
         setIcon(changeIco);
-        setText(getConfigValue("ping.and.fan", TConst.CONFIG_I18N_FILE)); // Æ½/·´
+        setText(getConfigValue("ping.and.fan", TConst.CONFIG_I18N_FILE)); // å¹³/å
 
     }
 

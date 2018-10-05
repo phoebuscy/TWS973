@@ -16,9 +16,9 @@ public class TCyTableModel extends AbstractTableModel
 {
 
     private String[] columnNames = null;
-    private Map<BigInteger, Integer> rowData2rowIndexMap = new HashMap<>(); // Êı¾İÓërowindexµÄ¶ÔÓ¦¹ØÏµmap, rowIndex¿É±ä
-    private Map<BigInteger, List<Object>> rowdatas = new HashMap<>();       // ´æ·ÅÊı¾İlist
-    private BigInteger rowObjectNum = BigInteger.ZERO; // Ã¿ĞĞÊı¾İµÄ±êÊ¶£¬¼ÓÒ»ĞĞ¸ÃÊıÔòÔö¼ÓÒ»
+    private Map<BigInteger, Integer> rowData2rowIndexMap = new HashMap<>(); // æ•°æ®ä¸rowindexçš„å¯¹åº”å…³ç³»map, rowIndexå¯å˜
+    private Map<BigInteger, List<Object>> rowdatas = new HashMap<>();       // å­˜æ”¾æ•°æ®list
+    private BigInteger rowObjectNum = BigInteger.ZERO; // æ¯è¡Œæ•°æ®çš„æ ‡è¯†ï¼ŒåŠ ä¸€è¡Œè¯¥æ•°åˆ™å¢åŠ ä¸€
 
     public TCyTableModel()
     {
@@ -54,7 +54,7 @@ public class TCyTableModel extends AbstractTableModel
             for (int i = 0; i < datas.length; i++)
             {
                 BigInteger newRowDataNum = getNewRowObjectNum();
-                Object[] rowUserObjData = new Object[newDataColCount]; // Ôö¼ÓµÚÒ»¸öµ¥Ôª¸ñ´æ·ÅuserObject
+                Object[] rowUserObjData = new Object[newDataColCount]; // å¢åŠ ç¬¬ä¸€ä¸ªå•å…ƒæ ¼å­˜æ”¾userObject
                 System.arraycopy(datas[i], 0, rowUserObjData, 1, dataColCount);
                 rowdatas.put(newRowDataNum, Arrays.asList(datas[i]));
                 rowData2rowIndexMap.put(newRowDataNum, Integer.valueOf(i));
@@ -175,14 +175,14 @@ public class TCyTableModel extends AbstractTableModel
             int columCount = getColumnCount();
             if(columCount == rowdata.size())
             {
-                if(rowIndex < 0) // ±íÊ¾Ã»ÓĞÕÒµ½£¬ÔòÌí¼Óµ½×îºóÒ»ĞĞ
+                if(rowIndex < 0) // è¡¨ç¤ºæ²¡æœ‰æ‰¾åˆ°ï¼Œåˆ™æ·»åŠ åˆ°æœ€åä¸€è¡Œ
                 {
                     addRowData(userObj, rowdata);
                 }
-                else // ±íÊ¾ÕÒµ½ÁËuserObject£¬Ôò¸üĞÂÕâÒ»ĞĞÊı¾İ
+                else // è¡¨ç¤ºæ‰¾åˆ°äº†userObjectï¼Œåˆ™æ›´æ–°è¿™ä¸€è¡Œæ•°æ®
                 {
                     List<Object> rowDataWithUserObj = getRowDataWithUserObj(rowIndex);
-                    // ×¢Òâ£ºrowDataWithUserObj ÊÇ´øuserObjectµÄ
+                    // æ³¨æ„ï¼šrowDataWithUserObj æ˜¯å¸¦userObjectçš„
                     if (notNullAndEmptyCollection(rowDataWithUserObj) &&
                         rowDataWithUserObj.size() == rowdata.size() + 1)
                     {
@@ -206,18 +206,18 @@ public class TCyTableModel extends AbstractTableModel
             BigInteger newRowDataNum = getNewRowObjectNum();
 
             List<Object> rowDataWithUserObj = new ArrayList<>(newDataColCount);
-            rowDataWithUserObj.add(userObj);  // Ôö¼ÓµÚÒ»¸öµ¥Ôª¸ñ´æ·ÅuserObject
+            rowDataWithUserObj.add(userObj);  // å¢åŠ ç¬¬ä¸€ä¸ªå•å…ƒæ ¼å­˜æ”¾userObject
             rowDataWithUserObj.addAll(rowdata);
             rowdatas.put(newRowDataNum, rowDataWithUserObj);
             rowIndex = (rowIndex >= rowData2rowIndexMap.size()) ? rowData2rowIndexMap.size() : rowIndex;
-            // ¸ü¸ÄrowData2rowIndexMapÖĞ valueÖµ±ÈrowIndex ´óµÄÖµ£¨¼Ó1£©
+            // æ›´æ”¹rowData2rowIndexMapä¸­ valueå€¼æ¯”rowIndex å¤§çš„å€¼ï¼ˆåŠ 1ï¼‰
             increOrDecreRowIndex(true, rowIndex);
             rowData2rowIndexMap.put(newRowDataNum, rowIndex);
             fireTableRowsInserted(rowIndex, rowIndex);
         }
     }
 
-    // Ôö¼Ó»ò¼õÉÙ1
+    // å¢åŠ æˆ–å‡å°‘1
     private void increOrDecreRowIndex(boolean isIncreOne, Integer beginRowIndex)
     {
         if (rowData2rowIndexMap != null)
@@ -259,7 +259,7 @@ public class TCyTableModel extends AbstractTableModel
                 }
             }
 
-            // »ñÈ¡µ½ rowdatas ÖĞµÄKey
+            // è·å–åˆ° rowdatas ä¸­çš„Key
             List<BigInteger> rowObjLst = new ArrayList<>();
             for (Map.Entry<BigInteger, Integer> entry : rowData2rowIndexMap.entrySet())
             {

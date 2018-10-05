@@ -15,14 +15,14 @@ import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TPubUtil.makeAKmsg;
 
 /**
- * ¼ì²éÁªÍ¨ĞÔµÄ¼àÊÓÆ÷
+ * æ£€æŸ¥è”é€šæ€§çš„ç›‘è§†å™¨
  */
 
 public class ConnectionMonitor
 {
     private static Logger LogApp = LogManager.getLogger("applog");
 
-    private static int checkRate = 10;  // ¼ì²éÆµÂÊ£¬µ¥Î» Ãë
+    private static int checkRate = 10;  // æ£€æŸ¥é¢‘ç‡ï¼Œå•ä½ ç§’
     private static ScheduledExecutorService monitor = Executors.newSingleThreadScheduledExecutor();
     private static CheckConnection checkConnection;
 
