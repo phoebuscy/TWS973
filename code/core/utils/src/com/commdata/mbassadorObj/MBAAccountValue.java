@@ -3,17 +3,17 @@ package com.commdata.mbassadorObj;
 
 /*
 key
-±íÊ¾Ò»ÖÖÕË»§ÖµÀàĞÍµÄ×Ö·û´®¡£ ÓĞºÜ¶à¿É±»·¢ËÍµÄ¿ÉÓÃµÄ±êÇ©£¬ÕâÀï½öÁĞ³ö¼¸¸öÑù±¾£º
+è¡¨ç¤ºä¸€ç§è´¦æˆ·å€¼ç±»å‹çš„å­—ç¬¦ä¸²ã€‚ æœ‰å¾ˆå¤šå¯è¢«å‘é€çš„å¯ç”¨çš„æ ‡ç­¾ï¼Œè¿™é‡Œä»…åˆ—å‡ºå‡ ä¸ªæ ·æœ¬ï¼š
 
-CashBalance - ÕË»§ÏÖ½ğÓà¶î
-DayTradesRemaining - Ê£Óà½»Ò×ÈÕ
-EquityWithLoanValue - º¬½è´ûÖµ¹ÉÈ¨
-InitMarginReq - µ±Ç°³õÊ¼±£Ö¤½ğÒªÇó
-MaintMarginReq - µ±Ç°Î¬³Ö±£Ö¤½ğ
-NetLiquidation - ¾»ÇåËãÖµ
-value	Óë±êÇ©Ïà¹ØµÄÖµ¡£
-currency	ÔÚÖµÎª»õ±ÒÀàĞÍµÄÇé¿öÏÂ£¬¶¨Òå»õ±ÒÀàĞÍ¡£
-account	ËµÃ÷ĞÅÏ¢Ó¦ÓÃµÄÕË»§¡£ÊÊÓÃÓÚ½ğÈÚ¹ËÎÊ×ÓÕË»§ĞÅÏ¢¡£
+CashBalance - è´¦æˆ·ç°é‡‘ä½™é¢
+DayTradesRemaining - å‰©ä½™äº¤æ˜“æ—¥
+EquityWithLoanValue - å«å€Ÿè´·å€¼è‚¡æƒ
+InitMarginReq - å½“å‰åˆå§‹ä¿è¯é‡‘è¦æ±‚
+MaintMarginReq - å½“å‰ç»´æŒä¿è¯é‡‘
+NetLiquidation - å‡€æ¸…ç®—å€¼
+value	ä¸æ ‡ç­¾ç›¸å…³çš„å€¼ã€‚
+currency	åœ¨å€¼ä¸ºè´§å¸ç±»å‹çš„æƒ…å†µä¸‹ï¼Œå®šä¹‰è´§å¸ç±»å‹ã€‚
+account	è¯´æ˜ä¿¡æ¯åº”ç”¨çš„è´¦æˆ·ã€‚é€‚ç”¨äºé‡‘èé¡¾é—®å­è´¦æˆ·ä¿¡æ¯ã€‚
  */
 
 public class MBAAccountValue

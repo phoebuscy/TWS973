@@ -20,8 +20,8 @@ public class DbManager
     private final String dbname = "twsdb";
     private String userName = "root";
     private String password = "@try258TRY";
-    private Connection mysql_connection;  // mysqlµÄ conn
-    private Connection db_connection;     // dbµÄconn
+    private Connection mysql_connection;  // mysqlçš„ conn
+    private Connection db_connection;     // dbçš„conn
 
     private static DbManager instance = null;
 
@@ -68,23 +68,23 @@ public class DbManager
         if (mysql_connection != null && notNullAndEmptyStr(userName) && notNullAndEmptyStr(password) && userName.equals(
                 this.userName) && password.equals(this.password))
         {
-            createTwsDb(mysql_connection, dbname);  // Èç¹û²»´æÔÚÔò´´½¨TwsDbÊı¾İ¿â
+            createTwsDb(mysql_connection, dbname);  // å¦‚æœä¸å­˜åœ¨åˆ™åˆ›å»ºTwsDbæ•°æ®åº“
             db_connection = connectDB(dbname, userName, password);
-            createTables(db_connection);  // ´´½¨¸÷ÖÖ±í
+            createTables(db_connection);  // åˆ›å»ºå„ç§è¡¨
             createProcedure(db_connection);
         }
     }
 
-    // ´´½¨Êı¾İ¿âµÄ¸÷ÖÖ±í
+    // åˆ›å»ºæ•°æ®åº“çš„å„ç§è¡¨
     private void createTables(Connection connection)
     {
-        // ²éÑ¯id±í
+        // æŸ¥è¯¢idè¡¨
         createQueryIDTable(connection);
-        // ÀúÊ·Êı¾İ±í
+        // å†å²æ•°æ®è¡¨
         createHistoricDataIDTable(connection);
     }
 
-    // ´´½¨Êı¾İ¿âµÄ´æ´¢¹ı³Ì
+    // åˆ›å»ºæ•°æ®åº“çš„å­˜å‚¨è¿‡ç¨‹
     private void createProcedure(Connection connection)
     {
         createQueryReqIdProc(connection);
@@ -97,7 +97,7 @@ public class DbManager
             try
             {
                 Statement statement = mysqlConn.createStatement();
-                String hrappSQL = "CREATE DATABASE  IF NOT EXISTS " + dbname;  // ¼ÓÉÏIF NOT EXISTS¾ÍËãÊı¾İ¿âÒÑ¾­´æÔÚ£¬°ÑÔ­À´µÄ¸²¸ÇµôÁË
+                String hrappSQL = "CREATE DATABASE  IF NOT EXISTS " + dbname;  // åŠ ä¸ŠIF NOT EXISTSå°±ç®—æ•°æ®åº“å·²ç»å­˜åœ¨ï¼ŒæŠŠåŸæ¥çš„è¦†ç›–æ‰äº†
                 int ret = statement.executeUpdate(hrappSQL);
                 statement.close();
                 mysqlConn.close();
@@ -111,7 +111,7 @@ public class DbManager
     }
 
     /**
-     * Á¬½Óµ½Êı¾İ¿â
+     * è¿æ¥åˆ°æ•°æ®åº“
      */
     private Connection connectDB(String dbname, String userName, String password)
     {
@@ -124,7 +124,7 @@ public class DbManager
         catch (ClassNotFoundException e)
         {
             // TODO Auto-generated catch block
-            LogApp.error("add mysql jdbc driver failed");  // ÕÒ²»µ½Çı¶¯£¡
+            LogApp.error("add mysql jdbc driver failed");  // æ‰¾ä¸åˆ°é©±åŠ¨ï¼
             e.printStackTrace();
         }
         try
@@ -145,7 +145,7 @@ public class DbManager
     }
 
     /**
-     * Á¬½Óµ½Mysql
+     * è¿æ¥åˆ°Mysql
      */
     private Connection connectMySql(String userName, String password)
     {
@@ -158,7 +158,7 @@ public class DbManager
         catch (ClassNotFoundException e)
         {
             // TODO Auto-generated catch block
-            LogApp.error("add mysql jdbc driver failed");  // ÕÒ²»µ½Çı¶¯£¡
+            LogApp.error("add mysql jdbc driver failed");  // æ‰¾ä¸åˆ°é©±åŠ¨ï¼
             e.printStackTrace();
         }
         try
@@ -179,7 +179,7 @@ public class DbManager
     }
 
     /**
-     * ´´½¨²éÑ¯id±í
+     * åˆ›å»ºæŸ¥è¯¢idè¡¨
      *
      * @param connection
      */
@@ -189,35 +189,35 @@ public class DbManager
         {
             try
             {
-                //¼ÓÔØÇı¶¯
+                //åŠ è½½é©±åŠ¨
                 Class.forName(MYSQL_DRIVER_CLASS);
-                //Á´½Óµ½Êı¾İ¿â
+                //é“¾æ¥åˆ°æ•°æ®åº“
                 String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC" + "&useSSL=false";
-                //»ñÈ¡¶ÔÏó
+                //è·å–å¯¹è±¡
                 Statement stmt = connection.createStatement();
                 String delTableSqlStr = "drop table if exists queryidtable;";
                 stmt.execute(delTableSqlStr);
 
-                //²åÈë¼ÇÂ¼µ½Êı¾İ¿âÖĞ
+                //æ’å…¥è®°å½•åˆ°æ•°æ®åº“ä¸­
                 String sqlstr = "create table queryidtable(reqid int(1));";
                 int ret = stmt.executeUpdate(sqlstr);
 
                 String sqlInsertData = "insert into queryidtable values(100000000)";
                 stmt.executeUpdate(sqlInsertData);
 
-                System.out.println("´´½¨³É¹¦£¡");
+                System.out.println("åˆ›å»ºæˆåŠŸï¼");
                 stmt.close();
             }
             catch (Exception e)
             {
-                System.out.println("´´½¨Ê§°Ü£¡»òÒÑ¾­´æÔÚ¸Ã±í¸ñ" + e);
+                System.out.println("åˆ›å»ºå¤±è´¥ï¼æˆ–å·²ç»å­˜åœ¨è¯¥è¡¨æ ¼" + e);
                 e.printStackTrace();
             }
         }
     }
 
     /**
-     * ´´½¨²éÑ¯reqidµÄ´æ´¢¹ı³Ì
+     * åˆ›å»ºæŸ¥è¯¢reqidçš„å­˜å‚¨è¿‡ç¨‹
      *
      * @param connection
      */
@@ -263,20 +263,20 @@ public class DbManager
     }
 
     /**
-     * ´´½¨ÀúÊ·Êı¾İ±í ,±íµÄ¹æ¸ñÈçÏÂ
-     * 5 Ãë
-     * 15 Ãë
-     * 30 Ãë
-     * 1 ·ÖÖÓ
-     * 2 ·ÖÖÓ
-     * 3 ·ÖÖÓ
-     * 5 ·ÖÖÓ
-     * 15 ·ÖÖÓ
-     * 30 ·ÖÖÓ
-     * 1 Ğ¡Ê±
-     * 1 Ìì
+     * åˆ›å»ºå†å²æ•°æ®è¡¨ ,è¡¨çš„è§„æ ¼å¦‚ä¸‹
+     * 5 ç§’
+     * 15 ç§’
+     * 30 ç§’
+     * 1 åˆ†é’Ÿ
+     * 2 åˆ†é’Ÿ
+     * 3 åˆ†é’Ÿ
+     * 5 åˆ†é’Ÿ
+     * 15 åˆ†é’Ÿ
+     * 30 åˆ†é’Ÿ
+     * 1 å°æ—¶
+     * 1 å¤©
      *
-     * @param connection Êı¾İ¿âÁ¬½Ó
+     * @param connection æ•°æ®åº“è¿æ¥
      */
     private void createHistoricDataIDTable(Connection connection)
     {
@@ -294,10 +294,10 @@ public class DbManager
     }
 
     /**
-     * ´´½¨ÀúÊ·Êı¾İ±í ,±íµÄ¹æ¸ñÈçÏÂ
+     * åˆ›å»ºå†å²æ•°æ®è¡¨ ,è¡¨çš„è§„æ ¼å¦‚ä¸‹
      *
-     * @param connection Êı¾İ¿âÁ¬½Ó
-     * @param barSize    Öù
+     * @param connection æ•°æ®åº“è¿æ¥
+     * @param barSize    æŸ±
      */
     private void createHistoricDataIDTable(Connection connection, com.ib.client.Types.BarSize barSize)
     {
@@ -305,11 +305,11 @@ public class DbManager
         {
             try
             {
-                //¼ÓÔØÇı¶¯
+                //åŠ è½½é©±åŠ¨
                 Class.forName(MYSQL_DRIVER_CLASS);
-                //Á´½Óµ½Êı¾İ¿â
+                //é“¾æ¥åˆ°æ•°æ®åº“
                 String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC" + "&useSSL=false";
-                //»ñÈ¡¶ÔÏó
+                //è·å–å¯¹è±¡
                 Statement stmt = connection.createStatement();
                 String tableName = "hisdata" + trimStr(barSize.toString());
                 //  String delTableSqlStr = "drop table if exists" + tableName + ";";
@@ -319,19 +319,19 @@ public class DbManager
                 String sqlstr = "create table" + " " + tableName + " " + crtHistoricDataFileStatement();
                 int ret = stmt.executeUpdate(sqlstr);
 
-                System.out.println("´´½¨³É¹¦£¡");
+                System.out.println("åˆ›å»ºæˆåŠŸï¼");
                 stmt.close();
             }
             catch (Exception e)
             {
-                System.out.println("´´½¨Ê§°Ü£¡»òÒÑ¾­´æÔÚ¸Ã±í¸ñ" + e);
+                System.out.println("åˆ›å»ºå¤±è´¥ï¼æˆ–å·²ç»å­˜åœ¨è¯¥è¡¨æ ¼" + e);
                 e.printStackTrace();
             }
         }
     }
 
     /**
-     * ´´½¨ÀúÊ·Êı¾İµÄ×Ö¶Î
+     * åˆ›å»ºå†å²æ•°æ®çš„å­—æ®µ
      * public String date;
      * public double open;
      * public double high;

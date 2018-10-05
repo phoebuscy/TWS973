@@ -4,7 +4,7 @@ import com.ib.client.Contract;
 import com.ib.client.Types;
 
 /**
- * ²éÑ¯ÆÚÈ¨ÀúÊ·Êı¾İµÄÇëÇó²ÎÊıÀà£¬±£´æµÄÊÇÇëÇó²ÎÊı
+ * æŸ¥è¯¢æœŸæƒå†å²æ•°æ®çš„è¯·æ±‚å‚æ•°ç±»ï¼Œä¿å­˜çš„æ˜¯è¯·æ±‚å‚æ•°
  */
 
 public class OptionHistoricReqParams

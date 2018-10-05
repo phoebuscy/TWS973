@@ -3,7 +3,7 @@ package com.auto;
 import com.ib.client.Contract;
 
 /**
- * ¸ÃÀà¸ºÔğ½ÓÊÕCculateÄ£¿é·¢ËÍµÄ ÂòÂô±êµÄ£¬¼°ÂòÂôµã½øĞĞÂòÂô
+ * è¯¥ç±»è´Ÿè´£æ¥æ”¶Cculateæ¨¡å—å‘é€çš„ ä¹°å–æ ‡çš„ï¼ŒåŠä¹°å–ç‚¹è¿›è¡Œä¹°å–
  */
 
 public class BuyOrSale
@@ -23,8 +23,8 @@ public class BuyOrSale
 
 
     /**
-     * Âò²Ù×÷
-     * @param contract ±êµÄ
+     * ä¹°æ“ä½œ
+     * @param contract æ ‡çš„
      */
     public void buy(Contract contract)
     {
@@ -32,8 +32,8 @@ public class BuyOrSale
     }
 
     /**
-     * Âô²Ù×÷
-     * @param contract ±êµÄ
+     * å–æ“ä½œ
+     * @param contract æ ‡çš„
      */
     public void sale(Contract contract)
     {

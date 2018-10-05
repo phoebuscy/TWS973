@@ -31,18 +31,18 @@ import static com.utils.TConst.DATAMAAGER_BUS;
 import static com.utils.TConst.REALTIMEPRICEMGR_BUS;
 
 /**
- * ÊµÊ±¼Û¸ñ¹ÜÀíÆ÷Æ÷
+ * å®æ—¶ä»·æ ¼ç®¡ç†å™¨å™¨
  */
 public class RealTimePriceMgr
 {
     SDataManager dataManager;
     Symbol symbol;
 
-    // reqid ÓëcontractµÄmap
+    // reqid ä¸contractçš„map
     private static Map<Integer, Contract> reqid2ContractMap = new HashMap<>();
-    // contract µÄidÓëÇëÇó´ÎÊıµÄmap
+    // contract çš„idä¸è¯·æ±‚æ¬¡æ•°çš„map
     private static Map<Integer, Integer> contractid2ReqCountMap = new HashMap<>();
-    // contract id ÓëÊµÊ±¼Û¸ñµÄmap
+    // contract id ä¸å®æ—¶ä»·æ ¼çš„map
     private static Map<Integer, ContractRealTimeInfo> contractid2RealPriceMap = new HashMap<>();
 
 
@@ -51,7 +51,7 @@ public class RealTimePriceMgr
         this.dataManager = dataManager;
         this.symbol = symbol;
 
-        // ¶©ÔÄÏûÏ¢×ÜÏßÃû³ÆÎª DATAMAAGER_BUS µÄ ÏûÏ¢
+        // è®¢é˜…æ¶ˆæ¯æ€»çº¿åç§°ä¸º DATAMAAGER_BUS çš„ æ¶ˆæ¯
         TMbassadorSingleton.getInstance(DATAMAAGER_BUS).subscribe(this);
     }
 
@@ -94,7 +94,7 @@ public class RealTimePriceMgr
             {
                 int reqid = symbol.reqOptionMktData(contract);
                 reqid2ContractMap.put(reqid, contract);
-                contractid2ReqCountMap.put(contract.conid(), 1); // contractid ¼ÆÊı 1´Î
+                contractid2ReqCountMap.put(contract.conid(), 1); // contractid è®¡æ•° 1æ¬¡
                 contractid2RealPriceMap.put(contract.conid(), new ContractRealTimeInfo(contract));
             }
             else
@@ -102,26 +102,26 @@ public class RealTimePriceMgr
                 int reqCount = contractid2ReqCountMap.get(contract.conid());
                 contractid2ReqCountMap.put(contract.conid(), reqCount + 1);
 
-                // Èç¹ûÊÇÒÑ¾­¶©ÔÄÁËµÄ£¬ÔòÖ±½Ó·¢Ò»¸öÊµÊ±¼Û¸ñÏûÏ¢
+                // å¦‚æœæ˜¯å·²ç»è®¢é˜…äº†çš„ï¼Œåˆ™ç›´æ¥å‘ä¸€ä¸ªå®æ—¶ä»·æ ¼æ¶ˆæ¯
                 ContractRealTimeInfo contractRealTimeInfo = contractid2RealPriceMap.get(contract.conid());
                 if (contractRealTimeInfo != null)
                 {
-                    // ·¢²¼ÊµÊ±¼Û¸ñÊı¾İ
+                    // å‘å¸ƒå®æ—¶ä»·æ ¼æ•°æ®
                     TMbassadorSingleton.getInstance(REALTIMEPRICEMGR_BUS).publish(new ContractRealTimeInfo(
                             contractRealTimeInfo,
                             TickType.LAST));
                 }
             }
 
-            // ²»¹Ü¿ªÅÌ»¹ÊÇ²»¿ªÅÌÊ±¼ä¶¼ÒªÍ¨¹ıÀúÊ·Êı¾İ»ñÈ¡×òÊÕ/½ñ¿ª¼Û¸ñ
+            // ä¸ç®¡å¼€ç›˜è¿˜æ˜¯ä¸å¼€ç›˜æ—¶é—´éƒ½è¦é€šè¿‡å†å²æ•°æ®è·å–æ˜¨æ”¶/ä»Šå¼€ä»·æ ¼
             getLastOpenDayHistoryData(contract);
         }
     }
 
-    // Èç¹û²»ÊÇ¿ªÅÌÊ±¼ä£¬ÔòÍ¨¹ıÀúÊ·Êı¾İ»ñÈ¡µ±Ç°¼Û¸ñºÍ¿ªÅÌ¼Û¸ñ
+    // å¦‚æœä¸æ˜¯å¼€ç›˜æ—¶é—´ï¼Œåˆ™é€šè¿‡å†å²æ•°æ®è·å–å½“å‰ä»·æ ¼å’Œå¼€ç›˜ä»·æ ¼
     private void getLastOpenDayHistoryData(Contract contract)
     {
-        // »ñÈ¡Ö¸¶¨ÌìÊıÖ®Ç°µÄ¿ªÅÌµÄ±¾µØÊ±¼ä, ²ÎÊı lastDay ÊÇ±íÊ¾Ö®Ç°¶àÉÙÌì
+        // è·å–æŒ‡å®šå¤©æ•°ä¹‹å‰çš„å¼€ç›˜çš„æœ¬åœ°æ—¶é—´, å‚æ•° lastDay æ˜¯è¡¨ç¤ºä¹‹å‰å¤šå°‘å¤©
         Pair<LocalDateTime, LocalDateTime> lastUsaOpenCloseTime = getLastDayUSAOpenDateTime();
         LocalDateTime usaCurDateTime = getCurrentAmericaLocalDateTime();
 
@@ -138,7 +138,7 @@ public class RealTimePriceMgr
         //  String locatime = localCloseDateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
         String locatime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss"));
 
-        // ×¢Òâ£º²éÑ¯ÀúÊ·Êı¾İĞèÒªÓÃ±¾µØÊ±¼ä
+        // æ³¨æ„ï¼šæŸ¥è¯¢å†å²æ•°æ®éœ€è¦ç”¨æœ¬åœ°æ—¶é—´
         symbol.getHistoricDatasAndProcess(contract,
                 locatime,
                 duration,
@@ -175,7 +175,7 @@ public class RealTimePriceMgr
                             {
                                 contractRealTimeInfo.lastPrice = lastHistoricData.close;
                             }
-                            // ·¢²¼ÊµÊ±¼Û¸ñÊı¾İ
+                            // å‘å¸ƒå®æ—¶ä»·æ ¼æ•°æ®
                             TMbassadorSingleton.getInstance(REALTIMEPRICEMGR_BUS).publish(new ContractRealTimeInfo(
                                     contractRealTimeInfo,
                                     TickType.LAST));
@@ -260,7 +260,7 @@ public class RealTimePriceMgr
     }
 
 
-    // ½ÓÊÕ²éÑ¯ÊµÊ±¼Û¸ñµÄÏûÏ¢¹ıÂËÆ÷
+    // æ¥æ”¶æŸ¥è¯¢å®æ—¶ä»·æ ¼çš„æ¶ˆæ¯è¿‡æ»¤å™¨
     public static class recvContractRealTimePriceFilter implements IMessageFilter<MBAtickPrice>
     {
         @Override
@@ -270,11 +270,11 @@ public class RealTimePriceMgr
         }
     }
 
-    // ÊµÊ±¼Û¸ñÏûÏ¢´¦ÀíÆ÷
+    // å®æ—¶ä»·æ ¼æ¶ˆæ¯å¤„ç†å™¨
     @Handler(filters = {@Filter(recvContractRealTimePriceFilter.class)})
     private void getSymbolRealPrice(MBAtickPrice msg)
     {
-        //   1 = Âò¼Û   2 = Âô¼Û   4 = ×îºó¼Û  6 = ×î¸ß¼Û   7 = ×îµÍ¼Û   9 = ÊÕÅÌ¼Û   µÈµÈ
+        //   1 = ä¹°ä»·   2 = å–ä»·   4 = æœ€åä»·  6 = æœ€é«˜ä»·   7 = æœ€ä½ä»·   9 = æ”¶ç›˜ä»·   ç­‰ç­‰
         Contract contract = reqid2ContractMap.get(msg.tickerId);
         ContractRealTimeInfo contractRealTimeInfo =
                 (contract != null) ? contractid2RealPriceMap.get(contract.conid()) : null;
@@ -283,7 +283,7 @@ public class RealTimePriceMgr
         {
             TickType tickType = TickType.get(msg.field);
             contractRealTimeInfo.setPrice(tickType, msg.price);
-            // ·¢²¼ÊµÊ±¼Û¸ñÊı¾İ
+            // å‘å¸ƒå®æ—¶ä»·æ ¼æ•°æ®
             TMbassadorSingleton.getInstance(REALTIMEPRICEMGR_BUS).publish(new ContractRealTimeInfo(contractRealTimeInfo,
                     tickType));
         }

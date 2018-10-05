@@ -10,7 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * ´æ´¢ÆÚÈ¨ÀúÊ·Êı¾İ²éÑ¯²ÎÊı´æ´¢Æ÷
+ * å­˜å‚¨æœŸæƒå†å²æ•°æ®æŸ¥è¯¢å‚æ•°å­˜å‚¨å™¨
  */
 
 
@@ -22,35 +22,35 @@ public class OptHisDataReqParamStorage
     private ConcurrentLinkedQueue<Pair<Integer, OptionHistoricReqParams>> optHistReqParamQueue = new
             ConcurrentLinkedQueue();
 
-    // Ëø
+    // é”
     private final Lock lock = new ReentrantLock();
-    // ²Ö¿â¿ÕµÄÌõ¼ş±äÁ¿
+    // ä»“åº“ç©ºçš„æ¡ä»¶å˜é‡
     private final Condition empty = lock.newCondition();
 
-    // Éú²únum¸ö²úÆ·
+    // ç”Ÿäº§numä¸ªäº§å“
     public void produce(Pair<Integer, OptionHistoricReqParams> reqidAndReqParam)
     {
-        // »ñµÃËø
+        // è·å¾—é”
         lock.lock();
         optHistReqParamQueue.offer(reqidAndReqParam);
         LogApp.info("OptHisDataReqParamStorage produce put data: " + reqidAndReqParam.getValue().toString());
-        // »½ĞÑÆäËûËùÓĞÏß³Ì
+        // å”¤é†’å…¶ä»–æ‰€æœ‰çº¿ç¨‹
         empty.signalAll();
-        // ÊÍ·ÅËø
+        // é‡Šæ”¾é”
         lock.unlock();
     }
 
-    // Ïû·Ñ1¸ö²úÆ·
+    // æ¶ˆè´¹1ä¸ªäº§å“
     public void consume(List<Pair<Integer, OptionHistoricReqParams>> consumContLst)
     {
-        // »ñµÃËø
+        // è·å¾—é”
         lock.lock();
-        // Èç¹û²Ö¿â´æ´¢Á¿²»×ã
+        // å¦‚æœä»“åº“å­˜å‚¨é‡ä¸è¶³
         while (optHistReqParamQueue.isEmpty())
         {
             try
             {
-                // ÓÉÓÚÌõ¼ş²»Âú×ã£¬Ïû·Ñ×èÈû
+                // ç”±äºæ¡ä»¶ä¸æ»¡è¶³ï¼Œæ¶ˆè´¹é˜»å¡
                 empty.await();
             }
             catch (InterruptedException e)
@@ -64,9 +64,9 @@ public class OptHisDataReqParamStorage
             consumContLst.add(poll);
             LogApp.info("OptHisDataReqParamStorage consume poll data: " + poll.getValue().toString());
         }
-        // »½ĞÑÆäËûËùÓĞÏß³Ì
+        // å”¤é†’å…¶ä»–æ‰€æœ‰çº¿ç¨‹
         empty.signalAll();
-        // ÊÍ·ÅËø
+        // é‡Šæ”¾é”
         lock.unlock();
     }
 

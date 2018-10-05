@@ -114,7 +114,7 @@ public class SDataManager implements EWrapper
         }
     }
 
-    // »ñÈ¡ÕË»§
+    // è·å–è´¦æˆ·
     public String getAccount()
     {
         return account;
@@ -222,20 +222,20 @@ public class SDataManager implements EWrapper
 
 
     /**
-     * Õâ¸ö·½·¨½öÔÚÒÑ¾­µ÷ÓÃEClientSocket¶ÔÏóµÄreqAccountUpdates()·½·¨Ê±µ÷ÓÃ
-     * ²ÎÊı	ÃèÊö
+     * è¿™ä¸ªæ–¹æ³•ä»…åœ¨å·²ç»è°ƒç”¨EClientSocketå¯¹è±¡çš„reqAccountUpdates()æ–¹æ³•æ—¶è°ƒç”¨
+     * å‚æ•°	æè¿°
      *
-     * @param key         ±íÊ¾Ò»ÖÖÕË»§ÖµÀàĞÍµÄ×Ö·û´®¡£ ÓĞºÜ¶à¿É±»·¢ËÍµÄ¿ÉÓÃµÄ±êÇ©£¬ÕâÀï½öÁĞ³ö¼¸¸öÑù±¾£º
+     * @param key         è¡¨ç¤ºä¸€ç§è´¦æˆ·å€¼ç±»å‹çš„å­—ç¬¦ä¸²ã€‚ æœ‰å¾ˆå¤šå¯è¢«å‘é€çš„å¯ç”¨çš„æ ‡ç­¾ï¼Œè¿™é‡Œä»…åˆ—å‡ºå‡ ä¸ªæ ·æœ¬ï¼š
      *                    <p>
-     *                    CashBalance - ÕË»§ÏÖ½ğÓà¶î
-     *                    DayTradesRemaining - Ê£Óà½»Ò×ÈÕ
-     *                    EquityWithLoanValue - º¬½è´ûÖµ¹ÉÈ¨
-     *                    InitMarginReq - µ±Ç°³õÊ¼±£Ö¤½ğÒªÇó
-     *                    MaintMarginReq - µ±Ç°Î¬³Ö±£Ö¤½ğ
-     *                    NetLiquidation - ¾»ÇåËãÖµ
-     * @param value       Óë±êÇ©Ïà¹ØµÄÖµ¡£
-     * @param currency    ÔÚÖµÎª»õ±ÒÀàĞÍµÄÇé¿öÏÂ£¬¶¨Òå»õ±ÒÀàĞÍ¡£
-     * @param accountName ËµÃ÷ĞÅÏ¢Ó¦ÓÃµÄÕË»§¡£ÊÊÓÃÓÚ½ğÈÚ¹ËÎÊ×ÓÕË»§ĞÅÏ¢¡£
+     *                    CashBalance - è´¦æˆ·ç°é‡‘ä½™é¢
+     *                    DayTradesRemaining - å‰©ä½™äº¤æ˜“æ—¥
+     *                    EquityWithLoanValue - å«å€Ÿè´·å€¼è‚¡æƒ
+     *                    InitMarginReq - å½“å‰åˆå§‹ä¿è¯é‡‘è¦æ±‚
+     *                    MaintMarginReq - å½“å‰ç»´æŒä¿è¯é‡‘
+     *                    NetLiquidation - å‡€æ¸…ç®—å€¼
+     * @param value       ä¸æ ‡ç­¾ç›¸å…³çš„å€¼ã€‚
+     * @param currency    åœ¨å€¼ä¸ºè´§å¸ç±»å‹çš„æƒ…å†µä¸‹ï¼Œå®šä¹‰è´§å¸ç±»å‹ã€‚
+     * @param accountName è¯´æ˜ä¿¡æ¯åº”ç”¨çš„è´¦æˆ·ã€‚é€‚ç”¨äºé‡‘èé¡¾é—®å­è´¦æˆ·ä¿¡æ¯ã€‚
      */
     @Override
     public void updateAccountValue(String key, String value, String currency, String accountName)
@@ -246,17 +246,17 @@ public class SDataManager implements EWrapper
 
 
     /**
-     * Õâ¸ö·½·¨½öÔÚÒÑ¾­µ÷ÓÃEClientSocket¶ÔÏóµÄreqAccountUpdates()·½·¨Ê±µ÷ÓÃ¡£
-     * ²ÎÊı	ÃèÊö
+     * è¿™ä¸ªæ–¹æ³•ä»…åœ¨å·²ç»è°ƒç”¨EClientSocketå¯¹è±¡çš„reqAccountUpdates()æ–¹æ³•æ—¶è°ƒç”¨ã€‚
+     * å‚æ•°	æè¿°
      *
-     * @param contract      ¸Ã½á¹¹°üÀ¨½»Ò×ºÏÔ¼µÄÃèÊö¡£ ºÏÔ¼µÄ½»Ò×ËùÇøÓòÃ»ÓĞÎªÍ¶×Ê×éºÏ¸üĞÂ¶øÉèÖÃ¡£
-     * @param position      ¸ÃÕûÊı±íÊ¾ºÏÔ¼Í·´ç¡£ Èç¹ûÍ·´çÎª0£¬±íÊ¾Í·´ç¸Õ±»Æ½²Ö¡£
-     * @param marketPrice   ²úÆ·µÄµ¥Î»¼Û¸ñ¡£
-     * @param marketValue   ²úÆ·µÄ×ÜÊĞÖµ¡£
-     * @param averageCost   Ã¿¹ÉµÄÆ½¾ù³É±¾µÄ¼ÆËãÊÇÓÃÄãÍ·´çµÄÊıÁ¿³ıÒÔÄãµÄ³É±¾£¨Ö´ĞĞ¼Û¸ñ£«Ó¶½ğ£©¡£
-     * @param unrealizedPNL ÄãÎ´Æ½²ÖÍ·´çµÄµ±Ç°ÊĞÖµºÍÆ½¾ù³É±¾»òÆ½¾ù³É±¾ÖµµÄ²î¡£
-     * @param realizedPNL   ÏÔÊ¾Æ½²ÖÍ·´çµÄÀûÈó£¬ÎªÄãµÄ½¨²ÖÖ´ĞĞ³É±¾£¨Ö´ĞĞ¼Û¸ñ£«½¨²ÖÓ¶½ğ£©ºÍÆ½²ÖÖ´ĞĞ³É±¾£¨Ö´ĞĞ¼Û¸ñ£«Æ½²ÖÍ·´çÓ¶½ğ£©µÄ²î¡£
-     * @param accountName   ĞÅÏ¢Ó¦ÓÃÓÚµÄÕË»§Ãû³Æ¡£ÊÊÓÃÓÚ½ğÈÚ¹ËÎÊ×ÓÕË»§ĞÅÏ¢¡£
+     * @param contract      è¯¥ç»“æ„åŒ…æ‹¬äº¤æ˜“åˆçº¦çš„æè¿°ã€‚ åˆçº¦çš„äº¤æ˜“æ‰€åŒºåŸŸæ²¡æœ‰ä¸ºæŠ•èµ„ç»„åˆæ›´æ–°è€Œè®¾ç½®ã€‚
+     * @param position      è¯¥æ•´æ•°è¡¨ç¤ºåˆçº¦å¤´å¯¸ã€‚ å¦‚æœå¤´å¯¸ä¸º0ï¼Œè¡¨ç¤ºå¤´å¯¸åˆšè¢«å¹³ä»“ã€‚
+     * @param marketPrice   äº§å“çš„å•ä½ä»·æ ¼ã€‚
+     * @param marketValue   äº§å“çš„æ€»å¸‚å€¼ã€‚
+     * @param averageCost   æ¯è‚¡çš„å¹³å‡æˆæœ¬çš„è®¡ç®—æ˜¯ç”¨ä½ å¤´å¯¸çš„æ•°é‡é™¤ä»¥ä½ çš„æˆæœ¬ï¼ˆæ‰§è¡Œä»·æ ¼ï¼‹ä½£é‡‘ï¼‰ã€‚
+     * @param unrealizedPNL ä½ æœªå¹³ä»“å¤´å¯¸çš„å½“å‰å¸‚å€¼å’Œå¹³å‡æˆæœ¬æˆ–å¹³å‡æˆæœ¬å€¼çš„å·®ã€‚
+     * @param realizedPNL   æ˜¾ç¤ºå¹³ä»“å¤´å¯¸çš„åˆ©æ¶¦ï¼Œä¸ºä½ çš„å»ºä»“æ‰§è¡Œæˆæœ¬ï¼ˆæ‰§è¡Œä»·æ ¼ï¼‹å»ºä»“ä½£é‡‘ï¼‰å’Œå¹³ä»“æ‰§è¡Œæˆæœ¬ï¼ˆæ‰§è¡Œä»·æ ¼ï¼‹å¹³ä»“å¤´å¯¸ä½£é‡‘ï¼‰çš„å·®ã€‚
+     * @param accountName   ä¿¡æ¯åº”ç”¨äºçš„è´¦æˆ·åç§°ã€‚é€‚ç”¨äºé‡‘èé¡¾é—®å­è´¦æˆ·ä¿¡æ¯ã€‚
      */
     @Override
     public void updatePortfolio(Contract contract, double position, double marketPrice, double marketValue, double averageCost, double unrealizedPNL, double realizedPNL, String accountName)
@@ -269,10 +269,10 @@ public class SDataManager implements EWrapper
 
 
     /**
-     * Õâ¸ö·½·¨½öÔÚÒÑ¾­µ÷ÓÃEClientSocket¶ÔÏóµÄreqAccountUpdates()·½·¨Ê±µ÷ÓÃ¡£
-     * ²ÎÊı	ÃèÊö
+     * è¿™ä¸ªæ–¹æ³•ä»…åœ¨å·²ç»è°ƒç”¨EClientSocketå¯¹è±¡çš„reqAccountUpdates()æ–¹æ³•æ—¶è°ƒç”¨ã€‚
+     * å‚æ•°	æè¿°
      *
-     * @param timeStamp ±íÊ¾ÕË»§ĞÅÏ¢µÄ×îºó¸üĞÂÊ±¼ä¡£
+     * @param timeStamp è¡¨ç¤ºè´¦æˆ·ä¿¡æ¯çš„æœ€åæ›´æ–°æ—¶é—´ã€‚
      */
     @Override
     public void updateAccountTime(String timeStamp)
@@ -350,8 +350,8 @@ public class SDataManager implements EWrapper
     {
         account = accountsList;
 
-        // µ÷ÓÃÕâ¸ö¹¦ÄÜ¿ªÊ¼»ñµÃÕË»§Öµ¡¢Í¶×Ê×éºÏ¡¢ºÍ×îºó¸üĞÂÊ±¼äĞÅÏ¢¡£
-        // ÕË»§Êı¾İ½«Í¨¹ıupdateAccountTime()£¬updateAccountValue()ºÍ updatePortfolio() EWrapper methods·´À¡¡£
+        // è°ƒç”¨è¿™ä¸ªåŠŸèƒ½å¼€å§‹è·å¾—è´¦æˆ·å€¼ã€æŠ•èµ„ç»„åˆã€å’Œæœ€åæ›´æ–°æ—¶é—´ä¿¡æ¯ã€‚
+        // è´¦æˆ·æ•°æ®å°†é€šè¿‡updateAccountTime()ï¼ŒupdateAccountValue()å’Œ updatePortfolio() EWrapper methodsåé¦ˆã€‚
         m_client.reqAccountUpdates(true, account);
     }
 
@@ -398,9 +398,9 @@ public class SDataManager implements EWrapper
     public void currentTime(long time)
     {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        //Ç°ÃæµÄlSysTimeÊÇÃëÊı£¬ÏÈ³Ë1000µÃµ½ºÁÃëÊı£¬ÔÙ×ªÎªjava.util.DateÀàĞÍ
+        //å‰é¢çš„lSysTimeæ˜¯ç§’æ•°ï¼Œå…ˆä¹˜1000å¾—åˆ°æ¯«ç§’æ•°ï¼Œå†è½¬ä¸ºjava.util.Dateç±»å‹
         Date dt = new Date(time * 1000);
-        String sDateTime = sdf.format(dt);  //µÃµ½¾«È·µ½ÃëµÄ±íÊ¾£º08/31/2006 21:08:00
+        String sDateTime = sdf.format(dt);  //å¾—åˆ°ç²¾ç¡®åˆ°ç§’çš„è¡¨ç¤ºï¼š08/31/2006 21:08:00
         int a = 1;
     }
 
@@ -532,7 +532,7 @@ public class SDataManager implements EWrapper
         {
             m_client.startAPI();
             TMbassadorSingleton.getInstance(DATAMAAGER_BUS).publish(makeAKmsg(AK_CONNECTED, "true"));
-            m_client.reqManagedAccts(); // ²éÑ¯ÕË»§
+            m_client.reqManagedAccts(); // æŸ¥è¯¢è´¦æˆ·
         }
     }
 
