@@ -17,6 +17,7 @@ public class DbManager
 {
     private static Logger LogApp = LogManager.getLogger("applog");
     private final String MYSQL_DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
+	private final String dbUrl = "jdbc:mysql://49.4.95.108:3306/";
     private final String dbname = "twsdb";
     private String userName = "root";
     private String password = "@try258TRY";
@@ -39,13 +40,13 @@ public class DbManager
 
     private DbManager()
     {
-        if(mysql_connection == null)
+        if (mysql_connection == null)
         {
-            mysql_connection = connectMySql(userName, password);
+            mysql_connection = connectMySql(dbUrl, userName, password);
         }
-        if(db_connection == null)
+        if (db_connection == null)
         {
-            db_connection = connectDB(dbname, userName, password);
+            db_connection = connectDB(dbUrl, dbname, userName, password);
         }
 
     }
@@ -63,13 +64,13 @@ public class DbManager
     {
         if (mysql_connection == null)
         {
-            mysql_connection = connectMySql(userName, password);
+            mysql_connection = connectMySql(dbUrl, userName, password);
         }
         if (mysql_connection != null && notNullAndEmptyStr(userName) && notNullAndEmptyStr(password) && userName.equals(
                 this.userName) && password.equals(this.password))
         {
             createTwsDb(mysql_connection, dbname);  // 如果不存在则创建TwsDb数据库
-            db_connection = connectDB(dbname, userName, password);
+            db_connection = connectDB(dbUrl, dbname, userName, password);
             createTables(db_connection);  // 创建各种表
             createProcedure(db_connection);
         }
@@ -113,10 +114,10 @@ public class DbManager
     /**
      * 连接到数据库
      */
-    private Connection connectDB(String dbname, String userName, String password)
+    private Connection connectDB(String dbUrl, String dbname, String userName, String password)
     {
         Connection connection = null;
-        String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC" + "&useSSL=false";
+        String url = dbUrl + dbname + "?serverTimezone=UTC" + "&useSSL=false";
         try
         {
             Class.forName(MYSQL_DRIVER_CLASS);
@@ -147,10 +148,10 @@ public class DbManager
     /**
      * 连接到Mysql
      */
-    private Connection connectMySql(String userName, String password)
+    private Connection connectMySql(String dbUrl, String userName, String password)
     {
         Connection conn = null;
-        String url = "jdbc:mysql://localhost:3306/mysql?serverTimezone=UTC" + "&useSSL=false";
+        String url = dbUrl + "mysql?serverTimezone=UTC" + "&useSSL=false";
         try
         {
             Class.forName(MYSQL_DRIVER_CLASS);
@@ -191,8 +192,6 @@ public class DbManager
             {
                 //加载驱动
                 Class.forName(MYSQL_DRIVER_CLASS);
-                //链接到数据库
-                String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC" + "&useSSL=false";
                 //获取对象
                 Statement stmt = connection.createStatement();
                 String delTableSqlStr = "drop table if exists queryidtable;";
@@ -307,8 +306,6 @@ public class DbManager
             {
                 //加载驱动
                 Class.forName(MYSQL_DRIVER_CLASS);
-                //链接到数据库
-                String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC" + "&useSSL=false";
                 //获取对象
                 Statement stmt = connection.createStatement();
                 String tableName = "hisdata" + trimStr(barSize.toString());
