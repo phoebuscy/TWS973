@@ -17,9 +17,10 @@ public class DbManager
 {
     private static Logger LogApp = LogManager.getLogger("applog");
     private final String MYSQL_DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
-	private final String dbUrl = "jdbc:mysql://49.4.95.108:3306/";
+	private final String dbUrl = "jdbc:mysql://phoebuscy.com:3306/";
+	private final String dbConnPubKeyParam = "&allowPublicKeyRetrieval=true";
     private final String dbname = "twsdb";
-    private String userName = "root";
+    private String userName = "phoebuscy";
     private String password = "@try258TRY";
     private Connection mysql_connection;  // mysql的 conn
     private Connection db_connection;     // db的conn
@@ -29,7 +30,7 @@ public class DbManager
 
     public static void main(String[] args)
     {
-        String userName = "root";
+        String userName = "phoebuscy";
         String password = "@try258TRY";
         DbManager dbManager = DbManager.getInstance();
         dbManager.initDb(userName, password);
@@ -117,7 +118,7 @@ public class DbManager
     private Connection connectDB(String dbUrl, String dbname, String userName, String password)
     {
         Connection connection = null;
-        String url = dbUrl + dbname + "?serverTimezone=UTC" + "&useSSL=false";
+        String url = dbUrl + dbname + "?serverTimezone=UTC" + "&useSSL=false" + dbConnPubKeyParam;
         try
         {
             Class.forName(MYSQL_DRIVER_CLASS);
@@ -151,7 +152,7 @@ public class DbManager
     private Connection connectMySql(String dbUrl, String userName, String password)
     {
         Connection conn = null;
-        String url = dbUrl + "mysql?serverTimezone=UTC" + "&useSSL=false";
+        String url = dbUrl + "mysql?serverTimezone=UTC" + "&useSSL=false" + dbConnPubKeyParam;
         try
         {
             Class.forName(MYSQL_DRIVER_CLASS);
