@@ -15,28 +15,28 @@ import java.util.Map;
 public class TMbassadorSingleton
 {
     private static Map<String, MBassador> instanceMap = new HashMap<>();
-    public static synchronized MBassador getInstance(final String busName)
+
+    public static MBassador getInstance(final String busName)
     {
         if (TStringUtil.nullOrEmptyStr(busName))
         {
             return null;
         }
-
-        MBassador bus = instanceMap.get(busName);
-        if (bus == null)
+        synchronized (MBassador.class)
         {
-            bus = new MBassador(new BusConfiguration()
-                                        .addFeature(Feature.SyncPubSub.Default())
-                                        .addFeature(Feature.AsynchronousHandlerInvocation.Default())
-                                        .addFeature(Feature.AsynchronousMessageDispatch.Default())
-                                        .addPublicationErrorHandler(new IPublicationErrorHandler.ConsoleLogger())
-                                        .setProperty(IBusConfiguration.Properties.BusId,
-                                                     busName));
-            instanceMap.put(busName, bus);
+            MBassador bus = instanceMap.get(busName);
+            if (bus == null)
+            {
+                bus = new MBassador(new BusConfiguration().addFeature(Feature.SyncPubSub.Default())
+                                                          .addFeature(Feature.AsynchronousHandlerInvocation.Default())
+                                                          .addFeature(Feature.AsynchronousMessageDispatch.Default())
+                                                          .addPublicationErrorHandler(new IPublicationErrorHandler.ConsoleLogger())
+                                                          .setProperty(IBusConfiguration.Properties.BusId, busName));
+                instanceMap.put(busName, bus);
+            }
+            return bus;
         }
-        return bus;
     }
-
 
 
 }
