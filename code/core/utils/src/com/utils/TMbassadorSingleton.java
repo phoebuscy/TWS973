@@ -22,20 +22,30 @@ public class TMbassadorSingleton
         {
             return null;
         }
-        synchronized (MBassador.class)
+
+        MBassador bus = instanceMap.get(busName);
+        if (bus == null)
         {
-            MBassador bus = instanceMap.get(busName);
-            if (bus == null)
+            synchronized (MBassador.class)
             {
-                bus = new MBassador(new BusConfiguration().addFeature(Feature.SyncPubSub.Default())
-                                                          .addFeature(Feature.AsynchronousHandlerInvocation.Default())
-                                                          .addFeature(Feature.AsynchronousMessageDispatch.Default())
-                                                          .addPublicationErrorHandler(new IPublicationErrorHandler.ConsoleLogger())
-                                                          .setProperty(IBusConfiguration.Properties.BusId, busName));
-                instanceMap.put(busName, bus);
+                bus = instanceMap.get(busName);
+                if (bus == null)
+                {
+                    bus = new MBassador(new BusConfiguration().addFeature(Feature.SyncPubSub.Default()).addFeature(
+                            Feature.AsynchronousHandlerInvocation.Default())
+                                                              .addFeature(Feature.AsynchronousMessageDispatch.Default())
+                                                              .addPublicationErrorHandler(new IPublicationErrorHandler.ConsoleLogger())
+                                                              .setProperty(IBusConfiguration.Properties.BusId,
+                                                                           busName));
+                    instanceMap.put(busName, bus);
+                }
+                else
+                {
+                    return bus;
+                }
             }
-            return bus;
         }
+        return bus;
     }
 
 
