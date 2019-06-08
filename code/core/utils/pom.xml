@@ -17,6 +17,7 @@
 
     <properties>
 
+        <java.version>1.8</java.version>
         <source.resource.use>true</source.resource.use>
 
         <deploy.output>../../../code/build/output</deploy.output>
@@ -39,7 +40,7 @@
             <artifactId>junit</artifactId>
             <version>4.11</version>
         </dependency>
-            <!-- https://mvnrepository.com/artifact/log4j/log4j -->
+        <!-- https://mvnrepository.com/artifact/log4j/log4j -->
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
@@ -81,7 +82,6 @@
     <build>
         <defaultGoal>compile</defaultGoal>
         <plugins>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -121,9 +121,18 @@
                     </execution>
                 </executions>
             </plugin>
-
-
         </plugins>
+
+        <resources>
+            <resource>
+                <directory>code/core/utils/conf</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+        </resources>
+
     </build>
 
 
