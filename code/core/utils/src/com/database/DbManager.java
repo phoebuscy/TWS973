@@ -18,7 +18,7 @@ public class DbManager
     private static Logger LogApp = LogManager.getLogger("applog");
     private final String MYSQL_DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
 	private final String dbUrl = "jdbc:mysql://phoebuscy.com:3306/";
-	private final String dbConnPubKeyParam = "&allowPublicKeyRetrieval=true";
+	private final String dbConnPubKeyParam = "&allowPublicKeyRetrieval=true&characterEncoding=utf8&autoReconnect=true";
     private final String dbname = "twsdb";
     private String userName = "phoebuscy";
     private String password = "@try258TRY";
