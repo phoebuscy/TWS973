@@ -1,24 +1,20 @@
 package com.database;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
-
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.sql.*;
 
 import static com.utils.TStringUtil.notNullAndEmptyStr;
 import static com.utils.TStringUtil.trimStr;
 
-public class DbManager
-{
+
+public class DbManager {
     private static Logger LogApp = LogManager.getLogger("applog");
     private final String MYSQL_DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
-	private final String dbUrl = "jdbc:mysql://phoebuscy.com:3306/";
-	private final String dbConnPubKeyParam = "&allowPublicKeyRetrieval=true&characterEncoding=utf8&autoReconnect=true";
+    private final String dbUrl = "jdbc:mysql://phoebuscy.com:3306/";
+    private final String dbConnPubKeyParam = "&allowPublicKeyRetrieval=true&characterEncoding=utf8&autoReconnect=true";
     private final String dbname = "twsdb";
     private String userName = "phoebuscy";
     private String password = "@try258TRY";
@@ -28,8 +24,15 @@ public class DbManager
     private static DbManager instance = null;
 
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
+
+        try {
+
+            testDbcp();
+        } catch (Exception e) {
+            LogApp.error("test dbsource error");
+        }
+
         String userName = "phoebuscy";
         String password = "@try258TRY";
         DbManager dbManager = DbManager.getInstance();
@@ -38,38 +41,48 @@ public class DbManager
         int a = 1;
     }
 
+    public static void testDbcp() throws Exception {
+        // DBCP连接池核心类
+        BasicDataSource dataSouce = new BasicDataSource();
+        // 连接池参数配置：初始化连接数、最大连接数 / 连接字符串、驱动、用户、密码
+        //   dataSouce.setUrl("jdbc:mysql://phoebuscy.com:3306/twsdb?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=UTC");        //数据库连接字符串
+        dataSouce.setUrl("jdbc:mysql://phoebuscy.com:3306?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=UTC");        //数据库连接字符串
+        dataSouce.setDriverClassName("com.mysql.cj.jdbc.Driver");  //数据库驱动
+        dataSouce.setUsername("phoebuscy");                            //数据库连接用户
+        dataSouce.setPassword("@try258TRY");                            //数据库连接密码
+        dataSouce.setInitialSize(3);  // 初始化连接
+        dataSouce.setMaxConnLifetimeMillis(0);  //  0表示连接的存活时间是无限的
+        // 获取连接
+        Connection con = dataSouce.getConnection();
+        //  con.prepareStatement("delete from admin where id=3").executeUpdate();
+        // 关闭
+        con.close();
+    }
 
-    private DbManager()
-    {
-        if (mysql_connection == null)
-        {
+
+    private DbManager() {
+        if (mysql_connection == null) {
             mysql_connection = connectMySql(dbUrl, userName, password);
         }
-        if (db_connection == null)
-        {
+        if (db_connection == null) {
             db_connection = connectDB(dbUrl, dbname, userName, password);
         }
 
     }
 
-    public static DbManager getInstance()
-    {
-        if (instance == null)
-        {
+    public static DbManager getInstance() {
+        if (instance == null) {
             instance = new DbManager();
         }
         return instance;
     }
 
-    public void initDb(String userName, String password)
-    {
-        if (mysql_connection == null)
-        {
+    public void initDb(String userName, String password) {
+        if (mysql_connection == null) {
             mysql_connection = connectMySql(dbUrl, userName, password);
         }
         if (mysql_connection != null && notNullAndEmptyStr(userName) && notNullAndEmptyStr(password) && userName.equals(
-                this.userName) && password.equals(this.password))
-        {
+                this.userName) && password.equals(this.password)) {
             createTwsDb(mysql_connection, dbname);  // 如果不存在则创建TwsDb数据库
             db_connection = connectDB(dbUrl, dbname, userName, password);
             createTables(db_connection);  // 创建各种表
@@ -78,8 +91,7 @@ public class DbManager
     }
 
     // 创建数据库的各种表
-    private void createTables(Connection connection)
-    {
+    private void createTables(Connection connection) {
         // 查询id表
         createQueryIDTable(connection);
         // 历史数据表
@@ -87,25 +99,19 @@ public class DbManager
     }
 
     // 创建数据库的存储过程
-    private void createProcedure(Connection connection)
-    {
+    private void createProcedure(Connection connection) {
         createQueryReqIdProc(connection);
     }
 
-    private void createTwsDb(Connection mysqlConn, String dbname)
-    {
-        if (mysqlConn != null)
-        {
-            try
-            {
+    private void createTwsDb(Connection mysqlConn, String dbname) {
+        if (mysqlConn != null) {
+            try {
                 Statement statement = mysqlConn.createStatement();
                 String hrappSQL = "CREATE DATABASE  IF NOT EXISTS " + dbname;  // 加上IF NOT EXISTS就算数据库已经存在，把原来的覆盖掉了
                 int ret = statement.executeUpdate(hrappSQL);
                 statement.close();
                 mysqlConn.close();
-            }
-            catch (SQLException ex)
-            {
+            } catch (SQLException ex) {
                 LogApp.error("DbManager createTwsDb failed");
                 ex.printStackTrace();
             }
@@ -115,30 +121,36 @@ public class DbManager
     /**
      * 连接到数据库
      */
-    private Connection connectDB(String dbUrl, String dbname, String userName, String password)
-    {
+    private Connection connectDB(String dbUrl, String dbname, String userName, String password) {
         Connection connection = null;
-        String url = dbUrl + dbname + "?serverTimezone=UTC" + "&useSSL=false" + dbConnPubKeyParam;
-        try
-        {
+        //  String url = dbUrl + dbname + "?serverTimezone=UTC" + "&useSSL=false" + dbConnPubKeyParam;
+        String url = "jdbc:mysql://phoebuscy.com:3306/twsdb?useUnicode=true&useSSL=false&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=UTC";
+        try {
             Class.forName(MYSQL_DRIVER_CLASS);
-        }
-        catch (ClassNotFoundException e)
-        {
+        } catch (ClassNotFoundException e) {
             // TODO Auto-generated catch block
             LogApp.error("add mysql jdbc driver failed");  // 找不到驱动！
             e.printStackTrace();
         }
-        try
-        {
-            connection = DriverManager.getConnection(url, userName, password);
-            if (connection != null)
-            {
+        try {
+            // connection = DriverManager.getConnection(url, userName, password);
+
+            // DBCP连接池核心类
+            BasicDataSource dataSouce = new BasicDataSource();
+            dataSouce.setUrl(url);        //数据库连接字符串
+            dataSouce.setDriverClassName("com.mysql.cj.jdbc.Driver");  //数据库驱动
+            dataSouce.setUsername(userName);                            //数据库连接用户
+            dataSouce.setPassword(password);                            //数据库连接密码
+            dataSouce.setInitialSize(3);  // 初始化连接
+            dataSouce.setMaxConnLifetimeMillis(0);  //  0表示连接的存活时间是无限的
+            // 获取连接
+            connection = dataSouce.getConnection();
+
+
+            if (connection != null) {
                 LogApp.info("connection successful");
             }
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             // TODO Auto-generated catch block
             LogApp.error("connection fail");
             e.printStackTrace();
@@ -149,30 +161,34 @@ public class DbManager
     /**
      * 连接到Mysql
      */
-    private Connection connectMySql(String dbUrl, String userName, String password)
-    {
+    private Connection connectMySql(String dbUrl, String userName, String password) {
         Connection conn = null;
-        String url = dbUrl + "mysql?serverTimezone=UTC" + "&useSSL=false" + dbConnPubKeyParam;
-        try
-        {
+        //  String url = dbUrl + "mysql?serverTimezone=UTC" + "&useSSL=false" + dbConnPubKeyParam;
+        String url = "jdbc:mysql://phoebuscy.com:3306?useUnicode=true&useSSL=false&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=UTC";
+        try {
             Class.forName(MYSQL_DRIVER_CLASS);
-        }
-        catch (ClassNotFoundException e)
-        {
+        } catch (ClassNotFoundException e) {
             // TODO Auto-generated catch block
             LogApp.error("add mysql jdbc driver failed");  // 找不到驱动！
             e.printStackTrace();
         }
-        try
-        {
-            conn = DriverManager.getConnection(url, userName, password);
-            if (conn != null)
-            {
+        try {
+            // DBCP连接池核心类
+            BasicDataSource dataSouce = new BasicDataSource();
+            dataSouce.setUrl(url);        //数据库连接字符串
+            dataSouce.setDriverClassName("com.mysql.cj.jdbc.Driver");  //数据库驱动
+            dataSouce.setUsername(userName);                            //数据库连接用户
+            dataSouce.setPassword(password);                            //数据库连接密码
+            dataSouce.setInitialSize(3);  // 初始化连接
+            dataSouce.setMaxConnLifetimeMillis(0);  //  0表示连接的存活时间是无限的
+            // 获取连接
+            conn = dataSouce.getConnection();
+
+            //  conn = DriverManager.getConnection(url, userName, password);
+            if (conn != null) {
                 LogApp.info("connection successful");
             }
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             // TODO Auto-generated catch block
             LogApp.error("connection fail");
             e.printStackTrace();
@@ -185,12 +201,9 @@ public class DbManager
      *
      * @param connection
      */
-    private void createQueryIDTable(Connection connection)
-    {
-        if (connection != null)
-        {
-            try
-            {
+    private void createQueryIDTable(Connection connection) {
+        if (connection != null) {
+            try {
                 //加载驱动
                 Class.forName(MYSQL_DRIVER_CLASS);
                 //获取对象
@@ -207,9 +220,7 @@ public class DbManager
 
                 System.out.println("创建成功！");
                 stmt.close();
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 System.out.println("创建失败！或已经存在该表格" + e);
                 e.printStackTrace();
             }
@@ -221,40 +232,34 @@ public class DbManager
      *
      * @param connection
      */
-    private void createQueryReqIdProc(Connection connection)
-    {
-        if (connection != null)
-        {
-            try
-            {
+    private void createQueryReqIdProc(Connection connection) {
+        if (connection != null) {
+            try {
                 Statement statement = connection.createStatement();
+
+                String dropProcedure =  "drop procedure if exists queryReqIDProc";
+                statement.executeUpdate(dropProcedure);
+
                 String sqlStr = "create procedure queryReqIDProc(out id int)" + "BEGIN " +
-                                "update queryidtable set reqid=reqid+1;" + "select reqid into id from queryidtable;" +
-                                "END ";
+                        "update queryidtable set reqid=reqid+1;" + "select reqid into id from queryidtable;" +
+                        "END ";
                 statement.executeUpdate(sqlStr);
-            }
-            catch (SQLException e)
-            {
+            } catch (SQLException e) {
                 LogApp.error("DbManager createQueryReqIdProc failed");
                 e.printStackTrace();
             }
         }
     }
 
-    public int queryReqID()
-    {
+    public int queryReqID() {
         int retid = 0;
-        if (db_connection != null)
-        {
-            try
-            {
+        if (db_connection != null) {
+            try {
                 CallableStatement cs = db_connection.prepareCall("{call queryReqIDProc(?)}");
                 cs.registerOutParameter(1, Types.INTEGER);
                 cs.execute();
                 retid = cs.getInt(1);
-            }
-            catch (SQLException e)
-            {
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
 
@@ -278,8 +283,7 @@ public class DbManager
      *
      * @param connection 数据库连接
      */
-    private void createHistoricDataIDTable(Connection connection)
-    {
+    private void createHistoricDataIDTable(Connection connection) {
         createHistoricDataIDTable(connection, com.ib.client.Types.BarSize._5_secs);
         createHistoricDataIDTable(connection, com.ib.client.Types.BarSize._15_secs);
         createHistoricDataIDTable(connection, com.ib.client.Types.BarSize._30_secs);
@@ -299,12 +303,9 @@ public class DbManager
      * @param connection 数据库连接
      * @param barSize    柱
      */
-    private void createHistoricDataIDTable(Connection connection, com.ib.client.Types.BarSize barSize)
-    {
-        if (connection != null)
-        {
-            try
-            {
+    private void createHistoricDataIDTable(Connection connection, com.ib.client.Types.BarSize barSize) {
+        if (connection != null) {
+            try {
                 //加载驱动
                 Class.forName(MYSQL_DRIVER_CLASS);
                 //获取对象
@@ -314,14 +315,12 @@ public class DbManager
                 //  stmt.execute(delTableSqlStr);
 
                 String sqlstr2 = "create table queryidtable(reqid int(1));";
-                String sqlstr = "create table" + " " + tableName + " " + crtHistoricDataFileStatement();
+                String sqlstr = "create table" + " if not exists " + " " + tableName + " " + crtHistoricDataFileStatement();
                 int ret = stmt.executeUpdate(sqlstr);
 
                 System.out.println("创建成功！");
                 stmt.close();
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 System.out.println("创建失败！或已经存在该表格" + e);
                 e.printStackTrace();
             }
@@ -342,8 +341,7 @@ public class DbManager
      *
      * @return
      */
-    private String crtHistoricDataFileStatement()
-    {
+    private String crtHistoricDataFileStatement() {
         StringBuilder strBuder = new StringBuilder();
         strBuder.append("(");
 
