@@ -237,7 +237,7 @@ public class DbManager {
             try {
                 Statement statement = connection.createStatement();
 
-                String dropProcedure =  "drop procedure if exists queryReqIDProc";
+                String dropProcedure = "drop procedure if exists queryReqIDProc";
                 statement.executeUpdate(dropProcedure);
 
                 String sqlStr = "create procedure queryReqIDProc(out id int)" + "BEGIN " +
@@ -255,6 +255,10 @@ public class DbManager {
         int retid = 0;
         if (db_connection != null) {
             try {
+                if (db_connection.isClosed()) {
+                    db_connection = connectDB("", "", userName, password);
+                }
+
                 CallableStatement cs = db_connection.prepareCall("{call queryReqIDProc(?)}");
                 cs.registerOutParameter(1, Types.INTEGER);
                 cs.execute();
@@ -262,7 +266,6 @@ public class DbManager {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-
         }
         return retid;
     }
