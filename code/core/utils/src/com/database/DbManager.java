@@ -13,10 +13,10 @@ import static com.utils.TStringUtil.trimStr;
 public class DbManager {
     private static Logger LogApp = LogManager.getLogger("applog");
     private final String MYSQL_DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
-    private final String dbUrl = "jdbc:mysql://phoebuscy.com:3306/";
+    private final String dbUrl = "jdbc:mysql://139.9.54.135:3306/";
     private final String dbConnPubKeyParam = "&allowPublicKeyRetrieval=true&characterEncoding=utf8&autoReconnect=true";
     private final String dbname = "twsdb";
-    private String userName = "phoebuscy";
+    private String userName = "caiyong";
     private String password = "@try258TRY";
     private Connection mysql_connection;  // mysql的 conn
     private Connection db_connection;     // db的conn
@@ -33,7 +33,7 @@ public class DbManager {
             LogApp.error("test dbsource error");
         }
 
-        String userName = "phoebuscy";
+        String userName = "caiyong";
         String password = "@try258TRY";
         DbManager dbManager = DbManager.getInstance();
         dbManager.initDb(userName, password);
@@ -45,10 +45,10 @@ public class DbManager {
         // DBCP连接池核心类
         BasicDataSource dataSouce = new BasicDataSource();
         // 连接池参数配置：初始化连接数、最大连接数 / 连接字符串、驱动、用户、密码
-        //   dataSouce.setUrl("jdbc:mysql://phoebuscy.com:3306/twsdb?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=UTC");        //数据库连接字符串
-        dataSouce.setUrl("jdbc:mysql://phoebuscy.com:3306?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=UTC");        //数据库连接字符串
+        //   dataSouce.setUrl("jdbc:mysql://139.9.54.135:3306/twsdb?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=UTC");        //数据库连接字符串
+        dataSouce.setUrl("jdbc:mysql://139.9.54.135:3306?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=UTC");        //数据库连接字符串
         dataSouce.setDriverClassName("com.mysql.cj.jdbc.Driver");  //数据库驱动
-        dataSouce.setUsername("phoebuscy");                            //数据库连接用户
+        dataSouce.setUsername("caiyong");                            //数据库连接用户
         dataSouce.setPassword("@try258TRY");                            //数据库连接密码
         dataSouce.setInitialSize(3);  // 初始化连接
         dataSouce.setMaxConnLifetimeMillis(0);  //  0表示连接的存活时间是无限的
@@ -124,7 +124,7 @@ public class DbManager {
     private Connection connectDB(String dbUrl, String dbname, String userName, String password) {
         Connection connection = null;
         //  String url = dbUrl + dbname + "?serverTimezone=UTC" + "&useSSL=false" + dbConnPubKeyParam;
-        String url = "jdbc:mysql://phoebuscy.com:3306/twsdb?useUnicode=true&useSSL=false&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=UTC";
+        String url = "jdbc:mysql://139.9.54.135:3306/twsdb?useUnicode=true&useSSL=false&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=UTC";
         try {
             Class.forName(MYSQL_DRIVER_CLASS);
         } catch (ClassNotFoundException e) {
@@ -136,15 +136,16 @@ public class DbManager {
             // connection = DriverManager.getConnection(url, userName, password);
 
             // DBCP连接池核心类
-            BasicDataSource dataSouce = new BasicDataSource();
-            dataSouce.setUrl(url);        //数据库连接字符串
-            dataSouce.setDriverClassName("com.mysql.cj.jdbc.Driver");  //数据库驱动
-            dataSouce.setUsername(userName);                            //数据库连接用户
-            dataSouce.setPassword(password);                            //数据库连接密码
-            dataSouce.setInitialSize(3);  // 初始化连接
-            dataSouce.setMaxConnLifetimeMillis(0);  //  0表示连接的存活时间是无限的
+            BasicDataSource dataSource = new BasicDataSource();
+            dataSource.setUrl(url);        //数据库连接字符串
+            dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");  //数据库驱动
+            dataSource.setUsername(userName);                            //数据库连接用户
+            dataSource.setPassword(password);                            //数据库连接密码
+            dataSource.setInitialSize(3);  // 初始化连接
+            dataSource.setMaxConnLifetimeMillis(0);  //  0表示连接的存活时间是无限的
+
             // 获取连接
-            connection = dataSouce.getConnection();
+            connection = dataSource.getConnection();
 
 
             if (connection != null) {
@@ -164,7 +165,7 @@ public class DbManager {
     private Connection connectMySql(String dbUrl, String userName, String password) {
         Connection conn = null;
         //  String url = dbUrl + "mysql?serverTimezone=UTC" + "&useSSL=false" + dbConnPubKeyParam;
-        String url = "jdbc:mysql://phoebuscy.com:3306?useUnicode=true&useSSL=false&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=UTC";
+        String url = "jdbc:mysql://139.9.54.135:3306?useUnicode=true&useSSL=false&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=UTC";
         try {
             Class.forName(MYSQL_DRIVER_CLASS);
         } catch (ClassNotFoundException e) {
@@ -174,15 +175,17 @@ public class DbManager {
         }
         try {
             // DBCP连接池核心类
-            BasicDataSource dataSouce = new BasicDataSource();
-            dataSouce.setUrl(url);        //数据库连接字符串
-            dataSouce.setDriverClassName("com.mysql.cj.jdbc.Driver");  //数据库驱动
-            dataSouce.setUsername(userName);                            //数据库连接用户
-            dataSouce.setPassword(password);                            //数据库连接密码
-            dataSouce.setInitialSize(3);  // 初始化连接
-            dataSouce.setMaxConnLifetimeMillis(0);  //  0表示连接的存活时间是无限的
+            BasicDataSource dataSource = new BasicDataSource();
+            dataSource.setUrl(url);        //数据库连接字符串
+            dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");  //数据库驱动
+            dataSource.setUsername(userName);                            //数据库连接用户
+            dataSource.setPassword(password);                            //数据库连接密码
+            dataSource.setInitialSize(3);  // 初始化连接
+            dataSource.setMaxConnLifetimeMillis(0);  //  0表示连接的存活时间是无限的
+
+
             // 获取连接
-            conn = dataSouce.getConnection();
+            conn = dataSource.getConnection();
 
             //  conn = DriverManager.getConnection(url, userName, password);
             if (conn != null) {

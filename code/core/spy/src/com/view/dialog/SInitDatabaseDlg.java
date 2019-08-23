@@ -38,7 +38,7 @@ public class SInitDatabaseDlg extends JFrame
 {
     private static Logger LogApp = LogManager.getLogger("applog");
 
-    JTextField userTextField = new JTextField("phoebuscy", 20);
+    JTextField userTextField = new JTextField("caiyong", 20);
     JTextField pwTextField = new JTextField("@try258TRY", 20);
 
     public SInitDatabaseDlg()
