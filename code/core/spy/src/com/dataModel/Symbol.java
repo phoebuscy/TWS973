@@ -625,7 +625,9 @@ public class Symbol
         {
             Order order = new Order();
             order.action(action);
-            order.totalQuantity(count);
+            order.orderId(dataManager.getOrderId());
+            order.account(dataManager.getAccount());
+            order.totalQuantity(Double.valueOf(count));
             order.orderType(OrderType.MKT);
             m_client.placeOrder(reqid, contract, order);
             return reqid;

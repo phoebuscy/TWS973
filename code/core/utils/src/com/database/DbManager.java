@@ -20,6 +20,7 @@ public class DbManager {
     private String password = "@try258TRY";
     private Connection mysql_connection;  // mysql的 conn
     private Connection db_connection;     // db的conn
+    private static int reqID = 0;         // 查询id
 
     private static DbManager instance = null;
 
@@ -255,7 +256,10 @@ public class DbManager {
     }
 
     public int queryReqID() {
-        int retid = 0;
+        if(reqID > 0)
+        {
+            return ++reqID;
+        }
         if (db_connection != null) {
             try {
                 if (db_connection.isClosed()) {
@@ -265,12 +269,12 @@ public class DbManager {
                 CallableStatement cs = db_connection.prepareCall("{call queryReqIDProc(?)}");
                 cs.registerOutParameter(1, Types.INTEGER);
                 cs.execute();
-                retid = cs.getInt(1);
+                reqID = cs.getInt(1);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
-        return retid;
+        return reqID;
     }
 
     /**

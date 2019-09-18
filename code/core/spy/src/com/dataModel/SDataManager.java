@@ -36,6 +36,7 @@ public class SDataManager implements EWrapper
     private String m_host;
     private int m_port;
     private int m_clientid;
+    private int m_orderId=90000;
 
 
     private EJavaSignal m_signal;
@@ -134,6 +135,11 @@ public class SDataManager implements EWrapper
     {
         int reqId = dbManager.queryReqID();
         return reqId;
+    }
+
+    public int getOrderId()
+    {
+        return ++m_orderId;
     }
 
 
